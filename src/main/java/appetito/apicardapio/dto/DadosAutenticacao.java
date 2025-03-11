@@ -1,4 +1,4 @@
-package appetito.apicardapio.posts;
+package appetito.apicardapio.dto;
 
 public record DadosAutenticacao(String email, String senha) {
 

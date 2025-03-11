@@ -1,4 +1,4 @@
-package appetito.apicardapio.infra;
+package appetito.apicardapio.security;
 import appetito.apicardapio.entity.Usuario;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

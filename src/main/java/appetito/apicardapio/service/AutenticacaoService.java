@@ -1,4 +1,4 @@
-package appetito.apicardapio.controller;
+package appetito.apicardapio.service;
 
 import appetito.apicardapio.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;

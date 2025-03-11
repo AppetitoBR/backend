@@ -1,4 +1,4 @@
-package appetito.apicardapio.infra;
+package appetito.apicardapio.dto;
 
 public record DadosTokenJWT(String tokenJWT) {
 
