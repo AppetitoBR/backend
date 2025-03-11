@@ -1,13 +1,13 @@
-package com.appetito.cardapio_api;
+package appetito.apicardapio;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class CardapioApiApplicationTests {
+class ApiCardapioApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }
