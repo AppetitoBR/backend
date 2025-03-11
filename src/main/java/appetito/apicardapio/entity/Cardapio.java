@@ -1,9 +1,11 @@
 package appetito.apicardapio.entity;
 
-import appetito.apicardapio.posts.CardapioCadastro;
+import appetito.apicardapio.dto.CardapioCadastro;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
+import java.util.List;
 
 @Table(name = "Cardapio")
 @Entity(name = "Cardapios")
@@ -15,7 +17,7 @@ import java.time.LocalDate;
 public class Cardapio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long cardapio_id;
     private int estabelecimento_id;
     private String nome;
     private String secao;
@@ -24,6 +26,8 @@ public class Cardapio {
     private LocalDate vigencia_inicio;
     private LocalDate vigencia_fim;
     private boolean ativo;
+    @ElementCollection
+    private List<String> restricoesAlimentares;
 
     public Cardapio(CardapioCadastro dadosCardapio){
         this.estabelecimento_id = dadosCardapio.estabelecimento_id();
@@ -34,6 +38,7 @@ public class Cardapio {
         this.vigencia_inicio = dadosCardapio.vigencia_inicio();
         this.vigencia_fim = dadosCardapio.vigencia_fim();
         this.ativo = dadosCardapio.ativo();
+        this.restricoesAlimentares = dadosCardapio.restricoesAlimentares();
     }
 
 }

@@ -1,4 +1,4 @@
-package appetito.apicardapio.infra;
+package appetito.apicardapio.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.HibernateError;

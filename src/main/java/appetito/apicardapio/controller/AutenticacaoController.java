@@ -1,9 +1,9 @@
 package appetito.apicardapio.controller;
 
 import appetito.apicardapio.entity.Usuario;
-import appetito.apicardapio.infra.DadosTokenJWT;
-import appetito.apicardapio.infra.TokenService;
-import appetito.apicardapio.posts.DadosAutenticacao;
+import appetito.apicardapio.dto.DadosTokenJWT;
+import appetito.apicardapio.security.TokenService;
+import appetito.apicardapio.dto.DadosAutenticacao;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/login")
-public class ControllerAutenticacao {
+public class AutenticacaoController {
     @Autowired
     private AuthenticationManager manager;
     @Autowired
