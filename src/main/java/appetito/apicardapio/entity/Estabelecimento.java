@@ -1,9 +1,7 @@
 package appetito.apicardapio.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -12,43 +10,69 @@ public class Estabelecimento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "estabelecimento_id", nullable = false)
-    private Long id;
+    @Column(name = "estabelecimento_id")
+    private Long id; // Campo ID
 
     @Column(nullable = false)
-    @NotNull(message = "Razão social é obrigatória")
     private String razao_social;
 
-    @Column(name = "nome_fantasia")
-    private String nomeFantasia;
+    @Column(nullable = false)
+    private String nome_fantasia;
 
     @Column(nullable = false, unique = true)
-    @NotNull(message = "CNPJ é obrigatório")
     private String cnpj;
 
+    @Lob
+    private String contatos;
+
+    @Lob
+    private String endereco;
+
     @Column(nullable = false)
-    @NotNull(message = "Tipo de estabelecimento é obrigatório")
     private String tipo;
 
     @Column(nullable = false)
     private Boolean ativo = true;
 
     @Column(nullable = false)
+    private Boolean bloqueado = false;
+
+    @Column(nullable = false)
     private LocalDateTime data_cadastro = LocalDateTime.now();
 
     private LocalDateTime data_atualizacao;
 
+    @Column(nullable = false)
+    private String segmento;
+
+    @ManyToOne
+    @JoinColumn(name = "usuario_cadastro_id", nullable = false)
+    private Usuario usuario_cadastro;
+
+    @ManyToOne
+    @JoinColumn(name = "usuario_alteracao_id")
+    private Usuario usuario_alteracao;
+
+    @Lob
+    private String observacao;
+
+    @Lob
+    private String logomarca;
+
+    private String url_cardapio_digital;
+
+    private String subdominio_appetito;
+
+    // Construtor padrão (necessário para JPA)
     public Estabelecimento() {}
 
-    public Estabelecimento(String razao_social, String nomeFantasia, String cnpj, String tipo) {
+    // Construtor para DTO
+    public Estabelecimento(String razao_social, String nome_fantasia, String cnpj, String tipo, String segmento, Usuario usuario_cadastro) {
         this.razao_social = razao_social;
-        this.nomeFantasia = nomeFantasia;
+        this.nome_fantasia = nome_fantasia;
         this.cnpj = cnpj;
         this.tipo = tipo;
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.data_atualizacao = LocalDateTime.now();
+        this.segmento = segmento;
+        this.usuario_cadastro = usuario_cadastro;
     }
 }

@@ -1,4 +1,5 @@
 package appetito.apicardapio.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
@@ -20,7 +21,7 @@ public class Cardapio {
 
     @ManyToOne
     @JoinColumn(name = "estabelecimento_id", nullable = false)
-    private Estabelecimento estabelecimento;
+    private Estabelecimento estabelecimento; // Relação com Estabelecimento
 
     @ManyToOne
     @JoinColumn(name = "colaborador_id")
@@ -35,8 +36,10 @@ public class Cardapio {
     @Column(nullable = false)
     private Boolean ativo = true;
 
+    // Construtor padrão (necessário para JPA)
     public Cardapio() {}
 
+    // Construtor para DTO
     public Cardapio(String nome, String secao, String descricao, Estabelecimento estabelecimento, Colaborador colaborador, LocalDate vigencia_inicio, LocalDate vigencia_fim) {
         this.nome = nome;
         this.secao = secao;
