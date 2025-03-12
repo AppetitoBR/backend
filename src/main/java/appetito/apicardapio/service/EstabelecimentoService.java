@@ -21,7 +21,7 @@ public class EstabelecimentoService {
     public EstabelecimentoDetalhamento cadastrarEstabelecimento(EstabelecimentoCadastro dadosEstabelecimento) {
         Estabelecimento estabelecimento = new Estabelecimento(
                 dadosEstabelecimento.razao_social(),
-                dadosEstabelecimento.nome_fantasia(),
+                dadosEstabelecimento.nomeFantasia(),
                 dadosEstabelecimento.cnpj(),
                 dadosEstabelecimento.tipo()
         );
@@ -31,8 +31,8 @@ public class EstabelecimentoService {
     }
 
     // Buscar um estabelecimento por ID
-    public EstabelecimentoDetalhamento buscarEstabelecimentoPorId(Long id) {
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
+    public EstabelecimentoDetalhamento buscarEstabelecimentoPorId(Long estabelecimento_id) {
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimento_id)
                 .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
         return new EstabelecimentoDetalhamento(estabelecimento);
     }
@@ -45,12 +45,12 @@ public class EstabelecimentoService {
     }
 
     // Atualizar um estabelecimento
-    public EstabelecimentoDetalhamento atualizarEstabelecimento(Long id, EstabelecimentoCadastro dadosAtualizados) {
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
+    public EstabelecimentoDetalhamento atualizarEstabelecimento(Long estabelecimento_id, EstabelecimentoCadastro dadosAtualizados) {
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimento_id)
                 .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
 
         estabelecimento.setRazao_social(dadosAtualizados.razao_social());
-        estabelecimento.setNome_fantasia(dadosAtualizados.nome_fantasia());
+        estabelecimento.setNomeFantasia(dadosAtualizados.nomeFantasia());
         estabelecimento.setCnpj(dadosAtualizados.cnpj());
         estabelecimento.setTipo(dadosAtualizados.tipo());
 
@@ -59,8 +59,8 @@ public class EstabelecimentoService {
     }
 
     // Desativar um estabelecimento (soft delete)
-    public void desativarEstabelecimento(Long id) {
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
+    public void desativarEstabelecimento(Long estabelecimento_id) {
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimento_id)
                 .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
 
         estabelecimento.setAtivo(false);

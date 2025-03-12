@@ -24,7 +24,7 @@ public class EstabelecimentoController {
             @Valid @RequestBody EstabelecimentoCadastro dadosEstabelecimento,
             UriComponentsBuilder uriBuilder) {
         EstabelecimentoDetalhamento estabelecimento = estabelecimentoService.cadastrarEstabelecimento(dadosEstabelecimento);
-        var uri = uriBuilder.path("/estabelecimentos/{id}").buildAndExpand(estabelecimento.estabelecimento_id()).toUri();
+        var uri = uriBuilder.path("/estabelecimentos/{id}").buildAndExpand(estabelecimento.id()).toUri();
         return ResponseEntity.created(uri).body(estabelecimento);
     }
 

@@ -4,9 +4,9 @@ import appetito.apicardapio.entity.Estabelecimento;
 import java.time.LocalDateTime;
 
 public record EstabelecimentoDetalhamento(
-        Long estabelecimento_id,
+        Long id,
         String razao_social,
-        String nome_fantasia,
+        String nomeFantasia,
         String cnpj,
         String tipo,
         Boolean ativo,
@@ -14,9 +14,9 @@ public record EstabelecimentoDetalhamento(
 ) {
     public EstabelecimentoDetalhamento(Estabelecimento estabelecimento) {
         this(
-                estabelecimento.getEstabelecimento_id(),
+                estabelecimento.getId(),
                 estabelecimento.getRazao_social(),
-                estabelecimento.getNome_fantasia(),
+                estabelecimento.getNomeFantasia(),
                 estabelecimento.getCnpj(),
                 estabelecimento.getTipo(),
                 estabelecimento.getAtivo(),

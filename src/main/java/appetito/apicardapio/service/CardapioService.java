@@ -59,7 +59,7 @@ public class CardapioService {
     }
 
     public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Long estabelecimentoId) {
-        return cardapioRepository.findByEstabelecimento_Estabelecimento_id(estabelecimentoId).stream()
+        return cardapioRepository.findByEstabelecimentoId(estabelecimentoId).stream()
                 .map(CardapioDetalhamento::new)
                 .collect(Collectors.toList());
     }
