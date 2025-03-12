@@ -8,7 +8,7 @@ public record CardapioCadastro(
         @NotBlank String nome,
         String secao,
         String descricao,
-        @NotNull Long estabelecimento_id,
+        @NotNull Long id,
         Long colaborador_id,
         @NotNull LocalDate vigencia_inicio,
         @NotNull LocalDate vigencia_fim
