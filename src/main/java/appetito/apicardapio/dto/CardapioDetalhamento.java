@@ -1,33 +1,29 @@
 package appetito.apicardapio.dto;
-
-import appetito.apicardapio.entity.Cardapio;
-import java.util.List;
+import  appetito.apicardapio.entity.Cardapio;
 import java.time.LocalDate;
 
-public record DadosDetalhamentoCardapio(
+public record CardapioDetalhamento(
         Long cardapio_id,
-        int estabelecimento_id,
         String nome,
         String secao,
         String descricao,
-        int colaborador_id,
+        Long estabelecimento_id,
+        Long colaborador_id,
         LocalDate vigencia_inicio,
         LocalDate vigencia_fim,
-        boolean ativo,
-        List<String> restricoesAlimentares
+        Boolean ativo
 ) {
-    public DadosDetalhamentoCardapio(Cardapio cardapio) {
+    public CardapioDetalhamento(Cardapio cardapio) {
         this(
                 cardapio.getCardapio_id(),
-                cardapio.getEstabelecimento_id(),
                 cardapio.getNome(),
                 cardapio.getSecao(),
                 cardapio.getDescricao(),
-                cardapio.getColaborador_id(),
+                cardapio.getEstabelecimento().getEstabelecimento_id(),
+                cardapio.getColaborador() != null ? cardapio.getColaborador().getColaborador_id() : null,
                 cardapio.getVigencia_inicio(),
                 cardapio.getVigencia_fim(),
-                cardapio.isAtivo(),
-                cardapio.getRestricoesAlimentares()
+                cardapio.getAtivo()
         );
     }
 }

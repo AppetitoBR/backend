@@ -1,61 +1,68 @@
 package appetito.apicardapio.entity;
 
+
+import appetito.apicardapio.enums.PerfilUsuario;
 import jakarta.persistence.*;
-import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import lombok.Data;
 
-import java.util.Collection;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Table(name = "Usuario")
-@Entity(name = "Usuarios")
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode(of = "id")
-public class Usuario implements UserDetails {
+@Data
+@Entity
+public class Usuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long usuario_id;
+
+    @Column(nullable = false)
+    private String nome_completo;
+
+    private String apelido;
+
+    @Column(nullable = false, unique = true)
+    private String cpf;
+
+    @Column(nullable = false, unique = true)
     private String email;
+    @Column(nullable = false)
     private String senha;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PerfilUsuario perfil;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
-    }
+    private LocalDate data_nascimento;
 
-    @Override
-    public String getPassword() {
-        return senha;
-    }
+    private Integer idioma_padrao = 0;
 
-    @Override
-    public String getUsername() {
-        return email;
-    }
+    private String nacionalidade;
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+    private String caminho_imagem_perfil;
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+    private String situacao = "ativo";
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+    @Lob
+    private String contatos;
 
-    @Override
-    public boolean isEnabled() {
-        return true;
+    @Lob
+    private String endereco;
+
+    @Lob
+    private String redes_sociais;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime data_cadastro = LocalDateTime.now();
+
+    private LocalDateTime data_atualizacao;
+
+    public Usuario() {}
+
+    public Usuario(String nome_completo, String cpf, String email, String senha, PerfilUsuario perfil) {
+        this.nome_completo = nome_completo;
+        this.cpf = cpf;
+        this.email = email;
+        this.senha = senha;
+        this.perfil = perfil;
     }
 }
-
