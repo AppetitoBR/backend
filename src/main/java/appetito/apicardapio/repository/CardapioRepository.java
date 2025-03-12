@@ -2,11 +2,11 @@ package appetito.apicardapio.repository;
 
 import appetito.apicardapio.entity.Cardapio;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CardapioRepository extends JpaRepository<Cardapio, Long> {
-    List<Cardapio> findByEstabelecimentoId(Long id); // Corrigido
+    Optional<Cardapio> findById(Long id);
+    List<Cardapio> findByEstabelecimentoId(Long estabelecimentoId);
 }
