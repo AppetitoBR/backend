@@ -18,16 +18,13 @@ import java.util.stream.Collectors;
 @Service
 public class CardapioService {
 
-    @Autowired
     private final CardapioRepository cardapioRepository;
-
-    @Autowired
     private final EstabelecimentoRepository estabelecimentoRepository;
-
-    @Autowired
     private final ColaboradorRepository colaboradorRepository;
 
-    public CardapioService(CardapioRepository cardapioRepository, EstabelecimentoRepository estabelecimentoRepository, ColaboradorRepository colaboradorRepository) {
+    public CardapioService(CardapioRepository cardapioRepository,
+                           EstabelecimentoRepository estabelecimentoRepository,
+                           ColaboradorRepository colaboradorRepository) {
         this.cardapioRepository = cardapioRepository;
         this.estabelecimentoRepository = estabelecimentoRepository;
         this.colaboradorRepository = colaboradorRepository;
@@ -35,7 +32,7 @@ public class CardapioService {
 
     // Cadastrar um cardápio
     public CardapioDetalhamento cadastrarCardapio(CardapioCadastro dadosCardapio) {
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dadosCardapio.estabelecimento_id())
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dadosCardapio.id())
                 .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
 
         Colaborador colaborador = null;
@@ -59,16 +56,15 @@ public class CardapioService {
     }
 
     // Buscar um cardápio por ID
-    public CardapioDetalhamento buscarCardapioPorId(Long id) {
-        Cardapio cardapio = cardapioRepository.findById(id)
+    public CardapioDetalhamento buscarCardapioPorId(Long cardapio_id) {
+        Cardapio cardapio = cardapioRepository.findById(cardapio_id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado"));
         return new CardapioDetalhamento(cardapio);
     }
-
-    // Listar cardápios por estabelecimento
-    public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Long estabelecimentoId) {
-        return cardapioRepository.findByEstabelecimentoId(estabelecimentoId).stream()
-                .map(CardapioDetalhamento::new)
+     // Listar cardápios por estabelecimento
+    public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Long estabelecimento_id) {
+        return cardapioRepository.findByEstabelecimentoId(estabelecimento_id).stream()
+               .map(CardapioDetalhamento::new)
                 .collect(Collectors.toList());
     }
 }
