@@ -8,5 +8,5 @@ public record MesaCadastro(
         @NotNull Integer capacidade,
         @NotBlank String status,
         @NotBlank String qrCode,
-        @NotNull Long estabelecimentoId
+        @NotNull Long estabelecimento_id
 ) {}

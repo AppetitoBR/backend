@@ -1,0 +1,67 @@
+package appetito.apicardapio.service;
+
+import appetito.apicardapio.dto.ColaboradorCadastro;
+import appetito.apicardapio.dto.ColaboradorDetalhamento;
+import appetito.apicardapio.entity.Colaborador;
+import appetito.apicardapio.entity.Usuario;
+import appetito.apicardapio.entity.Estabelecimento;
+import appetito.apicardapio.repository.ColaboradorRepository;
+import appetito.apicardapio.repository.UsuarioRepository;
+import appetito.apicardapio.repository.EstabelecimentoRepository;
+import appetito.apicardapio.exception.ResourceNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class ColaboradorService {
+
+    @Autowired
+    private ColaboradorRepository colaboradorRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private EstabelecimentoRepository estabelecimentoRepository;
+
+    // Cadastrar um colaborador
+    public ColaboradorDetalhamento cadastrarColaborador(ColaboradorCadastro dadosColaborador) {
+        Usuario usuario = usuarioRepository.findById(dadosColaborador.usuario_id())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dadosColaborador.estabelecimento_id())
+                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
+
+        Colaborador colaborador = new Colaborador(
+                usuario,
+                estabelecimento,
+                dadosColaborador.cargo(),
+                dadosColaborador.data_contratacao()
+        );
+
+        colaborador.setCalendario_trabalho(dadosColaborador.calendario_trabalho());
+        colaborador.setInicio_turno(dadosColaborador.inicio_turno());
+        colaborador.setTermino_turno(dadosColaborador.termino_turno());
+        colaborador.setNotificacoes(dadosColaborador.notificacoes());
+
+        colaboradorRepository.save(colaborador);
+        return new ColaboradorDetalhamento(colaborador);
+    }
+
+    // Buscar um colaborador por ID
+    public ColaboradorDetalhamento buscarColaboradorPorId(Long id) {
+        Colaborador colaborador = colaboradorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Colaborador não encontrado"));
+        return new ColaboradorDetalhamento(colaborador);
+    }
+
+    // Listar colaboradores por estabelecimento
+    public List<ColaboradorDetalhamento> listarColaboradoresPorEstabelecimento(Long estabelecimentoId) {
+        return colaboradorRepository.findByEstabelecimento_Estabelecimento_id(estabelecimentoId).stream()
+                .map(ColaboradorDetalhamento::new)
+                .collect(Collectors.toList());
+    }
+}
