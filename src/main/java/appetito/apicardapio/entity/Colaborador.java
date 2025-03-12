@@ -18,7 +18,7 @@ public class Colaborador {
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "estabelecimento_id", nullable = false)
     private Estabelecimento estabelecimento;
 
     @Column(nullable = false)

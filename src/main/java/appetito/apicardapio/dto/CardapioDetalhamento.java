@@ -17,7 +17,7 @@ public record CardapioDetalhamento(
 ) {
     public CardapioDetalhamento(Cardapio cardapio) {
         this(
-                cardapio.getCardapio_id(),
+                cardapio.getId(),
                 cardapio.getNome(),
                 cardapio.getSecao(),
                 cardapio.getDescricao(),

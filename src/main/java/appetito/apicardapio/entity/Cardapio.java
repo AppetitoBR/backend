@@ -10,7 +10,8 @@ public class Cardapio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long cardapio_id;
+    @Column(name = "cardapio_id", nullable = false)
+    private Long id;
 
     @Column(nullable = false)
     private String nome;
@@ -21,10 +22,10 @@ public class Cardapio {
 
     @ManyToOne
     @JoinColumn(name = "estabelecimento_id", nullable = false)
-    private Estabelecimento estabelecimento; // Relação com Estabelecimento
+    private Estabelecimento estabelecimento;
 
     @ManyToOne
-    @JoinColumn(name = "colaborador_id")
+    @JoinColumn(name = "colaborador_id", nullable = false)
     private Colaborador colaborador;
 
     @Column(nullable = false)
