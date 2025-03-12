@@ -1,5 +1,7 @@
 package appetito.apicardapio.dto;
-import  appetito.apicardapio.entity.Cardapio;
+
+import appetito.apicardapio.entity.Cardapio;
+
 import java.time.LocalDate;
 
 public record CardapioDetalhamento(

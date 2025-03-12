@@ -8,6 +8,5 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface CardapioRepository extends JpaRepository<Cardapio, Long> {
-    @Query("SELECT c FROM Cardapio c WHERE c.estabelecimento.id = :estabelecimentoId")
-    List<Cardapio> findByEstabelecimentoId(@Param("estabelecimento_id") Long estabelecimentoId);
+    List<Cardapio> findByEstabelecimentoId(Long id); // Corrigido
 }
