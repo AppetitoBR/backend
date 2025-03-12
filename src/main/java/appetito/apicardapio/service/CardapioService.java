@@ -1,6 +1,5 @@
 package appetito.apicardapio.service;
 
-
 import appetito.apicardapio.dto.CardapioCadastro;
 import appetito.apicardapio.dto.CardapioDetalhamento;
 import appetito.apicardapio.entity.Cardapio;
@@ -20,14 +19,21 @@ import java.util.stream.Collectors;
 public class CardapioService {
 
     @Autowired
-    private CardapioRepository cardapioRepository;
+    private final CardapioRepository cardapioRepository;
 
     @Autowired
-    private EstabelecimentoRepository estabelecimentoRepository;
+    private final EstabelecimentoRepository estabelecimentoRepository;
 
     @Autowired
-    private ColaboradorRepository colaboradorRepository;
+    private final ColaboradorRepository colaboradorRepository;
 
+    public CardapioService(CardapioRepository cardapioRepository, EstabelecimentoRepository estabelecimentoRepository, ColaboradorRepository colaboradorRepository) {
+        this.cardapioRepository = cardapioRepository;
+        this.estabelecimentoRepository = estabelecimentoRepository;
+        this.colaboradorRepository = colaboradorRepository;
+    }
+
+    // Cadastrar um cardápio
     public CardapioDetalhamento cadastrarCardapio(CardapioCadastro dadosCardapio) {
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(dadosCardapio.estabelecimento_id())
                 .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
@@ -52,12 +58,14 @@ public class CardapioService {
         return new CardapioDetalhamento(cardapio);
     }
 
+    // Buscar um cardápio por ID
     public CardapioDetalhamento buscarCardapioPorId(Long id) {
         Cardapio cardapio = cardapioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado"));
         return new CardapioDetalhamento(cardapio);
     }
 
+    // Listar cardápios por estabelecimento
     public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Long estabelecimentoId) {
         return cardapioRepository.findByEstabelecimentoId(estabelecimentoId).stream()
                 .map(CardapioDetalhamento::new)
