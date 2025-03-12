@@ -6,7 +6,7 @@ import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.Mesa;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
-import com.appetito.apicardapio.repository.MesaRepository;
+import appetito.apicardapio.repository.MesaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
