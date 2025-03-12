@@ -3,13 +3,12 @@ package appetito.apicardapio.service;
 import appetito.apicardapio.dto.EstabelecimentoCadastro;
 import appetito.apicardapio.dto.EstabelecimentoDetalhamento;
 import appetito.apicardapio.entity.Estabelecimento;
-import appetito.apicardapio.exception.ResourceNotFoundException;
+import appetito.apicardapio.entity.Usuario;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
+import appetito.apicardapio.repository.UsuarioRepository;
+import appetito.apicardapio.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class EstabelecimentoService {
@@ -17,53 +16,23 @@ public class EstabelecimentoService {
     @Autowired
     private EstabelecimentoRepository estabelecimentoRepository;
 
-    // Cadastrar um novo estabelecimento
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     public EstabelecimentoDetalhamento cadastrarEstabelecimento(EstabelecimentoCadastro dadosEstabelecimento) {
+        Usuario usuarioCadastro = usuarioRepository.findById(dadosEstabelecimento.usuario_cadastro_id())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
         Estabelecimento estabelecimento = new Estabelecimento(
                 dadosEstabelecimento.razao_social(),
-                dadosEstabelecimento.nomeFantasia(),
+                dadosEstabelecimento.nome_fantasia(),
                 dadosEstabelecimento.cnpj(),
-                dadosEstabelecimento.tipo()
+                dadosEstabelecimento.tipo(),
+                dadosEstabelecimento.segmento(),
+                usuarioCadastro
         );
 
         estabelecimentoRepository.save(estabelecimento);
         return new EstabelecimentoDetalhamento(estabelecimento);
-    }
-
-    // Buscar um estabelecimento por ID
-    public EstabelecimentoDetalhamento buscarEstabelecimentoPorId(Long estabelecimento_id) {
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimento_id)
-                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
-        return new EstabelecimentoDetalhamento(estabelecimento);
-    }
-
-    // Listar todos os estabelecimentos
-    public List<EstabelecimentoDetalhamento> listarEstabelecimentos() {
-        return estabelecimentoRepository.findAll().stream()
-                .map(EstabelecimentoDetalhamento::new)
-                .collect(Collectors.toList());
-    }
-
-    // Atualizar um estabelecimento
-    public EstabelecimentoDetalhamento atualizarEstabelecimento(Long estabelecimento_id, EstabelecimentoCadastro dadosAtualizados) {
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimento_id)
-                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
-
-        estabelecimento.setRazao_social(dadosAtualizados.razao_social());
-        estabelecimento.setNomeFantasia(dadosAtualizados.nomeFantasia());
-        estabelecimento.setCnpj(dadosAtualizados.cnpj());
-        estabelecimento.setTipo(dadosAtualizados.tipo());
-
-        estabelecimentoRepository.save(estabelecimento);
-        return new EstabelecimentoDetalhamento(estabelecimento);
-    }
-
-    // Desativar um estabelecimento (soft delete)
-    public void desativarEstabelecimento(Long estabelecimento_id) {
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimento_id)
-                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
-
-        estabelecimento.setAtivo(false);
-        estabelecimentoRepository.save(estabelecimento);
     }
 }

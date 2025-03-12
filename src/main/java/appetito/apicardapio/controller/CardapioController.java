@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/cardapios")
 public class CardapioController {
@@ -18,6 +16,7 @@ public class CardapioController {
     @Autowired
     private CardapioService cardapioService;
 
+    // Cadastrar um cardápio
     @PostMapping
     public ResponseEntity<CardapioDetalhamento> cadastrarCardapio(
             @RequestBody @Valid CardapioCadastro dadosCardapio,
@@ -32,13 +31,5 @@ public class CardapioController {
     public ResponseEntity<CardapioDetalhamento> buscarCardapioPorId(@PathVariable Long id) {
         CardapioDetalhamento cardapioDetalhamento = cardapioService.buscarCardapioPorId(id);
         return ResponseEntity.ok(cardapioDetalhamento);
-    }
-
-    // Listar cardápios por estabelecimento
-    @GetMapping("/estabelecimento/{estabelecimentoId}")
-    public ResponseEntity<List<CardapioDetalhamento>> listarCardapiosPorEstabelecimento(
-            @PathVariable Long estabelecimentoId) {
-        List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimentoId);
-        return ResponseEntity.ok(cardapios);
     }
 }

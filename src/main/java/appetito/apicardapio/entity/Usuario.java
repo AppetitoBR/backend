@@ -1,63 +1,37 @@
 package appetito.apicardapio.entity;
 
-
 import appetito.apicardapio.enums.PerfilUsuario;
-import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import lombok.Getter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collection;
 
-@Data
 @Entity
-public class Usuario {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Getter
     private Long usuario_id;
 
-    @Column(nullable = false)
     private String nome_completo;
-
-    private String apelido;
-
-    @Column(nullable = false, unique = true)
-    private String cpf;
-
-    @Column(nullable = false, unique = true)
     private String email;
-    @Column(nullable = false)
     private String senha;
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private PerfilUsuario perfil;
+    private String cpf;  // Adicionando o campo CPF
 
-    private LocalDate data_nascimento;
+    // Construtor padrão (necessário para JPA)
+    public Usuario() {
+    }
 
-    private Integer idioma_padrao = 0;
-
-    private String nacionalidade;
-
-    private String caminho_imagem_perfil;
-
-    private String situacao = "ativo";
-
-    @Lob
-    private String contatos;
-
-    @Lob
-    private String endereco;
-
-    @Lob
-    private String redes_sociais;
-
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime data_cadastro = LocalDateTime.now();
-
-    private LocalDateTime data_atualizacao;
-
-    public Usuario() {}
-
+    // Construtor com parâmetros, incluindo o CPF
     public Usuario(String nome_completo, String cpf, String email, String senha, PerfilUsuario perfil) {
         this.nome_completo = nome_completo;
         this.cpf = cpf;
@@ -65,4 +39,36 @@ public class Usuario {
         this.senha = senha;
         this.perfil = perfil;
     }
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Arrays.asList(new SimpleGrantedAuthority("ROLE_" + perfil.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return senha;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
 }

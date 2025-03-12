@@ -23,9 +23,14 @@ public class AutenticacaoController {
     private TokenService tokenService;
     @PostMapping
     public ResponseEntity<?> autenticar(@RequestBody @Valid DadosAutenticacao dados) {
-        var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
-        var autenticacao = manager.authenticate(token);
-        var tokenJWT = tokenService.generateToken((Usuario) autenticacao.getPrincipal());
-        return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
+        try {
+            var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
+            var autenticacao = manager.authenticate(token);
+            var tokenJWT = tokenService.generateToken((Usuario) autenticacao.getPrincipal());
+            return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
+        } catch (Exception e) {
+            return ResponseEntity.status(403).body("Erro de autenticação: " + e.getMessage());
+        }
     }
+
 }
