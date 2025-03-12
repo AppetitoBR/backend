@@ -1,6 +1,7 @@
 package appetito.apicardapio.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,18 +12,22 @@ public class Estabelecimento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long estabelecimento_id;
+    @Column(name = "estabelecimento_id", nullable = false)
+    private Long id;
 
     @Column(nullable = false)
+    @NotNull(message = "Razão social é obrigatória")
     private String razao_social;
 
-    @Column(nullable = false)
-    private String nome_fantasia;
+    @Column(name = "nome_fantasia")
+    private String nomeFantasia;
 
     @Column(nullable = false, unique = true)
+    @NotNull(message = "CNPJ é obrigatório")
     private String cnpj;
 
     @Column(nullable = false)
+    @NotNull(message = "Tipo de estabelecimento é obrigatório")
     private String tipo;
 
     @Column(nullable = false)
@@ -35,10 +40,15 @@ public class Estabelecimento {
 
     public Estabelecimento() {}
 
-    public Estabelecimento(String razao_social, String nome_fantasia, String cnpj, String tipo) {
+    public Estabelecimento(String razao_social, String nomeFantasia, String cnpj, String tipo) {
         this.razao_social = razao_social;
-        this.nome_fantasia = nome_fantasia;
+        this.nomeFantasia = nomeFantasia;
         this.cnpj = cnpj;
         this.tipo = tipo;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.data_atualizacao = LocalDateTime.now();
     }
 }

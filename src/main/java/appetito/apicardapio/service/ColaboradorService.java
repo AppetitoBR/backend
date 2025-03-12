@@ -58,10 +58,15 @@ public class ColaboradorService {
         return new ColaboradorDetalhamento(colaborador);
     }
 
-    // Listar colaboradores por estabelecimento
     public List<ColaboradorDetalhamento> listarColaboradoresPorEstabelecimento(Long estabelecimentoId) {
-        return colaboradorRepository.findByEstabelecimento_Estabelecimento_id(estabelecimentoId).stream()
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
+
+        return colaboradorRepository.findByEstabelecimento(estabelecimento).stream()
                 .map(ColaboradorDetalhamento::new)
                 .collect(Collectors.toList());
     }
+
+
+
 }

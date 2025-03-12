@@ -20,7 +20,7 @@ public record ColaboradorDetalhamento(
         this(
                 colaborador.getColaborador_id(),
                 colaborador.getUsuario().getUsuario_id(),
-                colaborador.getEstabelecimento().getEstabelecimento_id(),
+                colaborador.getEstabelecimento().getId(),
                 colaborador.getCargo(),
                 colaborador.getData_contratacao(),
                 colaborador.getCalendario_trabalho(),
