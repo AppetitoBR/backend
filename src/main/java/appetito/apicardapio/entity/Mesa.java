@@ -3,13 +3,15 @@ package appetito.apicardapio.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 public class Mesa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long mesa_id;
 
     @Column(nullable = false)
     private String nome;
@@ -18,7 +20,7 @@ public class Mesa {
     private Integer capacidade;
 
     @Column(nullable = false)
-    private String status; // Ex: 'livre', 'ocupada', 'reservada'
+    private String status;
 
     @Column(nullable = false, unique = true)
     private String qrCode;
@@ -29,7 +31,7 @@ public class Mesa {
 
     public Mesa() {}
 
-    public Mesa(String nome, Integer capacidade, String status, String qrCode, Estabelecimento estabelecimento) {
+    public Mesa(String nome, Integer capacidade, String status, String qrCode, Estabelecimento estabelecimento ) {
         this.nome = nome;
         this.capacidade = capacidade;
         this.status = status;
