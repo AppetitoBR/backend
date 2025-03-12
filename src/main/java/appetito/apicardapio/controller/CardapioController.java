@@ -1,10 +1,8 @@
 package appetito.apicardapio.controller;
 
-import appetito.apicardapio.entity.Cardapio;
 import appetito.apicardapio.dto.CardapioCadastro;
-import appetito.apicardapio.dto.DadosDetalhamentoCardapio;
-import appetito.apicardapio.repository.CardapioRepository;
-import jakarta.transaction.Transactional;
+import appetito.apicardapio.dto.CardapioDetalhamento;
+import appetito.apicardapio.service.CardapioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,37 +12,33 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @RestController
-@RequestMapping("/cardapio")
+@RequestMapping("/cardapios")
 public class CardapioController {
+
     @Autowired
-    private CardapioRepository cardapioRepository;
+    private CardapioService cardapioService;
 
     @PostMapping
-    @Transactional
-    public ResponseEntity<DadosDetalhamentoCardapio> cadastrarCardapio(@RequestBody @Valid CardapioCadastro dadosCardapio, UriComponentsBuilder uriBuilder ) {
-        var cardapio = new Cardapio(dadosCardapio);
-        cardapioRepository.save(cardapio);
-        var uri = uriBuilder.path("/cardapio/{id}").buildAndExpand(cardapio.getCardapio_id()).toUri();
-        return ResponseEntity.created(uri).body(new DadosDetalhamentoCardapio(cardapio));
+    public ResponseEntity<CardapioDetalhamento> cadastrarCardapio(
+            @RequestBody @Valid CardapioCadastro dadosCardapio,
+            UriComponentsBuilder uriBuilder) {
+        CardapioDetalhamento cardapioDetalhamento = cardapioService.cadastrarCardapio(dadosCardapio);
+        var uri = uriBuilder.path("/cardapios/{id}").buildAndExpand(cardapioDetalhamento.cardapio_id()).toUri();
+        return ResponseEntity.created(uri).body(cardapioDetalhamento);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Cardapio>> listarCardapio(
-            @RequestParam(required = false) Boolean ativo,
-            @RequestParam(required = false) String restricao) {
-
-        List<Cardapio> itens;
-
-        if (ativo != null) {
-            itens = cardapioRepository.findByAtivo(ativo);
-        } else if (restricao != null) {
-            itens = cardapioRepository.findByRestricoesAlimentaresContaining(restricao);
-        } else {
-            itens = cardapioRepository.findAll();
-        }
-
-        return ResponseEntity.ok(itens);
+    // Buscar um cardápio por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<CardapioDetalhamento> buscarCardapioPorId(@PathVariable Long id) {
+        CardapioDetalhamento cardapioDetalhamento = cardapioService.buscarCardapioPorId(id);
+        return ResponseEntity.ok(cardapioDetalhamento);
     }
 
-
+    // Listar cardápios por estabelecimento
+    @GetMapping("/estabelecimento/{estabelecimentoId}")
+    public ResponseEntity<List<CardapioDetalhamento>> listarCardapiosPorEstabelecimento(
+            @PathVariable Long estabelecimentoId) {
+        List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimentoId);
+        return ResponseEntity.ok(cardapios);
+    }
 }
