@@ -34,7 +34,7 @@ public class CardapioController {
         CardapioDetalhamento cardapioDetalhamento = cardapioService.buscarCardapioPorId(id);
         return ResponseEntity.ok(cardapioDetalhamento);
     }
-
+    // Buscar cardapio por Estabelecimento
     @GetMapping("/estabelecimento/{estabelecimentoId}")
     public ResponseEntity<List<CardapioDetalhamento>> listarCardapiosPorEstabelecimento(@PathVariable Long estabelecimentoId) {
         List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimentoId);
