@@ -24,7 +24,7 @@ public class Cardapio {
     @JoinColumn(name = "estabelecimento_id", nullable = false)
     private Estabelecimento estabelecimento;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "colaborador_id", nullable = false)
     private Colaborador colaborador;
 

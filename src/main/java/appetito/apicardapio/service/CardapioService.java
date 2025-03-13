@@ -9,7 +9,6 @@ import appetito.apicardapio.repository.CardapioRepository;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.ColaboradorRepository;
 import appetito.apicardapio.exception.ResourceNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,22 +29,27 @@ public class CardapioService {
         this.colaboradorRepository = colaboradorRepository;
     }
 
-    // Cadastrar um cardápio
     public CardapioDetalhamento cadastrarCardapio(CardapioCadastro dadosCardapio) {
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(dadosCardapio.id())
                 .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
 
+// Verifique se o colaborador está presente no banco
         Colaborador colaborador = null;
         if (dadosCardapio.colaborador_id() != null) {
             colaborador = colaboradorRepository.findById(dadosCardapio.colaborador_id())
                     .orElseThrow(() -> new ResourceNotFoundException("Colaborador não encontrado"));
         }
 
+// Aqui você garante que o colaborador (se fornecido) e o estabelecimento estão salvos
+        if (colaborador != null) {
+            colaboradorRepository.save(colaborador);  // Salva colaborador se necessário
+        }
+
         Cardapio cardapio = new Cardapio(
                 dadosCardapio.nome(),
                 dadosCardapio.secao(),
                 dadosCardapio.descricao(),
-                estabelecimento,
+                estabelecimento,  // Certifique-se que o estabelecimento existe
                 colaborador,
                 dadosCardapio.vigencia_inicio(),
                 dadosCardapio.vigencia_fim()
@@ -53,7 +57,9 @@ public class CardapioService {
 
         cardapioRepository.save(cardapio);
         return new CardapioDetalhamento(cardapio);
+
     }
+
 
     // Buscar um cardápio por ID
     public CardapioDetalhamento buscarCardapioPorId(Long cardapio_id) {
@@ -61,10 +67,11 @@ public class CardapioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado"));
         return new CardapioDetalhamento(cardapio);
     }
-     // Listar cardápios por estabelecimento
+
+    // Listar cardápios por estabelecimento
     public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Long estabelecimento_id) {
         return cardapioRepository.findByEstabelecimentoId(estabelecimento_id).stream()
-               .map(CardapioDetalhamento::new)
+                .map(CardapioDetalhamento::new)
                 .collect(Collectors.toList());
     }
 }
