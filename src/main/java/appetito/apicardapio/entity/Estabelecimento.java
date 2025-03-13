@@ -40,8 +40,6 @@ public class Estabelecimento {
     @Column(nullable = false)
     private LocalDateTime data_cadastro = LocalDateTime.now();
 
-    private LocalDateTime data_atualizacao;
-
     @Column(nullable = false)
     private String segmento;
 
@@ -74,5 +72,17 @@ public class Estabelecimento {
         this.tipo = tipo;
         this.segmento = segmento;
         this.usuario_cadastro = usuario_cadastro;
+    }
+
+    public void setRazaoSocial(String razao_social) {
+        this.razao_social = razao_social;
+    }
+
+    public void setNomeFantasia(String nome_fantasia) {
+        this.nome_fantasia = nome_fantasia;
+    }
+
+    public void setUsuarioCadastro(Usuario usuario) {
+        this.usuario_cadastro = usuario;
     }
 }

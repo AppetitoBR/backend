@@ -45,4 +45,20 @@ public class Colaborador {
         this.cargo = cargo;
         this.data_contratacao = data_contratacao;
     }
+
+    public void setDataContratacao(LocalDate data_contratacao) {
+        this.data_contratacao = data_contratacao;
+    }
+
+    public void setCalendarioTrabalho(String segundaASexta) {
+        this.calendario_trabalho = segundaASexta;
+    }
+
+    public void setInicioTurno(LocalDateTime inicio_turno) {
+        this.inicio_turno = inicio_turno;
+    }
+
+    public void setTerminoTurno(LocalDateTime termino_turno) {
+        this.termino_turno = termino_turno;
+    }
 }

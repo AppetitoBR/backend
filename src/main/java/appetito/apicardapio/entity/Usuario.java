@@ -5,7 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import lombok.Getter;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,12 +13,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Arrays;
 import java.util.Collection;
 
+@Data
 @Entity
 public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     private Long usuario_id;
 
     private String nome_completo;
@@ -39,7 +39,6 @@ public class Usuario implements UserDetails {
         this.senha = senha;
         this.perfil = perfil;
     }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -71,4 +70,8 @@ public class Usuario implements UserDetails {
         return true;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return true; // Por padrão, a conta está ativa
+    }
 }
