@@ -31,17 +31,14 @@ public class Usuario implements UserDetails {
     }
 
     // Construtor com parâmetros, incluindo o CPF
-    public Usuario(String nome_completo, String cpf, String email, String senha, PerfilUsuario perfil) {
+    public Usuario(String nome_completo, PerfilUsuario perfil) {
         this.nome_completo = nome_completo;
-        this.cpf = cpf;
-        this.email = email;
-        this.senha = senha;
         this.perfil = perfil;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + perfil.name()));
+        return List.of(new SimpleGrantedAuthority(perfil.name()));
     }
 
     @Override
@@ -71,6 +68,6 @@ public class Usuario implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true; // Por padrão, a conta está ativa
+        return true;
     }
 }
