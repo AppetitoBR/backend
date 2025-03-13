@@ -7,10 +7,6 @@ import appetito.apicardapio.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 @Service
 public class UsuarioService {
 
@@ -20,9 +16,6 @@ public class UsuarioService {
     public Usuario cadastrarUsuario(UsuarioCadastro dadosUsuario) {
         Usuario usuario = new Usuario(
                 dadosUsuario.nome_completo(),
-                dadosUsuario.cpf(),
-                dadosUsuario.email(),
-                dadosUsuario.senha(),
                 dadosUsuario.perfil()
         );
         return usuarioRepository.save(usuario);
