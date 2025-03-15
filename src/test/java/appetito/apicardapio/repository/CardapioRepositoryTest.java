@@ -44,7 +44,10 @@ public class CardapioRepositoryTest {
         // Cria um Usuario
         Usuario usuario = new Usuario(
                 "João Silva", // nome_completo
-                PerfilUsuario.CLIENTE // perfil
+                PerfilUsuario.CLIENTE, // perfil
+                "123.444.555-03",
+                "teste@gmail.com",
+                "12345678"
         );
         usuarioRepository.save(usuario);
 

@@ -16,7 +16,10 @@ public class UsuarioService {
     public Usuario cadastrarUsuario(UsuarioCadastro dadosUsuario) {
         Usuario usuario = new Usuario(
                 dadosUsuario.nome_completo(),
-                dadosUsuario.perfil()
+                dadosUsuario.perfil(),
+                dadosUsuario.email(),
+                dadosUsuario.cpf(),
+                dadosUsuario.senha()
         );
         return usuarioRepository.save(usuario);
     }

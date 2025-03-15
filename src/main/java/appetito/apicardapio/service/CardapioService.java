@@ -74,4 +74,11 @@ public class CardapioService {
                 .map(CardapioDetalhamento::new)
                 .collect(Collectors.toList());
     }
+
+    public void deletarCardapio(Long id) {
+        if (!cardapioRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Mesa não encontrada");
+        }
+        cardapioRepository.deleteById(id);
+    }
 }
