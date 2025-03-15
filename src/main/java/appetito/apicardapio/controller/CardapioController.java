@@ -40,4 +40,11 @@ public class CardapioController {
         List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimentoId);
         return ResponseEntity.ok(cardapios);
     }
+
+    // Deletar Estabelecimento
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> removerCardapio(@PathVariable Long id) {
+        cardapioService.deletarCardapio(id);
+        return ResponseEntity.noContent().build();
+    }
 }
