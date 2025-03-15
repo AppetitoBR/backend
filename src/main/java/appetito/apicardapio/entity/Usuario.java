@@ -24,16 +24,18 @@ public class Usuario implements UserDetails {
     private String email;
     private String senha;
     private PerfilUsuario perfil;
-    private String cpf;  // Adicionando o campo CPF
+    private String cpf;
 
-    // Construtor padrão (necessário para JPA)
     public Usuario() {
     }
 
     // Construtor com parâmetros, incluindo o CPF
-    public Usuario(String nome_completo, PerfilUsuario perfil) {
+    public Usuario(String nome_completo, PerfilUsuario perfil, String cpf, String email, String senha) {
         this.nome_completo = nome_completo;
         this.perfil = perfil;
+        this.cpf = cpf;
+        this.email = email;
+        this.senha = senha;
     }
 
     @Override
