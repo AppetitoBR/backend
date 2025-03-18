@@ -1,11 +1,18 @@
 package appetito.apicardapio.entity;
 
+import appetito.apicardapio.dto.EstabelecimentoCadastro;
+import appetito.apicardapio.dto.forGet.UsuarioDados;
 import jakarta.persistence.*;
-import lombok.Data;
-import java.time.LocalDateTime;
+import lombok.*;
 
+import java.time.LocalDateTime;
+@Table(name = "Estabelecimento")
 @Data
-@Entity
+@Entity(name = "Estabelecimentos")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Estabelecimento {
 
     @Id
@@ -61,28 +68,18 @@ public class Estabelecimento {
 
     private String subdominio_appetito;
 
-    // Construtor padrão (necessário para JPA)
-    public Estabelecimento() {}
+    public Estabelecimento(EstabelecimentoCadastro dadosEstabelecimento) {
+        this.razao_social = dadosEstabelecimento.razao_social();
+        this.nome_fantasia = dadosEstabelecimento.nome_fantasia();
+        this.cnpj = dadosEstabelecimento.cnpj();
+        this.tipo = dadosEstabelecimento.tipo();
+        this.segmento = dadosEstabelecimento.segmento();
+        this.usuario_cadastro = dadosEstabelecimento.usuario_cadastro_id();
 
-    // Construtor para DTO
-    public Estabelecimento(String razao_social, String nome_fantasia, String cnpj, String tipo, String segmento, Usuario usuario_cadastro) {
-        this.razao_social = razao_social;
-        this.nome_fantasia = nome_fantasia;
-        this.cnpj = cnpj;
-        this.tipo = tipo;
-        this.segmento = segmento;
-        this.usuario_cadastro = usuario_cadastro;
     }
 
-    public void setRazaoSocial(String razao_social) {
-        this.razao_social = razao_social;
-    }
 
-    public void setNomeFantasia(String nome_fantasia) {
-        this.nome_fantasia = nome_fantasia;
-    }
+    public void setNome(String estabelecimentoTeste) {
 
-    public void setUsuarioCadastro(Usuario usuario) {
-        this.usuario_cadastro = usuario;
     }
 }

@@ -1,9 +1,11 @@
 package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.ProdutoCadastro;
+import appetito.apicardapio.dto.forGet.ProdutoDados;
 import appetito.apicardapio.entity.Produto;
 import appetito.apicardapio.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,11 +15,6 @@ public class ProdutoService {
 
     @Autowired
     private ProdutoRepository produtoRepository;
-
-    // Listar todos os produtos ativos
-    public List<Produto> getAllProdutosAtivos() {
-        return produtoRepository.findByAtivoTrue();
-    }
 
     // Buscar produto por ID
     public Produto getProdutoById(Long id) {

@@ -1,13 +1,15 @@
 package appetito.apicardapio.dto;
 
+import appetito.apicardapio.entity.Estabelecimento;
+import appetito.apicardapio.entity.Usuario;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record ColaboradorCadastro(
-        @NotNull Long usuario_id,
-        @NotNull Long estabelecimento_id,
+        @NotNull Usuario usuario_id,
+        @NotNull Estabelecimento estabelecimento,
         @NotBlank String cargo,
         @NotNull LocalDate data_contratacao,
         String calendario_trabalho,

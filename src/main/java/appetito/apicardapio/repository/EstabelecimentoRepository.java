@@ -7,5 +7,4 @@ import java.util.Optional;
 
 public interface EstabelecimentoRepository extends JpaRepository<Estabelecimento, Long> {
     Optional<Estabelecimento> findByCnpj(String cnpj);
-    Optional<Estabelecimento> findById(Long id);
 }
