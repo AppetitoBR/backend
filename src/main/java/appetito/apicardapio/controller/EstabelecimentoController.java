@@ -2,23 +2,21 @@ package appetito.apicardapio.controller;
 
 import appetito.apicardapio.dto.EstabelecimentoCadastro;
 import appetito.apicardapio.dto.EstabelecimentoDetalhamento;
+import appetito.apicardapio.dto.forGet.EstabelecimentoDados;
 import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
-import appetito.apicardapio.service.EstabelecimentoService;
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/estabelecimentos")
 public class EstabelecimentoController {
-
-    @Autowired
-    private EstabelecimentoService estabelecimentoService;
-
     private final EstabelecimentoRepository estabelecimentoRepository;
 
     public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository) {
@@ -26,16 +24,24 @@ public class EstabelecimentoController {
     }
 
     @PostMapping
-    public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento(
-            @RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento,
-            UriComponentsBuilder uriBuilder) {
-        EstabelecimentoDetalhamento estabelecimentoDetalhamento = estabelecimentoService.cadastrarEstabelecimento(dadosEstabelecimento);
-        var uri = uriBuilder.path("/estabelecimentos/{id}").buildAndExpand(estabelecimentoDetalhamento.estabelecimento_id()).toUri();
-        return ResponseEntity.created(uri).body(estabelecimentoDetalhamento);
+    public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento(@RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento, UriComponentsBuilder uriE){
+            var estabelecimento = new Estabelecimento(dadosEstabelecimento);
+        estabelecimentoRepository.save(new Estabelecimento(dadosEstabelecimento));
+    var uri = uriE.path("/endereco/{id}").buildAndExpand(estabelecimento.getId()).toUri();
+        return ResponseEntity.created(uri).body(new EstabelecimentoDetalhamento(estabelecimento));
     }
+    // Detalhar caso queira que venha um a um
     @GetMapping("/{id}")
-    public Estabelecimento obterEstabelecimento(@PathVariable Long id) {
-        return estabelecimentoRepository.findById(id).orElse(null);
+    public ResponseEntity<EstabelecimentoDetalhamento> obterEstabelecimento(@PathVariable Long id) {
+        var estabelecimento = estabelecimentoRepository.getReferenceById(id);
+        return ResponseEntity.ok(new EstabelecimentoDetalhamento(estabelecimento));
+    }
+
+    @GetMapping
+    @Transactional
+    public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentos() {
+        var lista =  estabelecimentoRepository.findAll().stream().map(EstabelecimentoDados::new).toList();
+        return ResponseEntity.ok(lista);
     }
 
 }

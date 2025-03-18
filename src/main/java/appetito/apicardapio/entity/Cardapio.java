@@ -1,11 +1,18 @@
 package appetito.apicardapio.entity;
 
+import appetito.apicardapio.dto.CardapioCadastro;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+
 import java.time.LocalDate;
 
 @Data
 @Entity
+@Getter
+@Setter
+@Table(name = "Cardapio")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Cardapio {
 
     @Id
@@ -37,17 +44,15 @@ public class Cardapio {
     @Column(nullable = false)
     private Boolean ativo = true;
 
-    // Construtor padrão (necessário para JPA)
-    public Cardapio() {}
-
-    // Construtor para DTO
-    public Cardapio(String nome, String secao, String descricao, Estabelecimento estabelecimento, Colaborador colaborador, LocalDate vigencia_inicio, LocalDate vigencia_fim) {
-        this.nome = nome;
-        this.secao = secao;
-        this.descricao = descricao;
-        this.estabelecimento = estabelecimento;
-        this.colaborador = colaborador;
-        this.vigencia_inicio = vigencia_inicio;
-        this.vigencia_fim = vigencia_fim;
+    public Cardapio(CardapioCadastro cardapioCadastro) {
+        this.nome = cardapioCadastro.nome();
+        this.estabelecimento = cardapioCadastro.estabelecimento_id();
+        this.colaborador = cardapioCadastro.colaborador_id();
+        this.secao = cardapioCadastro.secao();
+        this.descricao = cardapioCadastro.descricao();
+        this.vigencia_inicio = LocalDate.now();
+        this.vigencia_fim = LocalDate.now();
+        this.ativo = true;
     }
+
 }
