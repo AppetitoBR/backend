@@ -27,30 +27,6 @@ public class ColaboradorService {
     @Autowired
     private EstabelecimentoRepository estabelecimentoRepository;
 
-    // Cadastrar um colaborador
-    public ColaboradorDetalhamento cadastrarColaborador(ColaboradorCadastro dadosColaborador) {
-        Usuario usuario = usuarioRepository.findById(dadosColaborador.usuario_id())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
-
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dadosColaborador.estabelecimento_id())
-                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
-
-        Colaborador colaborador = new Colaborador(
-                usuario,
-                estabelecimento,
-                dadosColaborador.cargo(),
-                dadosColaborador.data_contratacao()
-        );
-
-        colaborador.setCalendario_trabalho(dadosColaborador.calendario_trabalho());
-        colaborador.setInicio_turno(dadosColaborador.inicio_turno());
-        colaborador.setTermino_turno(dadosColaborador.termino_turno());
-        colaborador.setNotificacoes(dadosColaborador.notificacoes());
-
-        colaboradorRepository.save(colaborador);
-        return new ColaboradorDetalhamento(colaborador);
-    }
-
     // Buscar um colaborador por ID
     public ColaboradorDetalhamento buscarColaboradorPorId(Long id) {
         Colaborador colaborador = colaboradorRepository.findById(id)

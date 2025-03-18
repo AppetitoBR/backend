@@ -2,7 +2,19 @@ package appetito.apicardapio.controller;
 
 import appetito.apicardapio.dto.CardapioCadastro;
 import appetito.apicardapio.dto.CardapioDetalhamento;
+import appetito.apicardapio.dto.UsuarioCadastro;
+import appetito.apicardapio.dto.UsuarioDetalhamento;
+import appetito.apicardapio.entity.Cardapio;
+import appetito.apicardapio.entity.Colaborador;
+import appetito.apicardapio.entity.Estabelecimento;
+import appetito.apicardapio.entity.Usuario;
+import appetito.apicardapio.exception.ResourceNotFoundException;
+import appetito.apicardapio.repository.CardapioRepository;
+import appetito.apicardapio.repository.ColaboradorRepository;
+import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.service.CardapioService;
+import appetito.apicardapio.service.ColaboradorService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,18 +29,22 @@ public class CardapioController {
 
     @Autowired
     private CardapioService cardapioService;
+    @Autowired
+    private CardapioRepository cardapioRepository;
 
-    // Cadastrar um cardápio
+    @Autowired
+    private EstabelecimentoRepository estabelecimentoRepository;
+    @Autowired
+    private ColaboradorRepository colaboradorRepository;
+
     @PostMapping
-    public ResponseEntity<CardapioDetalhamento> cadastrarCardapio(
-            @RequestBody @Valid CardapioCadastro dadosCardapio,
-            UriComponentsBuilder uriBuilder) {
-        CardapioDetalhamento cardapioDetalhamento = cardapioService.cadastrarCardapio(dadosCardapio);
-        var uri = uriBuilder.path("/cardapios/{id}").buildAndExpand(cardapioDetalhamento.cardapio_id()).toUri();
-        return ResponseEntity.created(uri).body(cardapioDetalhamento);
+    @Transactional
+    public ResponseEntity<CardapioDetalhamento> cadastrarCardapio(@RequestBody @Valid CardapioCadastro dadosCardapio, UriComponentsBuilder uriBuilder1) {
+        var cardapio = new Cardapio(dadosCardapio);
+        cardapioRepository.save(cardapio);
+        var uri = uriBuilder1.path("/cardapio/{id}").buildAndExpand(cardapio.getId()).toUri();
+        return ResponseEntity.created(uri).body(new CardapioDetalhamento(cardapio));
     }
-
-    // Buscar um cardápio por ID
     @GetMapping("/{id}")
     public ResponseEntity<CardapioDetalhamento> buscarCardapioPorId(@PathVariable Long id) {
         CardapioDetalhamento cardapioDetalhamento = cardapioService.buscarCardapioPorId(id);

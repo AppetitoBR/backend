@@ -1,14 +1,18 @@
 package appetito.apicardapio.entity;
 
+import appetito.apicardapio.dto.ProdutoCadastro;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
+@Table(name = "Produto")
+@Entity(name = "Produtos")
 @Getter
 @Setter
-@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(of = "produto_id")
 public class Produto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +25,7 @@ public class Produto {
     private String nome_curto;
     private String nome_longo;
     private String categoria;
-    private String tamanho; // Ex: Individual, 2 pessoas, 4 pessoas
+    private String tamanho;
     private BigDecimal preco_custo;
     private BigDecimal preco_venda;
     private Integer estoque;
@@ -30,32 +34,16 @@ public class Produto {
     private String unidade_medida;
     private String imagens;
 
-    public Produto(){
-
-    }
-    public Produto(
-                   String nome_curto,
-                   String nome_longo,
-                   String categoria,
-                   String tamanho,
-                   BigDecimal preco_custo,
-                   BigDecimal preco_venda,
-                   Integer estoque,
-                   Integer estoque_minimo,
-                   Boolean ativo,
-                   String unidade_medida,
-                   String imagens){
-
-        this.nome_curto = nome_curto;
-        this.nome_longo = nome_longo;
-        this.categoria = categoria;
-        this.tamanho = tamanho;
-        this.preco_custo = preco_custo;
-        this.preco_venda = preco_venda;
-        this.estoque = estoque;
-        this.estoque_minimo = estoque_minimo;
-        this.ativo = ativo;
-        this.unidade_medida = unidade_medida;
-        this.imagens = imagens;
+    public Produto(ProdutoCadastro produtoCadastro) {
+        this.nome_curto = produtoCadastro.nome_curto();
+        this.nome_longo = produtoCadastro.nome_longo();
+        this.categoria = produtoCadastro.categoria();
+        this.tamanho = produtoCadastro.tamanho();
+        this.preco_custo = produtoCadastro.preco_custo();
+        this.preco_venda = produtoCadastro.preco_venda();
+        this.ativo = produtoCadastro.ativo();
+        this.estoque = produtoCadastro.estoque();
+        this.estoque_minimo = produtoCadastro.estoque_minimo();
+        this.imagens = produtoCadastro.imagens();
     }
 }
