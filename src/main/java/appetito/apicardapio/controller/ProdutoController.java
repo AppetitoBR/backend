@@ -1,9 +1,12 @@
 package appetito.apicardapio.controller;
 
 import appetito.apicardapio.dto.ProdutoCadastro;
+import appetito.apicardapio.dto.forGet.ProdutoDados;
 import appetito.apicardapio.entity.Produto;
+import appetito.apicardapio.repository.ProdutoRepository;
 import appetito.apicardapio.service.ProdutoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,9 +18,13 @@ public class ProdutoController {
     @Autowired
     private ProdutoService produtoService;
 
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
     @GetMapping
-    public List<Produto> getAllProdutosAtivos() {
-        return produtoService.getAllProdutosAtivos();
+    public ResponseEntity<List<ProdutoDados>> getAllProdutosAtivos() {
+        var lista = produtoRepository.findAllByAtivoTrue().stream().map(ProdutoDados::new).toList();
+        return ResponseEntity.ok(lista);
     }
 
     @GetMapping("/{id}")

@@ -2,7 +2,9 @@ package appetito.apicardapio.controller;
 
 import appetito.apicardapio.dto.ColaboradorCadastro;
 import appetito.apicardapio.dto.ColaboradorDetalhamento;
+import appetito.apicardapio.entity.Colaborador;
 import appetito.apicardapio.service.ColaboradorService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +22,12 @@ public class ColaboradorController {
 
     // Cadastrar um colaborador
     @PostMapping
-    public ResponseEntity<ColaboradorDetalhamento> cadastrarColaborador(
-            @RequestBody @Valid ColaboradorCadastro dadosColaborador,
+    @Transactional
+    public ResponseEntity<ColaboradorDetalhamento> cadastrarColaborador(@RequestBody @Valid ColaboradorCadastro dadosColaborador,
             UriComponentsBuilder uriBuilder) {
-        ColaboradorDetalhamento colaboradorDetalhamento = colaboradorService.cadastrarColaborador(dadosColaborador);
-        var uri = uriBuilder.path("/colaboradores/{id}").buildAndExpand(colaboradorDetalhamento.colaborador_id()).toUri();
-        return ResponseEntity.created(uri).body(colaboradorDetalhamento);
+       var colaborador = new Colaborador(dadosColaborador);
+        var uri = uriBuilder.path("/colaboradores/{id}").buildAndExpand(colaborador.getColaborador_id()).toUri();
+        return ResponseEntity.created(uri).body(new ColaboradorDetalhamento(colaborador));
     }
 
     // Buscar um colaborador por ID
