@@ -4,6 +4,7 @@ import appetito.apicardapio.dto.EstabelecimentoCadastro;
 import appetito.apicardapio.dto.EstabelecimentoDetalhamento;
 import appetito.apicardapio.dto.forGet.EstabelecimentoDados;
 import appetito.apicardapio.entity.Estabelecimento;
+import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -30,16 +31,21 @@ public class EstabelecimentoController {
     var uri = uriE.path("/endereco/{id}").buildAndExpand(estabelecimento.getId()).toUri();
         return ResponseEntity.created(uri).body(new EstabelecimentoDetalhamento(estabelecimento));
     }
-    // Detalhar caso queira que venha um a um
     @GetMapping("/{id}")
     public ResponseEntity<EstabelecimentoDetalhamento> obterEstabelecimento(@PathVariable Long id) {
-        var estabelecimento = estabelecimentoRepository.getReferenceById(id);
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
         return ResponseEntity.ok(new EstabelecimentoDetalhamento(estabelecimento));
     }
 
     @GetMapping
     @Transactional
     public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentos() {
+
+        List<Estabelecimento> estabelecimentos = estabelecimentoRepository.findAll();
+        if (estabelecimentos.isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum estabelecimento encontrado");
+        }
         var lista =  estabelecimentoRepository.findAll().stream().map(EstabelecimentoDados::new).toList();
         return ResponseEntity.ok(lista);
     }

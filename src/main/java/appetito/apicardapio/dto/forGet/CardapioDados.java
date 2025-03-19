@@ -1,4 +1,5 @@
 package appetito.apicardapio.dto.forGet;
 
-public class CardapioDados {
+public record CardapioDados() {
+
 }
