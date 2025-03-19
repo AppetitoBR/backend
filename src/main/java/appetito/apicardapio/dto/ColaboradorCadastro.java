@@ -8,8 +8,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record ColaboradorCadastro(
-        @NotNull Usuario usuario_id,
-        @NotNull Estabelecimento estabelecimento,
+        @NotNull Long usuario_id,
+        @NotNull Long estabelecimento,
         @NotBlank String cargo,
         @NotNull LocalDate data_contratacao,
         String calendario_trabalho,

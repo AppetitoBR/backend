@@ -3,6 +3,7 @@ package appetito.apicardapio.service;
 import appetito.apicardapio.dto.ProdutoCadastro;
 import appetito.apicardapio.dto.forGet.ProdutoDados;
 import appetito.apicardapio.entity.Produto;
+import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class ProdutoService {
     // Buscar produto por ID
     public Produto getProdutoById(Long id) {
         return produtoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
     }
     public Produto createProduto(ProdutoCadastro produtoCadastro) {
         Produto produto = new Produto();
@@ -40,7 +41,7 @@ public class ProdutoService {
 
     // Atualizar produto
     public Produto updateProduto(Long id, ProdutoCadastro produtoCadastro) {
-        Produto produto = produtoRepository.findById(id).orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+        Produto produto = produtoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
         produto.setCardapio(produtoCadastro.cardapio_id());
         produto.setNome_curto(produtoCadastro.nome_curto());
         produto.setNome_longo(produtoCadastro.nome_longo());

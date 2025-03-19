@@ -5,5 +5,7 @@ public enum PerfilUsuario {
     COZINHEIRO,
     ATENDENTE,
     GERENTE,
-    CLIENTE
+    CLIENTE,
+    PATROCINADOR,
+    COLABORADOR
 }

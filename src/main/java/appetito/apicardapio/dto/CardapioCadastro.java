@@ -8,11 +8,10 @@ import java.time.LocalDate;
 
 public record CardapioCadastro(
         @NotBlank String nome,
-        @NotBlank Estabelecimento estabelecimento_id,
+        @NotBlank Long estabelecimento_id,
         String secao,
         String descricao,
-        @NotNull Long id,
-        @NotBlank Colaborador colaborador_id,
+        @NotBlank Long colaborador_id,
         @NotNull LocalDate vigencia_inicio,
         @NotNull LocalDate vigencia_fim
 ) {}

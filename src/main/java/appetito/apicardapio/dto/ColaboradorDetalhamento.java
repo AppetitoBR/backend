@@ -19,8 +19,8 @@ public record ColaboradorDetalhamento(
     public ColaboradorDetalhamento(Colaborador colaborador) {
         this(
                 colaborador.getColaborador_id(),
-                colaborador.getUsuario().getUsuario_id(),
-                colaborador.getEstabelecimento().getId(),
+                colaborador.getUsuario(),
+                colaborador.getEstabelecimento(),
                 colaborador.getCargo(),
                 colaborador.getData_contratacao(),
                 colaborador.getCalendario_trabalho(),

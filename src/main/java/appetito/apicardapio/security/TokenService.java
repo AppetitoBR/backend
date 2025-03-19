@@ -30,18 +30,18 @@ public class TokenService {
     }
 
     public String getSubject(String tokenJWT) {
-            try {
-                var algorithm = Algorithm.HMAC256(secret);
-                return JWT.require(algorithm)
-                        .withIssuer("appetito_db")
-                        .build()
-                        .verify(tokenJWT)
-                        .getSubject();
-            }catch (JWTVerificationException exception) {
-                throw new RuntimeException("Token invalido ou Expirado", exception);
-            }
+        try {
+            var algorithm = Algorithm.HMAC256(secret);
+            return JWT.require(algorithm)
+                    .withIssuer("appetito_db")
+                    .build()
+                    .verify(tokenJWT)
+                    .getSubject();
+        }catch (JWTVerificationException exception) {
+            throw new RuntimeException("Token invalido ou Expirado", exception);
+        }
     }
     private Instant dataExpiracao() {
-           return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
     }
 }
