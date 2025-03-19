@@ -27,13 +27,12 @@ public class Cardapio {
 
     private String descricao;
 
-    @ManyToOne
-    @JoinColumn(name = "estabelecimento_id", nullable = false)
-    private Estabelecimento estabelecimento;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "estabelecimento_id", nullable = false)
+    private Long estabelecimento;
+
     @JoinColumn(name = "colaborador_id", nullable = false)
-    private Colaborador colaborador;
+    private Long colaborador;
 
     @Column(nullable = false)
     private LocalDate vigencia_inicio;

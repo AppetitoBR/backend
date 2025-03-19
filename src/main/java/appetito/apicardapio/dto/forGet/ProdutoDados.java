@@ -1,7 +1,6 @@
 package appetito.apicardapio.dto.forGet;
 
 import appetito.apicardapio.entity.Produto;
-import org.w3c.dom.Text;
 
 import java.math.BigDecimal;
 
