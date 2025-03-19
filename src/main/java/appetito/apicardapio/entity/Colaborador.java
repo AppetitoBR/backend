@@ -20,13 +20,12 @@ public class Colaborador {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long colaborador_id;
 
-    @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    private Long usuario;
 
-    @ManyToOne
+
     @JoinColumn(name = "estabelecimento_id", nullable = false)
-    private Estabelecimento estabelecimento;
+    private Long estabelecimento;
 
     @Column(nullable = false)
     private String cargo;
@@ -53,20 +52,6 @@ public class Colaborador {
         this.inicio_turno = dadosColaborador.inicio_turno();
         this.termino_turno = dadosColaborador.termino_turno();
         this.notificacoes = dadosColaborador.notificacoes();
-
-    }
-
-
-    public void setDataContratacao(LocalDate now) {
-    }
-
-    public void setCalendarioTrabalho(String segundaASexta) {
-    }
-
-    public void setInicioTurno(LocalDateTime now) {
-    }
-
-    public void setTerminoTurno(LocalDateTime localDateTime) {
 
     }
 

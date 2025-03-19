@@ -21,8 +21,8 @@ public record CardapioDetalhamento(
                 cardapio.getNome(),
                 cardapio.getSecao(),
                 cardapio.getDescricao(),
-                cardapio.getEstabelecimento().getId(),
-                cardapio.getColaborador() != null ? cardapio.getColaborador().getColaborador_id() : null,
+                cardapio.getEstabelecimento(),
+                cardapio.getColaborador() != null ? cardapio.getColaborador() : null,
                 cardapio.getVigencia_inicio(),
                 cardapio.getVigencia_fim(),
                 cardapio.getAtivo()

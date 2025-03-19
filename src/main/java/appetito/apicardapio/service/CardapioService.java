@@ -18,15 +18,9 @@ import java.util.stream.Collectors;
 public class CardapioService {
 
     private final CardapioRepository cardapioRepository;
-    private final EstabelecimentoRepository estabelecimentoRepository;
-    private final ColaboradorRepository colaboradorRepository;
 
-    public CardapioService(CardapioRepository cardapioRepository,
-                           EstabelecimentoRepository estabelecimentoRepository,
-                           ColaboradorRepository colaboradorRepository) {
+    public CardapioService(CardapioRepository cardapioRepository){
         this.cardapioRepository = cardapioRepository;
-        this.estabelecimentoRepository = estabelecimentoRepository;
-        this.colaboradorRepository = colaboradorRepository;
     }
 
 
@@ -39,14 +33,18 @@ public class CardapioService {
 
     // Listar cardápios por estabelecimento
     public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Long estabelecimento_id) {
-        return cardapioRepository.findByEstabelecimentoId(estabelecimento_id).stream()
+        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimento(estabelecimento_id);
+        if (cardapios.isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum cardápio encontrado para o estabelecimento informado");
+        }
+        return cardapios.stream()
                 .map(CardapioDetalhamento::new)
                 .collect(Collectors.toList());
     }
 
     public void deletarCardapio(Long id) {
         if (!cardapioRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Mesa não encontrada");
+            throw new ResourceNotFoundException("Cardapio não encontrada");
         }
         cardapioRepository.deleteById(id);
     }

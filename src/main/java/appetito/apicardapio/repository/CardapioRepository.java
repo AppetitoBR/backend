@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface CardapioRepository extends JpaRepository<Cardapio, Long> {
     Optional<Cardapio> findById(Long id);
-    List<Cardapio> findByEstabelecimentoId(Long estabelecimentoId);
+    List<Cardapio> findByEstabelecimento(Long estabelecimentoId);
+    boolean existsByEstabelecimento(Long estabelecimentoId);
 }
