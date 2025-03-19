@@ -28,11 +28,11 @@ public class Cardapio {
     private String descricao;
 
 
-    @JoinColumn(name = "estabelecimento_id", nullable = false)
+    @Column(name = "estabelecimento_id", nullable = false)
     private Long estabelecimento;
 
-    @JoinColumn(name = "colaborador_id", nullable = false)
-    private Long colaborador;
+    @Column(name = "colaborador_id", nullable = false)
+    private Long colaborador_id;
 
     @Column(nullable = false)
     private LocalDate vigencia_inicio;
@@ -46,7 +46,7 @@ public class Cardapio {
     public Cardapio(CardapioCadastro cardapioCadastro) {
         this.nome = cardapioCadastro.nome();
         this.estabelecimento = cardapioCadastro.estabelecimento_id();
-        this.colaborador = cardapioCadastro.colaborador_id();
+        this.colaborador_id = cardapioCadastro.colaborador_id();
         this.secao = cardapioCadastro.secao();
         this.descricao = cardapioCadastro.descricao();
         this.vigencia_inicio = LocalDate.now();
