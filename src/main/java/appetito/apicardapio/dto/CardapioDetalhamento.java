@@ -22,7 +22,7 @@ public record CardapioDetalhamento(
                 cardapio.getSecao(),
                 cardapio.getDescricao(),
                 cardapio.getEstabelecimento(),
-                cardapio.getColaborador() != null ? cardapio.getColaborador() : null,
+                cardapio.getColaborador_id() != null ? cardapio.getColaborador_id() : null,
                 cardapio.getVigencia_inicio(),
                 cardapio.getVigencia_fim(),
                 cardapio.getAtivo()
