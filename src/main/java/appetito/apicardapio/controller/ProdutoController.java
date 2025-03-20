@@ -46,4 +46,13 @@ public class ProdutoController {
     public void deleteProduto(@PathVariable Long id) {
         produtoService.deleteProduto(id);
     }
+
+    @GetMapping("/cardapio/{id}")
+    public ResponseEntity<List<ProdutoDados>> getAllProdutosbyCardapio(@PathVariable Long id) {
+        var lista = produtoRepository.findAllByCardapio(id)
+                .stream()
+                .map(ProdutoDados::new)
+                .toList();
+        return ResponseEntity.ok(lista);
+    }
 }
