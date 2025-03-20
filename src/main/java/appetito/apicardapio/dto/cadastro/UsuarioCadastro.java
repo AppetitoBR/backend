@@ -1,9 +1,7 @@
-package appetito.apicardapio.dto;
+package appetito.apicardapio.dto.cadastro;
 
 
-import appetito.apicardapio.enums.PerfilUsuario;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 
 import java.time.LocalDate;

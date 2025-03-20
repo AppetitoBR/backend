@@ -1,12 +1,11 @@
-package appetito.apicardapio.dto;
+package appetito.apicardapio.dto.cadastro;
 
-import appetito.apicardapio.entity.Cardapio;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record ProdutoCadastro(
-        @NotNull Cardapio cardapio_id,
+        @NotNull Long cardapio_id,
         @NotBlank String nome_curto,
         @NotBlank String nome_longo,
         @NotBlank String categoria,

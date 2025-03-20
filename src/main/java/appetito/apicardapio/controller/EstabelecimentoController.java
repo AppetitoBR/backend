@@ -1,14 +1,13 @@
 package appetito.apicardapio.controller;
 
-import appetito.apicardapio.dto.EstabelecimentoCadastro;
-import appetito.apicardapio.dto.EstabelecimentoDetalhamento;
-import appetito.apicardapio.dto.forGet.EstabelecimentoDados;
+import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
+import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
+import appetito.apicardapio.dto.GetAll.EstabelecimentoDados;
 import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;

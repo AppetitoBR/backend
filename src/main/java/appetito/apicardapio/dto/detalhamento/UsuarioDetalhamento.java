@@ -1,4 +1,4 @@
-package appetito.apicardapio.dto;
+package appetito.apicardapio.dto.detalhamento;
 
 import appetito.apicardapio.entity.Usuario;
 import appetito.apicardapio.enums.PerfilUsuario;
@@ -14,7 +14,6 @@ public record UsuarioDetalhamento(
         LocalDate data_nascimento,
         Integer idioma_padrao,
         String nacionalidade,
-        String caminho_imagem_perfil,
         String situacao,
         String contatos,
         String endereco,
@@ -32,7 +31,6 @@ public record UsuarioDetalhamento(
               usuario.getData_nascimento(),
               usuario.getIdioma_padrao(),
               usuario.getNacionalidade(),
-              usuario.getCaminho_imagem_perfil(),
               usuario.getSituacao(),
               usuario.getContatos(),
               usuario.getEndereco(),

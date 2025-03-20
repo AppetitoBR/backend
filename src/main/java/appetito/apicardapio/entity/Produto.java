@@ -1,6 +1,6 @@
 package appetito.apicardapio.entity;
 
-import appetito.apicardapio.dto.ProdutoCadastro;
+import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,9 +18,8 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long produto_id;
 
-    @ManyToOne
-    @JoinColumn(name = "cardapio_id", nullable = false)
-    private Cardapio cardapio;
+    @Column(name = "cardapio_id", nullable = false)
+    private Long cardapio;
 
     private String nome_curto;
     private String nome_longo;

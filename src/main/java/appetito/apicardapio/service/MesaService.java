@@ -1,9 +1,8 @@
 package appetito.apicardapio.service;
 
-import appetito.apicardapio.dto.MesaCadastro;
-import appetito.apicardapio.dto.MesaDetalhamento;
+import appetito.apicardapio.dto.cadastro.MesaCadastro;
+import appetito.apicardapio.dto.detalhamento.MesaDetalhamento;
 import appetito.apicardapio.entity.Mesa;
-import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.repository.MesaRepository;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.exception.ResourceNotFoundException;
@@ -22,14 +21,13 @@ public class MesaService {
     private EstabelecimentoRepository estabelecimentoRepository;
 
     public MesaDetalhamento cadastrarMesa(MesaCadastro dadosMesa) {
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dadosMesa.estabelecimento_id())
-                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
+        estabelecimentoRepository.findById(dadosMesa.estabelecimento_id()).orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
         Mesa mesa = new Mesa(
                 dadosMesa.nome(),
                 dadosMesa.capacidade(),
                 dadosMesa.status(),
                 dadosMesa.qrCode(),
-                estabelecimento
+                dadosMesa.estabelecimento_id()
         );
         mesaRepository.save(mesa);
         return new MesaDetalhamento(mesa);
@@ -38,14 +36,13 @@ public class MesaService {
     public MesaDetalhamento atualizarMesa(Long id, MesaCadastro dadosMesa) {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dadosMesa.estabelecimento_id())
-                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
+        estabelecimentoRepository.findById(dadosMesa.estabelecimento_id()).orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
 
         mesa.setNome(dadosMesa.nome());
         mesa.setCapacidade(dadosMesa.capacidade());
         mesa.setStatus(dadosMesa.status());
         mesa.setQrCode(dadosMesa.qrCode());
-        mesa.setEstabelecimento(estabelecimento);
+        mesa.setEstabelecimento(dadosMesa.estabelecimento_id());
 
         mesaRepository.save(mesa);
         return new MesaDetalhamento(mesa);

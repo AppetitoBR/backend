@@ -1,13 +1,8 @@
 package appetito.apicardapio.service;
 
-import appetito.apicardapio.dto.CardapioCadastro;
-import appetito.apicardapio.dto.CardapioDetalhamento;
+import appetito.apicardapio.dto.detalhamento.CardapioDetalhamento;
 import appetito.apicardapio.entity.Cardapio;
-import appetito.apicardapio.entity.Estabelecimento;
-import appetito.apicardapio.entity.Colaborador;
 import appetito.apicardapio.repository.CardapioRepository;
-import appetito.apicardapio.repository.EstabelecimentoRepository;
-import appetito.apicardapio.repository.ColaboradorRepository;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
