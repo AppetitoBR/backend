@@ -1,4 +1,4 @@
-package appetito.apicardapio.dto;
+package appetito.apicardapio.dto.detalhamento;
 
 import appetito.apicardapio.entity.Produto;
 import java.math.BigDecimal;
@@ -21,7 +21,7 @@ public record ProdutoDetalhamento(
     public ProdutoDetalhamento(Produto produto) {
         this(
                 produto.getProduto_id(),
-                produto.getCardapio().getId(),
+                produto.getCardapio(),
                 produto.getNome_curto(),
                 produto.getNome_longo(),
                 produto.getCategoria(),

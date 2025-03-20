@@ -1,4 +1,4 @@
-package appetito.apicardapio.dto;
+package appetito.apicardapio.dto.cadastro;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

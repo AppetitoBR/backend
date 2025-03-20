@@ -13,6 +13,10 @@ public class Mesa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long mesa_id;
 
+
+    @Column(name = "estabelecimento_id", nullable = false)
+    private Long estabelecimento;
+
     @Column(nullable = false)
     private String nome;
 
@@ -25,13 +29,11 @@ public class Mesa {
     @Column(nullable = false, unique = true)
     private String qrCode;
 
-    @ManyToOne
-    @JoinColumn(name = "estabelecimento_id", nullable = false)
-    private Estabelecimento estabelecimento;
+
 
     public Mesa() {}
 
-    public Mesa(String nome, Integer capacidade, String status, String qrCode, Estabelecimento estabelecimento ) {
+    public Mesa(String nome, Integer capacidade, String status, String qrCode, Long estabelecimento ) {
         this.nome = nome;
         this.capacidade = capacidade;
         this.status = status;

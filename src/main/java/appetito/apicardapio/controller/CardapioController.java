@@ -1,19 +1,10 @@
 package appetito.apicardapio.controller;
 
-import appetito.apicardapio.dto.CardapioCadastro;
-import appetito.apicardapio.dto.CardapioDetalhamento;
-import appetito.apicardapio.dto.UsuarioCadastro;
-import appetito.apicardapio.dto.UsuarioDetalhamento;
+import appetito.apicardapio.dto.cadastro.CardapioCadastro;
+import appetito.apicardapio.dto.detalhamento.CardapioDetalhamento;
 import appetito.apicardapio.entity.Cardapio;
-import appetito.apicardapio.entity.Colaborador;
-import appetito.apicardapio.entity.Estabelecimento;
-import appetito.apicardapio.entity.Usuario;
-import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.CardapioRepository;
-import appetito.apicardapio.repository.ColaboradorRepository;
-import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.service.CardapioService;
-import appetito.apicardapio.service.ColaboradorService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +23,7 @@ public class CardapioController {
     @Autowired
     private CardapioRepository cardapioRepository;
 
-    @Autowired
-    private EstabelecimentoRepository estabelecimentoRepository;
-    @Autowired
-    private ColaboradorRepository colaboradorRepository;
+
 
     @PostMapping
     @Transactional
@@ -50,14 +38,12 @@ public class CardapioController {
         CardapioDetalhamento cardapioDetalhamento = cardapioService.buscarCardapioPorId(id);
         return ResponseEntity.ok(cardapioDetalhamento);
     }
-    // Buscar cardapio por Estabelecimento
     @GetMapping("/estabelecimento/{estabelecimentoId}")
     public ResponseEntity<List<CardapioDetalhamento>> listarCardapiosPorEstabelecimento(@PathVariable Long estabelecimentoId) {
         List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimentoId);
         return ResponseEntity.ok(cardapios);
     }
 
-    // Deletar Estabelecimento
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removerCardapio(@PathVariable Long id) {
         cardapioService.deletarCardapio(id);
