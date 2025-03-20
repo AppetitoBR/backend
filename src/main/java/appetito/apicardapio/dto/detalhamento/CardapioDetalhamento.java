@@ -1,4 +1,4 @@
-package appetito.apicardapio.dto;
+package appetito.apicardapio.dto.detalhamento;
 
 import appetito.apicardapio.entity.Cardapio;
 
@@ -10,7 +10,7 @@ public record CardapioDetalhamento(
         String secao,
         String descricao,
         Long estabelecimento_id,
-        Long colaborador_id,
+        Long usuario_id,
         LocalDate vigencia_inicio,
         LocalDate vigencia_fim,
         Boolean ativo
@@ -22,7 +22,7 @@ public record CardapioDetalhamento(
                 cardapio.getSecao(),
                 cardapio.getDescricao(),
                 cardapio.getEstabelecimento(),
-                cardapio.getColaborador_id() != null ? cardapio.getColaborador_id() : null,
+                cardapio.getUsuario(),
                 cardapio.getVigencia_inicio(),
                 cardapio.getVigencia_fim(),
                 cardapio.getAtivo()

@@ -8,7 +8,7 @@ public class PerfilUsuarioConverter implements AttributeConverter<PerfilUsuario,
 
     @Override
     public String convertToDatabaseColumn(PerfilUsuario perfilUsuario) {
-        return perfilUsuario.name().toLowerCase();
+        return perfilUsuario.name().toUpperCase();
     }
 
     @Override

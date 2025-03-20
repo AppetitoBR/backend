@@ -1,7 +1,5 @@
-package appetito.apicardapio.dto;
+package appetito.apicardapio.dto.detalhamento;
 import appetito.apicardapio.entity.Mesa;
-
-import java.time.LocalDateTime;
 
 public record MesaDetalhamento(
         Long mesa_id,
@@ -18,7 +16,7 @@ public record MesaDetalhamento(
                 mesa.getCapacidade(),
                 mesa.getStatus(),
                 mesa.getQrCode(),
-                mesa.getEstabelecimento().getId()
+                mesa.getEstabelecimento()
         );
     }
 }

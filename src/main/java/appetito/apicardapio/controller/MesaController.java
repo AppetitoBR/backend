@@ -1,7 +1,7 @@
 package appetito.apicardapio.controller;
 
-import appetito.apicardapio.dto.MesaCadastro;
-import appetito.apicardapio.dto.MesaDetalhamento;
+import appetito.apicardapio.dto.cadastro.MesaCadastro;
+import appetito.apicardapio.dto.detalhamento.MesaDetalhamento;
 import appetito.apicardapio.service.MesaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

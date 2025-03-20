@@ -1,7 +1,7 @@
 package appetito.apicardapio.enums;
 
 public enum PerfilUsuario {
-    ADMIN,
+    ADMINISTRADOR,
     COZINHEIRO,
     ATENDENTE,
     GERENTE,
