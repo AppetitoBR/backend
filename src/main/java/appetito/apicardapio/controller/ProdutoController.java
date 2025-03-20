@@ -1,7 +1,7 @@
 package appetito.apicardapio.controller;
 
-import appetito.apicardapio.dto.ProdutoCadastro;
-import appetito.apicardapio.dto.forGet.ProdutoDados;
+import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
+import appetito.apicardapio.dto.GetAll.ProdutoDados;
 import appetito.apicardapio.entity.Produto;
 import appetito.apicardapio.repository.ProdutoRepository;
 import appetito.apicardapio.service.ProdutoService;

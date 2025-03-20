@@ -1,6 +1,6 @@
 package appetito.apicardapio.entity;
 
-import appetito.apicardapio.dto.CardapioCadastro;
+import appetito.apicardapio.dto.cadastro.CardapioCadastro;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,19 +20,18 @@ public class Cardapio {
     @Column(name = "cardapio_id", nullable = false)
     private Long id;
 
+    @Column(name = "usuario_id", nullable = false)
+    private Long usuario;
+
+    @Column(name = "estabelecimento_id", nullable = false)
+    private Long estabelecimento;
+
     @Column(nullable = false)
     private String nome;
 
     private String secao;
 
     private String descricao;
-
-
-    @Column(name = "estabelecimento_id", nullable = false)
-    private Long estabelecimento;
-
-    @Column(name = "colaborador_id", nullable = false)
-    private Long colaborador_id;
 
     @Column(nullable = false)
     private LocalDate vigencia_inicio;
@@ -46,7 +45,7 @@ public class Cardapio {
     public Cardapio(CardapioCadastro cardapioCadastro) {
         this.nome = cardapioCadastro.nome();
         this.estabelecimento = cardapioCadastro.estabelecimento_id();
-        this.colaborador_id = cardapioCadastro.colaborador_id();
+        this.usuario = cardapioCadastro.usuario_id();
         this.secao = cardapioCadastro.secao();
         this.descricao = cardapioCadastro.descricao();
         this.vigencia_inicio = LocalDate.now();

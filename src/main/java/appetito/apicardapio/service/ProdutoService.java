@@ -1,15 +1,11 @@
 package appetito.apicardapio.service;
 
-import appetito.apicardapio.dto.ProdutoCadastro;
-import appetito.apicardapio.dto.forGet.ProdutoDados;
+import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
 import appetito.apicardapio.entity.Produto;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ProdutoService {

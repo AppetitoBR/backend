@@ -1,7 +1,6 @@
 package appetito.apicardapio.entity;
 
-import appetito.apicardapio.dto.EstabelecimentoCadastro;
-import appetito.apicardapio.dto.forGet.UsuarioDados;
+import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,7 +38,7 @@ public class Estabelecimento {
     private String tipo;
 
     @Column(nullable = false)
-    private Boolean ativo = true;
+    private Boolean ativo;
 
     @Column(nullable = false)
     private Boolean bloqueado = false;
@@ -50,13 +49,14 @@ public class Estabelecimento {
     @Column(nullable = false)
     private String segmento;
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_cadastro_id", nullable = false)
-    private Usuario usuario_cadastro;
+    @Column(name = "usuario_cadastro_id", nullable = false)
+    private Long usuario_cadastro;
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_alteracao_id")
-    private Usuario usuario_alteracao;
+    @Column(nullable = false)
+    private LocalDateTime data_alteracao_cadastro = LocalDateTime.now();
+
+    @Column(name = "usuario_alteracao_id", nullable = false)
+    private Long usuario_alteracao;
 
     @Lob
     private String observacao;

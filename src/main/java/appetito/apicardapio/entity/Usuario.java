@@ -1,7 +1,8 @@
 package appetito.apicardapio.entity;
 
-import appetito.apicardapio.dto.UsuarioCadastro;
+import appetito.apicardapio.dto.cadastro.UsuarioCadastro;
 import appetito.apicardapio.enums.PerfilUsuario;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,7 +36,7 @@ public class Usuario implements UserDetails {
     private LocalDate data_nascimento;
     private Integer idioma_padrao;
     private String nacionalidade;
-    private String caminho_imagem_perfil;
+    private byte[] imagem_perfil;
     private String situacao;
     private String contatos;
     private String endereco;
@@ -57,7 +58,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(perfil.name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_"+ perfil.name()));
     }
 
     @Override

@@ -1,4 +1,4 @@
-package appetito.apicardapio.dto.forGet;
+package appetito.apicardapio.dto.GetAll;
 
 import appetito.apicardapio.entity.Usuario;
 
