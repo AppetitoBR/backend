@@ -4,9 +4,11 @@ import appetito.apicardapio.dto.detalhamento.CardapioDetalhamento;
 import appetito.apicardapio.entity.Cardapio;
 import appetito.apicardapio.repository.CardapioRepository;
 import appetito.apicardapio.exception.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,4 +45,16 @@ public class CardapioService {
         }
         cardapioRepository.deleteById(id);
     }
+    // deleta o estabelecimento apenas se ele pertencer a ele
+    public boolean deletarSePertencerAoEstabelecimento(Long cardapioId, Long estabelecimentoId) {
+        Optional<Cardapio> cardapioOpt = cardapioRepository.findByIdAndEstabelecimento(cardapioId, estabelecimentoId);
+
+        if (cardapioOpt.isEmpty()) {
+            return false;
+        }
+
+        cardapioRepository.deleteById(cardapioId);
+        return true;
+    }
+
 }
