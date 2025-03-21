@@ -1,5 +1,20 @@
 package appetito.apicardapio.dto.GetAll;
 
-public record CardapioDados() {
+import appetito.apicardapio.entity.Cardapio;
+
+public record CardapioDados(
+        Long estabelecimento_id,
+        String nome,
+        String descricao,
+        boolean ativo
+) {
+    public CardapioDados(Cardapio cardapio) {
+        this(
+                cardapio.getEstabelecimento(),
+                cardapio.getNome(),
+                cardapio.getDescricao(),
+                cardapio.getAtivo()
+        );
+    }
 
 }
