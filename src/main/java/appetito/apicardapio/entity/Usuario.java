@@ -54,11 +54,16 @@ public class Usuario implements UserDetails {
         this.endereco = dadosUsuario.endereco();
         this.redes_sociais = dadosUsuario.redes_sociais();
         this.contatos = dadosUsuario.contatos();
+        this.perfil = PerfilUsuario.CLIENTE;
     }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_"+ perfil.name()));
+        if (this.perfil == null) {
+            return List.of(new SimpleGrantedAuthority("ROLE_CLIENTE"));
+        }
+        return List.of(new SimpleGrantedAuthority("ROLE_" + perfil.name()));
     }
 
     @Override
