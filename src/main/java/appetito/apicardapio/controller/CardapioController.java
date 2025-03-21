@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import appetito.apicardapio.dto.GetAll.CardapioDados;
@@ -24,63 +25,66 @@ public class CardapioController {
 
     @Autowired
     private CardapioService cardapioService;
+
     @Autowired
     private CardapioRepository cardapioRepository;
 
-
-
-    //funcao admin e gerente
+    // Somente ADMIN e GERENTE podem cadastrar um cardápio
     @PostMapping
-    @Transactional
-    public ResponseEntity<CardapioDetalhamento> cadastrarCardapio(@RequestBody @Valid CardapioCadastro dadosCardapio, UriComponentsBuilder uriBuilder1) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    public ResponseEntity<CardapioDetalhamento> cadastrarCardapio(
+            @RequestBody @Valid CardapioCadastro dadosCardapio,
+            UriComponentsBuilder uriBuilder
+    ) {
         var cardapio = new Cardapio(dadosCardapio);
         cardapioRepository.save(cardapio);
-        var uri = uriBuilder1.path("/cardapio/{id}").buildAndExpand(cardapio.getId()).toUri();
+        var uri = uriBuilder.path("/cardapio/{id}").buildAndExpand(cardapio.getId()).toUri();
         return ResponseEntity.created(uri).body(new CardapioDetalhamento(cardapio));
     }
-    // Admin e irei ver como posso aplicar para fazer um painel, deixar como admin mesmo
+
+    // Apenas ADMIN pode listar todos os cardápios
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<CardapioDados>> listarCardapios() {
+        List<Cardapio> cardapios = cardapioRepository.findAll();
+        if (cardapios.isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum Cardapio encontrado");
+        }
+        var lista = cardapios.stream().map(CardapioDados::new).toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    // ADMIN e GERENTE podem buscar um cardápio específico
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<CardapioDetalhamento> buscarCardapioPorId(@PathVariable Long id) {
         CardapioDetalhamento cardapioDetalhamento = cardapioService.buscarCardapioPorId(id);
         return ResponseEntity.ok(cardapioDetalhamento);
     }
-    //Permi all com jwt
+
+    // Todos podem listar cardápios de um estabelecimento
     @GetMapping("/estabelecimento/{estabelecimentoId}")
     public ResponseEntity<List<CardapioDetalhamento>> listarCardapiosPorEstabelecimento(@PathVariable Long estabelecimentoId) {
         List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimentoId);
         return ResponseEntity.ok(cardapios);
     }
 
-    // listar todos os cardapios,irei ver como posso aplicar para fazer um painel, funcao ADMIN
-    @GetMapping
-    @Transactional
-    public ResponseEntity<List<CardapioDados>> listarCardapios() {
-
-        List<Cardapio> cardapios = cardapioRepository.findAll();
-        if (cardapios.isEmpty()) {
-            throw new ResourceNotFoundException("Nenhum Cardapio encontrado");
-        }
-        var lista =  cardapioRepository.findAll().stream().map(CardapioDados::new).toList();
-        return ResponseEntity.ok(lista);
-    }
-    // funcao admin, irei fazer para caso a pessoa for gerente e etc
+    // Apenas ADMIN pode deletar qualquer cardápio
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> removerCardapio(@PathVariable Long id) {
         cardapioService.deletarCardapio(id);
         return ResponseEntity.noContent().build();
     }
-    // funcao gerente
+
+    // Apenas GERENTE pode deletar um cardápio do seu próprio estabelecimento
     @DeleteMapping("/estabelecimento/{estabelecimentoId}/cardapio/{cardapioId}")
+    @PreAuthorize("hasRole('GERENTE')")
     public ResponseEntity<Void> deletarCardapio(
             @PathVariable Long estabelecimentoId,
-            @PathVariable Long cardapioId) {
-
+            @PathVariable Long cardapioId
+    ) {
         boolean deletado = cardapioService.deletarSePertencerAoEstabelecimento(cardapioId, estabelecimentoId);
-
-        if (deletado) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return deletado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }
