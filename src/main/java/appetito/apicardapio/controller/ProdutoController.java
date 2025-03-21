@@ -1,14 +1,25 @@
 package appetito.apicardapio.controller;
 
+import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
 import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
 import appetito.apicardapio.dto.GetAll.ProdutoDados;
+import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
+import appetito.apicardapio.dto.detalhamento.ProdutoDetalhamento;
+import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.Produto;
+import appetito.apicardapio.entity.Usuario;
 import appetito.apicardapio.repository.ProdutoRepository;
 import appetito.apicardapio.service.ProdutoService;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -33,8 +44,11 @@ public class ProdutoController {
     }
 
     @PostMapping
-    public Produto createProduto(@RequestBody ProdutoCadastro produtoCadastro) {
-        return produtoService.createProduto(produtoCadastro);
+    public ResponseEntity<ProdutoDetalhamento> cadastrarProduto(@RequestBody @Valid ProdutoCadastro dadosProduto, UriComponentsBuilder uriP){
+        var produto = new Produto(dadosProduto);
+        produtoRepository.save(new Produto(dadosProduto));
+        var uri = uriP.path("/produto/{id}").buildAndExpand(produto.getProduto_id()).toUri();
+        return ResponseEntity.created(uri).body(new ProdutoDetalhamento(produto));
     }
 
     @PutMapping("/{id}")
@@ -55,4 +69,22 @@ public class ProdutoController {
                 .toList();
         return ResponseEntity.ok(lista);
     }
+
+ //   @Operation(summary = "Upload da imagem de perfil do usuário")
+ //   @PostMapping(value = "/{id}/upload-imagem", consumes = "multipart/form-data")
+ //   public ResponseEntity<String> uploadImagemProduto(
+ //           @PathVariable Long id,
+ //           @RequestPart("file") MultipartFile file
+  //  ) {
+ //       try {
+ //           Produto produto = produtoService.salvarImagemPerfil(id, file);
+  //          if (produto != null) {
+   //             return ResponseEntity.ok("Imagem do produto foi salva");
+  //          } else {
+  //              return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Produto não encontrado");
+ //           }
+  //      } catch (IOException e) {
+  //          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao salvar imagem");
+   //     }
+ //   }
 }

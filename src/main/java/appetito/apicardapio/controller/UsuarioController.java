@@ -1,16 +1,19 @@
 package appetito.apicardapio.controller;
 
+import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
 import appetito.apicardapio.dto.cadastro.UsuarioCadastro;
+import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
 import appetito.apicardapio.dto.detalhamento.UsuarioDetalhamento;
 import appetito.apicardapio.dto.GetAll.UsuarioDados;
+import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.Usuario;
+import appetito.apicardapio.enums.PerfilUsuario;
 import appetito.apicardapio.repository.UsuarioRepository;
 import appetito.apicardapio.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,12 +26,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -36,6 +42,7 @@ import java.util.List;
 @Tag(name = "Usuário", description = "Gerenciamento de usuários e imagens de perfil")
 public class UsuarioController {
 
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final UsuarioRepository usuarioRepository;
     private final UsuarioService usuarioService;
     public UsuarioController(UsuarioRepository usuarioRepository, UsuarioService usuarioService) {
@@ -43,14 +50,6 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
-    @PostMapping
-    @Transactional
-    public ResponseEntity<UsuarioDetalhamento> cadastrarUsuario(@RequestBody @Valid UsuarioCadastro dadosUsuario, UriComponentsBuilder uriBuilder1) {
-        var usuario = new Usuario(dadosUsuario);
-        usuarioRepository.save(usuario);
-        var uri = uriBuilder1.path("/usuarios/{id}").buildAndExpand((usuario.getUsuario_id())).toUri();
-        return ResponseEntity.created(uri).body(new UsuarioDetalhamento(usuario));
-    }
 
     @GetMapping
     @Transactional
@@ -59,6 +58,14 @@ public class UsuarioController {
         return ResponseEntity.ok(lista);
     }
 
+    @PostMapping("/cadastrar")
+    public ResponseEntity<UsuarioDetalhamento> cadastrarUsuario(@RequestBody @Valid UsuarioCadastro dadosUsuario, UriComponentsBuilder uriU){
+        var usuario = new Usuario(dadosUsuario);
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        usuarioRepository.save(usuario);
+        var uri = uriU.path("/usuarios/{id}").buildAndExpand(usuario.getUsuario_id()).toUri();
+        return ResponseEntity.created(uri).body(new UsuarioDetalhamento(usuario));
+    }
 
     @Operation(summary = "Upload da imagem de perfil do usuário")
     @PostMapping(value = "/{id}/upload-imagem", consumes = "multipart/form-data")
@@ -112,6 +119,26 @@ public class UsuarioController {
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
                 .body(imagem);
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<UsuarioDetalhamento> deletarUsuario(@PathVariable Long id) {
+        var usuario = usuarioRepository.findById(id).orElse(null);
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        usuarioRepository.delete(usuario);
+        return ResponseEntity.ok().build();
+    }
+// em teste ainda
+    @PutMapping("/me")
+    public ResponseEntity<UsuarioDetalhamento> atualizarUsuario(){
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication.getPrincipal() instanceof Usuario usuario)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+        var usuarioDetalhamento = new UsuarioDetalhamento(usuario);
+        usuarioRepository.delete(usuario);
+        return ResponseEntity.ok(usuarioDetalhamento);
     }
 
 

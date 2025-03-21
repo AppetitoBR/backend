@@ -38,12 +38,6 @@ public class Estabelecimento {
     private String tipo;
 
     @Column(nullable = false)
-    private Boolean ativo;
-
-    @Column(nullable = false)
-    private Boolean bloqueado = false;
-
-    @Column(nullable = false)
     private LocalDateTime data_cadastro = LocalDateTime.now();
 
     @Column(nullable = false)
