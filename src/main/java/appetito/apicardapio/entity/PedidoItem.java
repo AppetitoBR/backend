@@ -18,7 +18,6 @@ public class PedidoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pedido_item_id;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id")
     @JsonBackReference
