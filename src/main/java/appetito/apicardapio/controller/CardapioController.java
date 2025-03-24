@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.service.annotation.DeleteExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import appetito.apicardapio.dto.GetAll.CardapioDados;
 import java.util.List;
@@ -68,7 +69,6 @@ public class CardapioController {
         List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimentoId);
         return ResponseEntity.ok(cardapios);
     }
-
     // Apenas ADMIN pode deletar qualquer cardápio
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -80,7 +80,7 @@ public class CardapioController {
     // Apenas GERENTE pode deletar um cardápio do seu próprio estabelecimento
     @DeleteMapping("/estabelecimento/{estabelecimentoId}/cardapio/{cardapioId}")
     @PreAuthorize("hasRole('GERENTE')")
-    public ResponseEntity<Void> deletarCardapio(
+    public ResponseEntity<Void> deletarCardapiodoEstabelecimento(
             @PathVariable Long estabelecimentoId,
             @PathVariable Long cardapioId
     ) {
