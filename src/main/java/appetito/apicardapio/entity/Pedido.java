@@ -1,0 +1,42 @@
+package appetito.apicardapio.entity;
+
+import appetito.apicardapio.enums.StatusPedido;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class Pedido {
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long pedido_id;
+
+        private Long usuario_id;
+
+        @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+        @JsonManagedReference
+        private List<PedidoItem> itens = new ArrayList<>();
+        private BigDecimal total = BigDecimal.ZERO;
+
+
+        @Enumerated(EnumType.STRING)
+        private StatusPedido status = StatusPedido.PENDENTE;
+
+        public void calcularTotal() {
+            this.total = itens.stream()
+                    .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+    }
+

@@ -57,4 +57,6 @@ public class CardapioService {
         return true;
     }
 
+    public void deletarCardapioporEstabelecimento(Long estabelecimentoId) {
+    }
 }
