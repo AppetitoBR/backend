@@ -7,6 +7,6 @@ public record MesaCadastro(
         @NotBlank String nome,
         @NotNull Integer capacidade,
         @NotBlank String status,
-        @NotBlank String qrCode,
+     //   @NotBlank String qrCode,
         @NotNull Long estabelecimento_id
 ) {}

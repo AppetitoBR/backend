@@ -9,6 +9,7 @@ import appetito.apicardapio.repository.EstabelecimentoRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -22,8 +23,9 @@ public class EstabelecimentoController {
     public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository) {
         this.estabelecimentoRepository = estabelecimentoRepository;
     }
-
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CLIENTE')")
     @PostMapping
+    @Transactional
     public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento(@RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento, UriComponentsBuilder uriE){
             var estabelecimento = new Estabelecimento(dadosEstabelecimento);
         estabelecimentoRepository.save(new Estabelecimento(dadosEstabelecimento));
@@ -32,6 +34,7 @@ public class EstabelecimentoController {
     }
 
     @GetMapping("/{id}")
+    @Transactional
     public ResponseEntity<EstabelecimentoDetalhamento> obterEstabelecimento(@PathVariable Long id) {
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
@@ -48,6 +51,15 @@ public class EstabelecimentoController {
         }
         var lista =  estabelecimentoRepository.findAll().stream().map(EstabelecimentoDados::new).toList();
         return ResponseEntity.ok(lista);
+    }
+    @DeleteMapping("/{id}")
+    @Transactional
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<Void> deletarEstabelecimento(@PathVariable Long id) {
+        if(estabelecimentoRepository.existsById(id)) {
+            estabelecimentoRepository.deleteById(id);
+        }
+       return ResponseEntity.noContent().build();
     }
 
 }

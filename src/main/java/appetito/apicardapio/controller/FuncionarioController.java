@@ -20,7 +20,7 @@ public class FuncionarioController {
     FuncionarioRepository funcionarioRepository;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
     public ResponseEntity<List<Funcionario>> listaFuncionarios() {
         return ResponseEntity.ok(funcionarioRepository.findAll());
     }
