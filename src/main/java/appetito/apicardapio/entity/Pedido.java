@@ -11,12 +11,12 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
+@Table(name = "pedido")
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Pedido {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +27,7 @@ public class Pedido {
         @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
         @JsonManagedReference
         private List<PedidoItem> itens = new ArrayList<>();
+
         private BigDecimal total = BigDecimal.ZERO;
 
 
@@ -38,5 +39,9 @@ public class Pedido {
                     .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
+        public Pedido(Long usuario_id) {
+                this.usuario_id = usuario_id;
+        }
+
     }
 

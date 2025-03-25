@@ -32,7 +32,8 @@ public class CardapioController {
 
     // Somente ADMIN e GERENTE podem cadastrar um cardápio
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
+    @Transactional
     public ResponseEntity<CardapioDetalhamento> cadastrarCardapio(
             @RequestBody @Valid CardapioCadastro dadosCardapio,
             UriComponentsBuilder uriBuilder
@@ -45,7 +46,8 @@ public class CardapioController {
 
     // Apenas ADMIN pode listar todos os cardápios
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @Transactional
     public ResponseEntity<List<CardapioDados>> listarCardapios() {
         List<Cardapio> cardapios = cardapioRepository.findAll();
         if (cardapios.isEmpty()) {
@@ -57,7 +59,8 @@ public class CardapioController {
 
     // ADMIN e GERENTE podem buscar um cardápio específico
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
+    @Transactional
     public ResponseEntity<CardapioDetalhamento> buscarCardapioPorId(@PathVariable Long id) {
         CardapioDetalhamento cardapioDetalhamento = cardapioService.buscarCardapioPorId(id);
         return ResponseEntity.ok(cardapioDetalhamento);
@@ -65,19 +68,22 @@ public class CardapioController {
 
     // Todos podem listar cardápios de um estabelecimento
     @GetMapping("/estabelecimento/{estabelecimentoId}")
+    @Transactional
     public ResponseEntity<List<CardapioDetalhamento>> listarCardapiosPorEstabelecimento(@PathVariable Long estabelecimentoId) {
         List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimentoId);
         return ResponseEntity.ok(cardapios);
     }
     // Apenas ADMIN pode deletar qualquer cardápio
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @Transactional
     public ResponseEntity<Void> removerCardapio(@PathVariable Long id) {
         cardapioService.deletarCardapio(id);
         return ResponseEntity.noContent().build();
     }
 
     // Apenas GERENTE pode deletar um cardápio do seu próprio estabelecimento
+    @Transactional
     @DeleteMapping("/estabelecimento/{estabelecimentoId}/cardapio/{cardapioId}")
     @PreAuthorize("hasRole('GERENTE')")
     public ResponseEntity<Void> deletarCardapiodoEstabelecimento(
