@@ -3,8 +3,6 @@ package appetito.apicardapio.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 @Entity
 public class Mesa {
@@ -31,7 +29,7 @@ public class Mesa {
 
 
 
-    public Mesa() {}
+    public Mesa(String nome, int capacidade, String livre, Estabelecimento estabelecimento) {}
 
     public Mesa(String nome, Integer capacidade, String status, Long estabelecimento ) {
         this.nome = nome;
