@@ -26,11 +26,19 @@ public class EstabelecimentoController {
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CLIENTE')")
     @PostMapping
     @Transactional
-    public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento(@RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento, UriComponentsBuilder uriE){
-            var estabelecimento = new Estabelecimento(dadosEstabelecimento);
-        estabelecimentoRepository.save(new Estabelecimento(dadosEstabelecimento));
-    var uri = uriE.path("/estabelecimento/{id}").buildAndExpand(estabelecimento.getId()).toUri();
-        return ResponseEntity.created(uri).body(new EstabelecimentoDetalhamento(estabelecimento));
+    public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento( // em caso de erro alterei toda a logica desse bloco
+            @RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento,
+            UriComponentsBuilder uriE) {
+
+        var estabelecimento = new Estabelecimento(dadosEstabelecimento);
+        Estabelecimento estabelecimentoSalvo = estabelecimentoRepository.save(estabelecimento);
+
+        var uri = uriE.path("/estabelecimento/{id}")
+                .buildAndExpand(estabelecimentoSalvo.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri)
+                .body(new EstabelecimentoDetalhamento(estabelecimentoSalvo));
     }
 
     @GetMapping("/{id}")

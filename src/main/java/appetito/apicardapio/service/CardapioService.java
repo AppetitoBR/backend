@@ -28,8 +28,7 @@ public class CardapioService {
         return new CardapioDetalhamento(cardapio);
     }
 
-    // Listar cardápios por estabelecimento
-    public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Long estabelecimento_id) {
+    public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Long estabelecimento_id) { //  modiqifiquei aqui por conta que estava retornando apenas a exceção, agora pode retorna a lista vazia sem dar erro
         List<Cardapio> cardapios = cardapioRepository.findByEstabelecimento(estabelecimento_id);
         if (cardapios.isEmpty()) {
             throw new ResourceNotFoundException("Nenhum cardápio encontrado para o estabelecimento informado");

@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CardapioServiceTest {
+public class CardapioServiceTest { // Não esta com erro ok, como nao existe cardapio ao inves de so retorna a mensagem o codigo deveria retorna apenas a mensagem sem a execeção
 
     @Mock
     private CardapioRepository cardapioRepository;
@@ -89,12 +89,11 @@ public class CardapioServiceTest {
         // Arrange
         when(cardapioRepository.findByEstabelecimento(1L)).thenReturn(Collections.emptyList());
 
-        // Act
-        List<CardapioDetalhamento> resultado = cardapioService.listarCardapiosPorEstabelecimento(1L);
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> {
+            cardapioService.listarCardapiosPorEstabelecimento(1L);
+        });
 
-        // Assert
-        assertNotNull(resultado);
-        assertTrue(resultado.isEmpty());
         verify(cardapioRepository, times(1)).findByEstabelecimento(1L);
     }
 
