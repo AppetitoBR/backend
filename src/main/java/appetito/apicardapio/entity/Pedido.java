@@ -1,16 +1,24 @@
 package appetito.apicardapio.entity;
 
+import appetito.apicardapio.dto.cadastro.PedidoCadastro;
+import appetito.apicardapio.dto.detalhamento.ItemDetalhamento;
+import appetito.apicardapio.dto.put.PedidoAtualizacao;
 import appetito.apicardapio.enums.StatusPedido;
+import appetito.apicardapio.exception.ResourceNotFoundException;
+import appetito.apicardapio.repository.ProdutoRepository;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 @Table(name = "pedido")
 @Entity
 @Getter
@@ -34,14 +42,14 @@ public class Pedido {
         @Enumerated(EnumType.STRING)
         private StatusPedido status = StatusPedido.PENDENTE;
 
-        public void calcularTotal() {
+    public void calcularTotal() {
             this.total = itens.stream()
                     .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
+
         public Pedido(Long usuario_id) {
                 this.usuario_id = usuario_id;
         }
-
     }
 

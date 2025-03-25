@@ -56,7 +56,4 @@ public class CardapioService {
         cardapioRepository.deleteById(cardapioId);
         return true;
     }
-
-    public void deletarCardapioporEstabelecimento(Long estabelecimentoId) {
-    }
 }
