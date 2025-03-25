@@ -26,18 +26,18 @@ public class Mesa {
     @Column(nullable = false)
     private String status;
 
-    @Column(nullable = false, unique = true)
-    private String qrCode;
+  //  @Column(nullable = false, unique = true)
+  //  private String qrCode;
 
 
 
     public Mesa() {}
 
-    public Mesa(String nome, Integer capacidade, String status, String qrCode, Long estabelecimento ) {
+    public Mesa(String nome, Integer capacidade, String status, Long estabelecimento ) {
         this.nome = nome;
         this.capacidade = capacidade;
         this.status = status;
-        this.qrCode = qrCode;
+        //this.qrCode = qrCode;
         this.estabelecimento = estabelecimento;
     }
 }
