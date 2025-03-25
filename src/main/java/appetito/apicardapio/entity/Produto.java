@@ -34,6 +34,7 @@ public class Produto {
     private String imagens;
 
     public Produto(ProdutoCadastro produtoCadastro) {
+        this.cardapio = produtoCadastro.cardapio();
         this.nome_curto = produtoCadastro.nome_curto();
         this.nome_longo = produtoCadastro.nome_longo();
         this.categoria = produtoCadastro.categoria();

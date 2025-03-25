@@ -27,7 +27,7 @@ public class ProdutoService {
     // Atualizar produto
     public Produto updateProduto(Long id, ProdutoCadastro produtoCadastro) {
         Produto produto = produtoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
-        produto.setCardapio(produtoCadastro.cardapio_id());
+        produto.setCardapio(produtoCadastro.cardapio());
         produto.setNome_curto(produtoCadastro.nome_curto());
         produto.setNome_longo(produtoCadastro.nome_longo());
         produto.setCategoria(produtoCadastro.categoria());

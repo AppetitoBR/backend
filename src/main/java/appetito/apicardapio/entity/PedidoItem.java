@@ -32,7 +32,7 @@ public class PedidoItem {
 
     private String nomeProduto;
 
-    public PedidoItem(Pedido pedido, Produto produto, Integer quantidade) {
+    public PedidoItem(Pedido pedido,Produto produto, Integer quantidade) {
         this.pedido = pedido;
         this.produto_id = produto.getProduto_id();
         this.quantidade = quantidade;

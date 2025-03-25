@@ -1,7 +1,10 @@
+
 package appetito.apicardapio.controller;
 import appetito.apicardapio.dto.GetAll.PedidoDados;
 import appetito.apicardapio.dto.cadastro.PedidoCadastro;
 import appetito.apicardapio.dto.detalhamento.PedidoDetalhamento;
+import appetito.apicardapio.dto.put.ItemAtualizacao;
+import appetito.apicardapio.dto.put.PedidoAtualizacao;
 import appetito.apicardapio.entity.Pedido;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.service.PedidoService;
@@ -27,16 +30,6 @@ public class PedidoController {
             return ResponseEntity.status(HttpStatus.CREATED).body(new PedidoDetalhamento(pedido));
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<PedidoDetalhamento> atualizarPedido(@PathVariable Long id, @RequestBody @Valid PedidoCadastro pedidoCadastro) {
-        try {
-            Pedido pedidoAtualizado = pedidoService.atualizarPedido(id, pedidoCadastro);
-            return ResponseEntity.ok(new PedidoDetalhamento(pedidoAtualizado));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
@@ -66,6 +59,17 @@ public class PedidoController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+    @PutMapping("/{pedidoId}")
+    public ResponseEntity<Pedido> atualizarItensPedido(
+            @PathVariable Long pedidoId,
+            @RequestBody List<ItemAtualizacao> itensAtualizacao) {
+        try {
+            Pedido pedidoAtualizado = pedidoService.atualizarItensPedido(pedidoId, itensAtualizacao);
+            return ResponseEntity.ok(pedidoAtualizado);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }
