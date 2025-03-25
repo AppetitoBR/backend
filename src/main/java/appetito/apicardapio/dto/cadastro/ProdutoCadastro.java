@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record ProdutoCadastro(
-        @NotNull Long cardapio_id,
+        @NotNull Long cardapio,
         @NotBlank String nome_curto,
         @NotBlank String nome_longo,
         @NotBlank String categoria,

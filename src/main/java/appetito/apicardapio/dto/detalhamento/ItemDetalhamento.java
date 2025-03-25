@@ -1,6 +1,7 @@
 package appetito.apicardapio.dto.detalhamento;
 
 import appetito.apicardapio.entity.PedidoItem;
+import appetito.apicardapio.entity.Produto;
 
 import java.math.BigDecimal;
 
