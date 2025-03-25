@@ -6,7 +6,6 @@ public record MesaDetalhamento(
         String nome,
         Integer capacidade,
         String status,
-        String qrCode,
         Long estabelecimento_id
 ) {
     public MesaDetalhamento(Mesa mesa) {
@@ -15,7 +14,7 @@ public record MesaDetalhamento(
                 mesa.getNome(),
                 mesa.getCapacidade(),
                 mesa.getStatus(),
-                mesa.getQrCode(),
+            //    mesa.getQrCode(),
                 mesa.getEstabelecimento()
         );
     }

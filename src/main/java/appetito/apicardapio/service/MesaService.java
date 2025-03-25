@@ -26,7 +26,7 @@ public class MesaService {
                 dadosMesa.nome(),
                 dadosMesa.capacidade(),
                 dadosMesa.status(),
-                dadosMesa.qrCode(),
+               // dadosMesa.qrCode(),
                 dadosMesa.estabelecimento_id()
         );
         mesaRepository.save(mesa);
@@ -41,7 +41,7 @@ public class MesaService {
         mesa.setNome(dadosMesa.nome());
         mesa.setCapacidade(dadosMesa.capacidade());
         mesa.setStatus(dadosMesa.status());
-        mesa.setQrCode(dadosMesa.qrCode());
+    //    mesa.setQrCode(dadosMesa.qrCode());
         mesa.setEstabelecimento(dadosMesa.estabelecimento_id());
 
         mesaRepository.save(mesa);
