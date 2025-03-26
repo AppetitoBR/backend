@@ -29,7 +29,7 @@ public class EstabelecimentoController {
     public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento(@RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento, UriComponentsBuilder uriE){
             var estabelecimento = new Estabelecimento(dadosEstabelecimento);
         estabelecimentoRepository.save(new Estabelecimento(dadosEstabelecimento));
-    var uri = uriE.path("/estabelecimento/{id}").buildAndExpand(estabelecimento.getId()).toUri();
+    var uri = uriE.path("/estabelecimento/{id}").buildAndExpand(estabelecimento.getEstabelecimento_id()).toUri();
         return ResponseEntity.created(uri).body(new EstabelecimentoDetalhamento(estabelecimento));
     }
 

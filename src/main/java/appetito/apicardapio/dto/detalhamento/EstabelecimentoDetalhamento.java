@@ -21,7 +21,7 @@ public record EstabelecimentoDetalhamento(
 ) {
     public EstabelecimentoDetalhamento(Estabelecimento estabelecimento) {
         this(
-                estabelecimento.getId(),
+                estabelecimento.getEstabelecimento_id(),
                 estabelecimento.getRazao_social(),
                 estabelecimento.getNome_fantasia(),
                 estabelecimento.getCnpj(),

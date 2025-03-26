@@ -4,15 +4,15 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
-public class PerfilUsuarioConverter implements AttributeConverter<PerfilUsuario, String> {
+public class PerfilUsuarioConverter implements AttributeConverter<PapelUsuario, String> {
 
     @Override
-    public String convertToDatabaseColumn(PerfilUsuario perfilUsuario) {
-        return perfilUsuario.name().toUpperCase();
+    public String convertToDatabaseColumn(PapelUsuario papelUsuario) {
+        return papelUsuario.name().toUpperCase();
     }
 
     @Override
-    public PerfilUsuario convertToEntityAttribute(String dbData) {
-        return PerfilUsuario.valueOf(dbData.toUpperCase());
+    public PapelUsuario convertToEntityAttribute(String dbData) {
+        return PapelUsuario.valueOf(dbData.toUpperCase());
     }
 }

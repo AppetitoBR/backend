@@ -16,8 +16,7 @@ public class Estabelecimento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "estabelecimento_id")
-    private Long id; // Campo ID
+    private Long estabelecimento_id;
 
     @Column(nullable = false)
     private String razao_social;
