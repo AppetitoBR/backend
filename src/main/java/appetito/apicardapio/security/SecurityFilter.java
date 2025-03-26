@@ -1,5 +1,6 @@
 package appetito.apicardapio.security;
 
+import appetito.apicardapio.entity.Usuario;
 import appetito.apicardapio.repository.UsuarioRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,14 +9,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
+
     @Autowired
     private TokenService tokenService;
 
@@ -30,14 +32,20 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (tokenJWT != null) {
             try {
-                String email = tokenService.getSubject(tokenJWT);
+                var decodedJWT = tokenService.decodeToken(tokenJWT);
+                String email = decodedJWT.getSubject();
+                int estabelecimentoId = decodedJWT.getClaim("estabelecimento_id").asInt();
+                String papel = decodedJWT.getClaim("papel").asString();
 
                 if (email != null) {
-                    UserDetails usuario = usuarioRepository.findByEmail(email);
-                    if (usuario != null) {
+                    Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+                    if (usuarioOptional.isPresent()) {
+                        Usuario usuario = usuarioOptional.get();
                         var auth = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
                         SecurityContextHolder.getContext().setAuthentication(auth);
-                        logger.info("Usuário autenticado: " + usuario.getUsername());
+                        request.setAttribute("estabelecimento_id", estabelecimentoId);
+                        request.setAttribute("papel", papel);
+                        logger.info("Usuário autenticado: " + usuario.getUsername() + ", Papel: " + papel + ", Estabelecimento: " + estabelecimentoId);
                     } else {
                         logger.warn("Usuário não encontrado no banco de dados.");
                     }
@@ -60,3 +68,4 @@ public class SecurityFilter extends OncePerRequestFilter {
         return null;
     }
 }
+

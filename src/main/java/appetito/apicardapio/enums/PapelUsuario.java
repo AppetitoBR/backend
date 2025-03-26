@@ -1,6 +1,6 @@
 package appetito.apicardapio.enums;
 
-public enum PerfilUsuario {
+public enum PapelUsuario {
     //Nós developers
     ADMINISTRADOR,
 

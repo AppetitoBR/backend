@@ -12,7 +12,7 @@ public record UsuarioCadastro(
         @NotBlank String email,
         @NotBlank String senha,
         @Past LocalDate data_nascimento,
-        @NotNull Integer idioma_padrao,
+        @NotNull String idioma_padrao,
         @NotBlank String contatos,
         @NotBlank String endereco,
         @NotBlank String redes_sociais
