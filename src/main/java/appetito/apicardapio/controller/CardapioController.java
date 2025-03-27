@@ -1,21 +1,16 @@
 package appetito.apicardapio.controller;
-
-import appetito.apicardapio.dto.GetAll.EstabelecimentoDados;
 import appetito.apicardapio.dto.cadastro.CardapioCadastro;
 import appetito.apicardapio.dto.detalhamento.CardapioDetalhamento;
 import appetito.apicardapio.entity.Cardapio;
-import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.CardapioRepository;
 import appetito.apicardapio.service.CardapioService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.service.annotation.DeleteExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import appetito.apicardapio.dto.GetAll.CardapioDados;
 import java.util.List;
