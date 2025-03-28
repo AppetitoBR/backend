@@ -1,14 +1,14 @@
-# Usando a imagem oficial do OpenJDK 21
-FROM openjdk:21-jdk-slim
+# Usa a imagem oficial do OpenJDK
+FROM openjdk:21-jdk
 
-# Define o diretório de trabalho dentro do container
+# Define o diretório de trabalho
 WORKDIR /app
 
-# Copia o arquivo JAR para dentro do container
+# Copia o JAR para dentro do contêiner
 COPY api-cardapio-0.0.1-SNAPSHOT.jar app.jar
 
-# Expõe a porta que sua API usa (mude se necessário)
+# Expõe a porta do serviço
 EXPOSE 8080
 
-# Comando para rodar a API
+# Comando para rodar a aplicação
 CMD ["java", "-jar", "app.jar"]
