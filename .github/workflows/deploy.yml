@@ -11,7 +11,7 @@ name: Deploy via FTP
 on:
   push:
     branches:
-      - main  # Altere para a branch que deseja usar
+      - main  # Altere para a branch desejada
 
 jobs:
   deploy:
@@ -22,12 +22,15 @@ jobs:
       - name: Checkout do Código
         uses: actions/checkout@v4
 
-      - name: Configurar JDK
+      - name: Configurar JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: maven
+
+      - name: Verificar Versão do Java
+        run: java -version
 
       - name: Build do Projeto
         run: mvn clean install
@@ -42,4 +45,4 @@ jobs:
           user: ${{ secrets.USER }}
           password: ${{ secrets.PASS }}
           localDir: "dist"
-          remoteDir: "web"
+          remoteDir: "public_html/appetito"
