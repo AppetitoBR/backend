@@ -9,7 +9,7 @@ public record EstabelecimentoDados(
 ) {
     public EstabelecimentoDados(Estabelecimento estabelecimento) {
         this(
-                estabelecimento.getNome_fantasia(),
+                estabelecimento.getNomeFantasia(),
                 estabelecimento.getCnpj(),
                 estabelecimento.getObservacao()
         );

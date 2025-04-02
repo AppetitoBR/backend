@@ -8,11 +8,4 @@ public enum PapelUsuario {
     COZINHEIRO,
     ATENDENTE,
     GERENTE,
-
-    //cliente é o default
-    CLIENTE,
-
-    // sao superusuarios -- tenho que mexer nessa parte para ver sobre o que fazer
-    PATROCINADOR,
-    COLABORADOR
 }

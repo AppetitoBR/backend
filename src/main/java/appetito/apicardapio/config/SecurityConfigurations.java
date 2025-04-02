@@ -1,11 +1,16 @@
 package appetito.apicardapio.config;
 
 import appetito.apicardapio.security.SecurityFilter;
+import appetito.apicardapio.service.AppUserDetailsService;
+import appetito.apicardapio.service.DashboardUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,6 +31,12 @@ public class SecurityConfigurations {
     @Autowired
     private SecurityFilter securityFilter;
 
+    @Autowired
+    private DashboardUserDetailsService dashboardUserDetailsService;
+
+    @Autowired
+    private AppUserDetailsService appUserDetailsService;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -33,8 +44,8 @@ public class SecurityConfigurations {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/usuarios/cadastrar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/login/dashboard").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/login/app").permitAll()
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
@@ -48,10 +59,6 @@ public class SecurityConfigurations {
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-    }
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
     }
 
     @Bean
@@ -68,6 +75,30 @@ public class SecurityConfigurations {
         };
     }
 
+    @Bean
+    public DaoAuthenticationProvider dashboardAuthProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(dashboardUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public DaoAuthenticationProvider appAuthProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(appUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    @Primary
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authManagerBuilder.authenticationProvider(dashboardAuthProvider());
+        authManagerBuilder.authenticationProvider(appAuthProvider());
+        return authManagerBuilder.build();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

@@ -1,21 +1,28 @@
 package appetito.apicardapio.entity;
 
+import appetito.apicardapio.dto.cadastro.MesaCadastro;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Data
 @Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "mesa")
 public class Mesa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long mesa_id;
+    @Column(name = "mesa_id")
+    private Long id;
 
-
-    @Column(name = "estabelecimento_id", nullable = false)
-    private Long estabelecimento;
+    @ManyToOne
+    @JoinColumn(name = "estabelecimento_id", nullable = false)
+    private Estabelecimento estabelecimento; // estabelecimento vai ser pelo post, tenho que ver uma logica de trazer ele
 
     @Column(nullable = false)
     private String nome;
@@ -24,20 +31,15 @@ public class Mesa {
     private Integer capacidade;
 
     @Column(nullable = false)
-    private String status;
+    private String status; // status vai ser o default e depois atualizado caso haja tal
 
-  //  @Column(nullable = false, unique = true)
-  //  private String qrCode;
+    @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] qrcode; // vai ser referenciado pela api na criação
 
-
-
-    public Mesa() {}
-
-    public Mesa(String nome, Integer capacidade, String status, Long estabelecimento ) {
-        this.nome = nome;
-        this.capacidade = capacidade;
-        this.status = status;
-        //this.qrCode = qrCode;
-        this.estabelecimento = estabelecimento;
+    public Mesa(MesaCadastro mesaCadastro) {
+        this.nome = mesaCadastro.nome();
+        this.capacidade = mesaCadastro.capacidade();
+        this.estabelecimento = mesaCadastro.estabelecimento_id();
     }
 }

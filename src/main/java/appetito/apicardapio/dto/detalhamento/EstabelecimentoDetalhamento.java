@@ -23,7 +23,7 @@ public record EstabelecimentoDetalhamento(
         this(
                 estabelecimento.getEstabelecimento_id(),
                 estabelecimento.getRazao_social(),
-                estabelecimento.getNome_fantasia(),
+                estabelecimento.getNomeFantasia(),
                 estabelecimento.getCnpj(),
                 estabelecimento.getContatos(),
                 estabelecimento.getEndereco(),

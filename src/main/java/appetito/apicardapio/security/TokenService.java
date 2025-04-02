@@ -1,6 +1,7 @@
 package appetito.apicardapio.security;
-import appetito.apicardapio.entity.Usuario;
-import appetito.apicardapio.entity.UsuarioEstabelecimento;
+
+import appetito.apicardapio.entity.UsuarioDashboard;
+import appetito.apicardapio.entity.Cliente;
 import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -24,26 +25,46 @@ public class TokenService {
     @Autowired
     private UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
 
-    public String generateToken(Usuario usuario) {
+    public String generateToken(UsuarioDashboard usuario) {
         try {
-            UsuarioEstabelecimento usuarioEstabelecimento = usuarioEstabelecimentoRepository.findByUsuario(usuario);
-
+            var usuarioEstabelecimento = usuarioEstabelecimentoRepository.findByUsuario(usuario);
             if (usuarioEstabelecimento == null) {
                 throw new RuntimeException("Usuário não associado a nenhum estabelecimento.");
             }
-
-            var algorithm = Algorithm.HMAC256(secret);
-            return JWT.create()
-                    .withIssuer("appetito_dev")
-                    .withSubject(usuario.getUsername())
-                    .withClaim("id", usuario.getUsuario_id())
-                    .withClaim("estabelecimento_id", usuarioEstabelecimento.getEstabelecimento().getEstabelecimento_id())
-                    .withClaim("papel", usuarioEstabelecimento.getPapel().name())
-                    .withExpiresAt(dataExpiracao())
-                    .sign(algorithm);
+            return generateJwt(usuario.getUsername(),
+                    usuario.getUsuario_dashboard_id(),
+                    usuarioEstabelecimento.getEstabelecimento().getEstabelecimento_id(),
+                    usuarioEstabelecimento.getPapel().name());
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token", exception);
         }
+    }
+
+    public String generateToken(Cliente cliente) {
+        try {
+            return generateJwt(cliente.getUsername(),
+                    cliente.getId(),
+                    null,
+                    "CLIENTE");
+        } catch (JWTCreationException exception) {
+            throw new RuntimeException("Erro ao gerar token", exception);
+        }
+    }
+
+    private String generateJwt(String username, Long userId, Long estabelecimentoId, String role) {
+        var algorithm = Algorithm.HMAC256(secret);
+        var jwtBuilder = JWT.create()
+                .withIssuer("appetito_dev")  // Corrigi o nome do issuer (estava "appetito_dev" no decode)
+                .withSubject(username)
+                .withClaim("id", userId)
+                .withClaim("papel", role)
+                .withExpiresAt(dataExpiracao());
+
+        if (estabelecimentoId != null) {
+            jwtBuilder.withClaim("estabelecimento_id", estabelecimentoId);
+        }
+
+        return jwtBuilder.sign(algorithm);
     }
 
     public DecodedJWT decodeToken(String tokenJWT) {

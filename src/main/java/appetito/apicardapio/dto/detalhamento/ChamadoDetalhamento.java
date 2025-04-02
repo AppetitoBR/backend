@@ -21,8 +21,8 @@ public record ChamadoDetalhamento(
     public ChamadoDetalhamento(Chamado chamado) {
         this(
                 chamado.getId(),
-                chamado.getMesa().getMesa_id(),
-                chamado.getUsuario().getUsuario_id(),
+                chamado.getMesa().getId(),
+                chamado.getUsuario().getUsuario_dashboard_id(),
                 chamado.getDataHoraAbertura(),
                 chamado.getClienteLeuQrcode(),
                 chamado.getAtendenteLeuQrcode(),

@@ -7,7 +7,10 @@ import appetito.apicardapio.repository.MesaRepository;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,14 +24,8 @@ public class MesaService {
     private EstabelecimentoRepository estabelecimentoRepository;
 
     public MesaDetalhamento cadastrarMesa(MesaCadastro dadosMesa) {
-        estabelecimentoRepository.findById(dadosMesa.estabelecimento_id()).orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
-        Mesa mesa = new Mesa(
-                dadosMesa.nome(),
-                dadosMesa.capacidade(),
-                dadosMesa.status(),
-               // dadosMesa.qrCode(),
-                dadosMesa.estabelecimento_id()
-        );
+        estabelecimentoRepository.findById(dadosMesa.estabelecimento_id().getEstabelecimento_id()).orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
+        Mesa mesa = new Mesa(dadosMesa);
         mesaRepository.save(mesa);
         return new MesaDetalhamento(mesa);
     }
@@ -36,13 +33,10 @@ public class MesaService {
     public MesaDetalhamento atualizarMesa(Long id, MesaCadastro dadosMesa) {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
-        estabelecimentoRepository.findById(dadosMesa.estabelecimento_id()).orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
+        estabelecimentoRepository.findById(dadosMesa.estabelecimento_id().getEstabelecimento_id()).orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
 
         mesa.setNome(dadosMesa.nome());
         mesa.setCapacidade(dadosMesa.capacidade());
-        mesa.setStatus(dadosMesa.status());
-    //    mesa.setQrCode(dadosMesa.qrCode());
-        mesa.setEstabelecimento(dadosMesa.estabelecimento_id());
 
         mesaRepository.save(mesa);
         return new MesaDetalhamento(mesa);
@@ -53,12 +47,6 @@ public class MesaService {
             throw new ResourceNotFoundException("Mesa não encontrada");
         }
         mesaRepository.deleteById(id);
-    }
-
-    public MesaDetalhamento buscarMesaPorId(Long id) {
-        Mesa mesa = mesaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
-        return new MesaDetalhamento(mesa);
     }
 
     public List<MesaDetalhamento> listarMesas() {

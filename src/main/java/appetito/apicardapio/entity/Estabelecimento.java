@@ -21,8 +21,8 @@ public class Estabelecimento {
     @Column(nullable = false)
     private String razao_social;
 
-    @Column(nullable = false)
-    private String nome_fantasia;
+    @Column(name= "nome_fantasia",nullable = false)
+    private String nomeFantasia;
 
     @Column(nullable = false, unique = true)
     private String cnpj;
@@ -63,7 +63,7 @@ public class Estabelecimento {
 
     public Estabelecimento(EstabelecimentoCadastro dadosEstabelecimento) {
         this.razao_social = dadosEstabelecimento.razao_social();
-        this.nome_fantasia = dadosEstabelecimento.nome_fantasia();
+        this.nomeFantasia = dadosEstabelecimento.nome_fantasia();
         this.cnpj = dadosEstabelecimento.cnpj();
         this.tipo = dadosEstabelecimento.tipo();
         this.segmento = dadosEstabelecimento.segmento();
