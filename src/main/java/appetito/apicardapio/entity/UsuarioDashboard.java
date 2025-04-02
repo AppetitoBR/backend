@@ -59,7 +59,6 @@ public class UsuarioDashboard implements UserDetails {
       //  this.redes_sociais = dadosUsuario.redes_sociais();
       //  this.contatos = dadosUsuario.contatos();
     }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (estabelecimentos == null || estabelecimentos.isEmpty()) {
