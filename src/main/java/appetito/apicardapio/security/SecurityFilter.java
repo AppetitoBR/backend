@@ -1,7 +1,7 @@
 package appetito.apicardapio.security;
 
-import appetito.apicardapio.entity.Usuario;
-import appetito.apicardapio.repository.UsuarioRepository;
+import appetito.apicardapio.entity.UsuarioDashboard;
+import appetito.apicardapio.repository.UsuarioDashboardRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +22,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     private TokenService tokenService;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioDashboardRepository usuarioRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -38,9 +38,9 @@ public class SecurityFilter extends OncePerRequestFilter {
                 String papel = decodedJWT.getClaim("papel").asString();
 
                 if (email != null) {
-                    Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+                    Optional<UsuarioDashboard> usuarioOptional = usuarioRepository.findByEmail(email);
                     if (usuarioOptional.isPresent()) {
-                        Usuario usuario = usuarioOptional.get();
+                        UsuarioDashboard usuario = usuarioOptional.get();
                         var auth = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
                         SecurityContextHolder.getContext().setAuthentication(auth);
                         request.setAttribute("estabelecimento_id", estabelecimentoId);
@@ -68,4 +68,3 @@ public class SecurityFilter extends OncePerRequestFilter {
         return null;
     }
 }
-

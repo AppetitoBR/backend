@@ -1,11 +1,8 @@
 package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.cadastro.PedidoCadastro;
-import appetito.apicardapio.dto.detalhamento.ItemDetalhamento;
 import appetito.apicardapio.dto.put.ItemAtualizacao;
-import appetito.apicardapio.dto.put.PedidoAtualizacao;
 import appetito.apicardapio.entity.*;
-import appetito.apicardapio.enums.StatusPedido;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.PedidoItemRepository;
 import appetito.apicardapio.repository.PedidoRepository;
@@ -33,10 +30,10 @@ public class PedidoService {
 
     public Pedido criarPedido(PedidoCadastro pedidoCadastro) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication.getPrincipal() instanceof Usuario usuario)) {
+        if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario)) {
             throw new ResourceNotFoundException("Usuário não autenticado.");
         }
-        Pedido pedido = new Pedido(usuario.getUsuario_id());
+        Pedido pedido = new Pedido(usuario.getUsuario_dashboard_id());
         criarItensDoPedido(pedidoCadastro, pedido).forEach(pedido.getItens()::add);
         pedido.calcularTotal();
         return pedidoRepository.save(pedido);
@@ -72,8 +69,8 @@ public class PedidoService {
 
         // Verificação de segurança
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication.getPrincipal() instanceof Usuario usuario) ||
-                !pedido.getUsuario_id().equals(usuario.getUsuario_id())) {
+        if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario) ||
+                !pedido.getUsuario_id().equals(usuario.getUsuario_dashboard_id())) {
             throw new ResourceNotFoundException("Operação não permitida");
         }
 

@@ -41,12 +41,6 @@ public class MesaController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<MesaDetalhamento> buscarMesaPorId(@PathVariable Long id) {
-        MesaDetalhamento mesaDetalhamento = mesaService.buscarMesaPorId(id);
-        return ResponseEntity.ok(mesaDetalhamento);
-    }
-
     @GetMapping
     public ResponseEntity<List<MesaDetalhamento>> listarMesas() {
         List<MesaDetalhamento> mesas = mesaService.listarMesas();

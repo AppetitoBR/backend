@@ -3,13 +3,11 @@ package appetito.apicardapio.service;
 import appetito.apicardapio.dto.cadastro.ChamadoCadastro;
 import appetito.apicardapio.entity.Chamado;
 import appetito.apicardapio.entity.Mesa;
-import appetito.apicardapio.entity.Usuario;
+import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.enums.StatusChamado;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.ChamadoRepository;
 import appetito.apicardapio.repository.MesaRepository;
-import appetito.apicardapio.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -19,17 +17,17 @@ import java.util.List;
 @Service
 public class ChamadoService {
 
-    @Autowired
-    private ChamadoRepository chamadoRepository;
+    private final ChamadoRepository chamadoRepository;
 
-    @Autowired
-    private MesaRepository mesaRepository;
+    private final MesaRepository mesaRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    public ChamadoService(ChamadoRepository chamadoRepository, MesaRepository mesaRepository) {
+        this.chamadoRepository = chamadoRepository;
+        this.mesaRepository = mesaRepository;
+    }
 
     public Chamado solicitarChamado(ChamadoCadastro request) {
-        Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Mesa mesa = mesaRepository.findById(request.mesa_id())
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
         Chamado chamado = new Chamado();

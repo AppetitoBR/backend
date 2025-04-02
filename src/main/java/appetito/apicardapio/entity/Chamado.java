@@ -28,7 +28,7 @@ public class Chamado {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    private UsuarioDashboard usuario;
 
     @Column(name = "data_hora_abertura", updatable = false)
     private LocalDateTime dataHoraAbertura = LocalDateTime.now();

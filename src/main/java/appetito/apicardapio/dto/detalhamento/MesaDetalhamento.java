@@ -6,16 +6,17 @@ public record MesaDetalhamento(
         String nome,
         Integer capacidade,
         String status,
+        byte[] qrcode,
         Long estabelecimento_id
 ) {
     public MesaDetalhamento(Mesa mesa) {
         this(
-                mesa.getMesa_id(),
+                mesa.getId(),
                 mesa.getNome(),
                 mesa.getCapacidade(),
                 mesa.getStatus(),
-            //    mesa.getQrCode(),
-                mesa.getEstabelecimento()
+                mesa.getQrcode(),
+                mesa.getEstabelecimento().getEstabelecimento_id()
         );
     }
 }
