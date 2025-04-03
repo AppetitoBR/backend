@@ -22,19 +22,15 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    @Autowired
-    private UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
-
     public String generateToken(UsuarioDashboard usuario) {
         try {
-            var usuarioEstabelecimento = usuarioEstabelecimentoRepository.findByUsuario(usuario);
-            if (usuarioEstabelecimento == null) {
-                throw new RuntimeException("Usuário não associado a nenhum estabelecimento.");
-            }
-            return generateJwt(usuario.getUsername(),
-                    usuario.getUsuario_dashboard_id(),
-                    usuarioEstabelecimento.getEstabelecimento().getEstabelecimento_id(),
-                    usuarioEstabelecimento.getPapel().name());
+            return JWT.create()
+                    .withIssuer("appetito_dev")
+                    .withSubject(usuario.getEmail())
+                    .withClaim("id", usuario.getUsuario_dashboard_id())
+                    .withClaim("papel", "DASHBOARD")
+                    .withExpiresAt(dataExpiracao())
+                    .sign(Algorithm.HMAC256(secret));
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token", exception);
         }
@@ -42,29 +38,16 @@ public class TokenService {
 
     public String generateToken(Cliente cliente) {
         try {
-            return generateJwt(cliente.getUsername(),
-                    cliente.getId(),
-                    null,
-                    "CLIENTE");
+            return JWT.create()
+                    .withIssuer("appetito_dev")
+                    .withSubject(cliente.getEmail())
+                    .withClaim("id", cliente.getId())
+                    .withClaim("papel", "CLIENTE")
+                    .withExpiresAt(dataExpiracao())
+                    .sign(Algorithm.HMAC256(secret));
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token", exception);
         }
-    }
-
-    private String generateJwt(String username, Long userId, Long estabelecimentoId, String role) {
-        var algorithm = Algorithm.HMAC256(secret);
-        var jwtBuilder = JWT.create()
-                .withIssuer("appetito_dev")  // Corrigi o nome do issuer (estava "appetito_dev" no decode)
-                .withSubject(username)
-                .withClaim("id", userId)
-                .withClaim("papel", role)
-                .withExpiresAt(dataExpiracao());
-
-        if (estabelecimentoId != null) {
-            jwtBuilder.withClaim("estabelecimento_id", estabelecimentoId);
-        }
-
-        return jwtBuilder.sign(algorithm);
     }
 
     public DecodedJWT decodeToken(String tokenJWT) {
