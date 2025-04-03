@@ -2,6 +2,10 @@ package appetito.apicardapio.security;
 
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.repository.UsuarioDashboardRepository;
+import appetito.apicardapio.service.AppUserDetailsService;
+import appetito.apicardapio.service.DashboardUserDetailsService;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +13,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -22,48 +28,65 @@ public class SecurityFilter extends OncePerRequestFilter {
     private TokenService tokenService;
 
     @Autowired
-    private UsuarioDashboardRepository usuarioRepository;
+    private DashboardUserDetailsService dashboardUserDetailsService;
+
+    @Autowired
+    private AppUserDetailsService appUserDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws IOException, ServletException {
+            throws ServletException, IOException {
 
-        String tokenJWT = recuperarToken(request);
+        var tokenJWT = recuperarToken(request);
 
         if (tokenJWT != null) {
             try {
-                var decodedJWT = tokenService.decodeToken(tokenJWT);
-                String email = decodedJWT.getSubject();
-                int estabelecimentoId = decodedJWT.getClaim("estabelecimento_id").asInt();
+                DecodedJWT decodedJWT = tokenService.decodeToken(tokenJWT);
+
+                // Verifica se o token contém as claims necessárias
+                if (decodedJWT.getSubject() == null) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido: subject ausente");
+                    return;
+                }
+
+                String username = decodedJWT.getSubject();
+                UserDetails userDetails;
+
+                // Verifica o escopo do token (dashboard ou app)
                 String papel = decodedJWT.getClaim("papel").asString();
 
-                if (email != null) {
-                    Optional<UsuarioDashboard> usuarioOptional = usuarioRepository.findByEmail(email);
-                    if (usuarioOptional.isPresent()) {
-                        UsuarioDashboard usuario = usuarioOptional.get();
-                        var auth = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-                        SecurityContextHolder.getContext().setAuthentication(auth);
-                        request.setAttribute("estabelecimento_id", estabelecimentoId);
-                        request.setAttribute("papel", papel);
-                        logger.info("Usuário autenticado: " + usuario.getUsername() + ", Papel: " + papel + ", Estabelecimento: " + estabelecimentoId);
-                    } else {
-                        logger.warn("Usuário não encontrado no banco de dados.");
-                    }
+                if ("DASHBOARD".equalsIgnoreCase(papel)) {
+                    userDetails = dashboardUserDetailsService.loadUserByUsername(username);
+                } else if ("CLIENTE".equalsIgnoreCase(papel)) {
+                    userDetails = appUserDetailsService.loadUserByUsername(username);
+                } else {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tipo de usuário não reconhecido");
+                    return;
                 }
+
+                var authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            } catch (JWTVerificationException e) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou expirado");
+                return;
+            } catch (UsernameNotFoundException e) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Usuário não encontrado");
+                return;
             } catch (Exception e) {
-                logger.error("Erro de autenticação: " + e.getMessage());
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erro durante a autenticação");
+                return;
             }
-        } else {
-            logger.info("Token JWT não fornecido ou inválido.");
         }
 
         filterChain.doFilter(request, response);
     }
 
     private String recuperarToken(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
+        var authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null) {
+            return authorizationHeader.replace("Bearer ", "");
         }
         return null;
     }
