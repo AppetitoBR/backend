@@ -1,5 +1,6 @@
 package appetito.apicardapio.exception;
 
+import appetito.apicardapio.security.DiscordAlert;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,6 +16,12 @@ import org.springframework.validation.FieldError;
 
 @RestControllerAdvice
 public class CustomExceptionHandler {
+
+    private final DiscordAlert discordAlert;
+
+    public CustomExceptionHandler(DiscordAlert discordAlert) {
+        this.discordAlert = discordAlert;
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public final ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
@@ -36,4 +43,13 @@ public class CustomExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex, WebRequest request) {
+        String mensagemErro = "🚨 Erro inesperado na API:\n```\n" + ex.getClass().getSimpleName() + ": " + ex.getMessage() + "\n```";
+        discordAlert.AlertDiscord(mensagemErro);
+
+        ErrorResponse errorResponse = new ErrorResponse("Erro interno", ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 }

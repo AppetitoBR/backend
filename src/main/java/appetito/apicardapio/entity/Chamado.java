@@ -27,8 +27,8 @@ public class Chamado {
     private Mesa mesa;
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private UsuarioDashboard usuario;
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
 
     @Column(name = "data_hora_abertura", updatable = false)
     private LocalDateTime dataHoraAbertura = LocalDateTime.now();

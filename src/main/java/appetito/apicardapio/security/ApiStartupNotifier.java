@@ -1,5 +1,6 @@
 package appetito.apicardapio.security;
 
+import jakarta.annotation.PreDestroy;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -18,4 +19,10 @@ public class ApiStartupNotifier {
         String mensagem = "✅ API Online";
         discordAlert.AlertDiscord(mensagem);
     }
+    @PreDestroy
+    public void notificarStop() {
+        String mensagem = "API Desligada";
+        discordAlert.AlertDiscord(mensagem);
+    }
+
 }

@@ -2,6 +2,7 @@ package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.cadastro.ChamadoCadastro;
 import appetito.apicardapio.entity.Chamado;
+import appetito.apicardapio.entity.Cliente;
 import appetito.apicardapio.entity.Mesa;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.enums.StatusChamado;
@@ -27,12 +28,12 @@ public class ChamadoService {
     }
 
     public Chamado solicitarChamado(ChamadoCadastro request) {
-        UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cliente cliente = (Cliente) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Mesa mesa = mesaRepository.findById(request.mesa_id())
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
         Chamado chamado = new Chamado();
         chamado.setMesa(mesa);
-        chamado.setUsuario(usuario);
+        chamado.setCliente(cliente);
         chamado.setMensagemAdicional(request.mensagem());
         chamado.setStatus(StatusChamado.CHAMADO);
 

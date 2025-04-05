@@ -30,14 +30,11 @@ public class PedidoItem {
 
     private BigDecimal precoUnitario;
 
-    private String nomeProduto;
-
     public PedidoItem(Pedido pedido,Produto produto, Integer quantidade) {
         this.pedido = pedido;
         this.produto_id = produto.getProduto_id();
         this.quantidade = quantidade;
         this.precoUnitario = produto.getPreco_venda();
-        this.nomeProduto = produto.getNome_curto();
     }
 }
 

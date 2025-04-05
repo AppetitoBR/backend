@@ -22,11 +22,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 @RequestMapping("/cliente")
 public class ClienteController {
-
+    private final DiscordAlert discordAlert;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ClienteRepository clienteRepository;
 
-    public ClienteController(ClienteRepository clienteRepository) {
+    public ClienteController(DiscordAlert discordAlert, ClienteRepository clienteRepository) {
+        this.discordAlert = discordAlert;
         this.clienteRepository = clienteRepository;
     }
 
@@ -42,8 +43,9 @@ public class ClienteController {
         var cliente = new Cliente(dadosCliente);
         cliente.setSenha(passwordEncoder.encode(cliente.getSenha()));
         clienteRepository.save(cliente);
-        var email = cliente.getEmail();
-        new DiscordAlert().AlertDiscord("Novo Cliente cadastrado: " + email);
+
+        discordAlert.AlertDiscord("Novo Cliente cadastrado: " + cliente.getEmail());
+
         var uri = uriBuilder.path("/clientes/{id}")
                 .buildAndExpand(cliente.getId())
                 .toUri();

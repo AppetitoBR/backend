@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public record ChamadoDetalhamento(
         Long chamadoId,
         Long mesaId,
-        Long usuarioId,
+        String nome_cliente,
         LocalDateTime dataHoraAbertura,
         Boolean clienteLeuQrcode,
         Boolean atendenteLeuQrcode,
@@ -22,7 +22,7 @@ public record ChamadoDetalhamento(
         this(
                 chamado.getId(),
                 chamado.getMesa().getId(),
-                chamado.getUsuario().getUsuario_dashboard_id(),
+                chamado.getCliente().getNomeCompleto(),
                 chamado.getDataHoraAbertura(),
                 chamado.getClienteLeuQrcode(),
                 chamado.getAtendenteLeuQrcode(),

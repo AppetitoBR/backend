@@ -62,7 +62,7 @@ public class UsuarioDashboard implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (estabelecimentos == null || estabelecimentos.isEmpty()) {
-            return List.of(new SimpleGrantedAuthority("ROLE_"));
+            return List.of(new SimpleGrantedAuthority("ROLE_USUARIODASHBOARD"));
         }
 
         return estabelecimentos.stream()

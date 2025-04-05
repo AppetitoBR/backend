@@ -38,14 +38,16 @@ public class CardapioController {
     }
 
     // APP
-    @GetMapping
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @GetMapping("/estabelecimento/{nomeFantasia}")
+    @PreAuthorize("hasRole('CLIENTE')")
     @Transactional
-    public ResponseEntity<List<CardapioDados>> listarCardapios() {
-        List<Cardapio> cardapios = cardapioRepository.findAll();
+    public ResponseEntity<List<CardapioDados>> listarCardapiosPorEstabelecimento(@PathVariable String nomeFantasia) {
+        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimentoNomeFantasiaIgnoreCase(nomeFantasia);
+
         if (cardapios.isEmpty()) {
-            throw new ResourceNotFoundException("Nenhum Cardapio encontrado");
+            throw new ResourceNotFoundException("Nenhum cardápio encontrado para o estabelecimento: " + nomeFantasia);
         }
+
         var lista = cardapios.stream().map(CardapioDados::new).toList();
         return ResponseEntity.ok(lista);
     }

@@ -70,7 +70,7 @@ public class PedidoService {
         // Verificação de segurança
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario) ||
-                !pedido.getUsuario_id().equals(usuario.getUsuario_dashboard_id())) {
+                !pedido.getCliente_id().equals(usuario.getUsuario_dashboard_id())) {
             throw new ResourceNotFoundException("Operação não permitida");
         }
 
