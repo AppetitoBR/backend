@@ -9,16 +9,14 @@ public record ItemDetalhamento(
         Long pedido_item_id,
         Long produto_id,
         Integer quantidade,
-        BigDecimal precoUnitario,
-        String nomeProduto
+        BigDecimal precoUnitario
 ) {
     public ItemDetalhamento(PedidoItem item) {
         this(
                 item.getPedido_item_id(),
                 item.getProduto_id(),
                 item.getQuantidade(),
-                item.getPrecoUnitario(),
-                item.getNomeProduto()
+                item.getPrecoUnitario()
         );
     }
 }

@@ -1,5 +1,5 @@
 package appetito.apicardapio.enums;
 
 public enum StatusPedido {
-    PENDENTE, CONFIRMADO, CANCELADO
+    ABERTO, CONFIRMADO, CANCELADO
 }

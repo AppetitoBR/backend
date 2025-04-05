@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.sql.Date;
@@ -80,7 +81,7 @@ public class Cliente implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_CLIENTE"));
     }
 
     @Override
@@ -94,7 +95,7 @@ public class Cliente implements UserDetails {
     }
 
     public Cliente(ClienteCadastro clienteCadastro){
-        this.nomeCompleto = clienteCadastro.nome();
+        this.nomeCompleto = clienteCadastro.nomeCompleto();
         this.email = clienteCadastro.email();
         this.senha = clienteCadastro.senha();
     }

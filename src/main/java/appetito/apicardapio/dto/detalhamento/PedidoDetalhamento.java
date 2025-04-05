@@ -16,7 +16,7 @@ public record PedidoDetalhamento(
     public PedidoDetalhamento(Pedido pedido) {
         this(
                 pedido.getPedido_id(),
-                pedido.getUsuario_id(),
+                pedido.getCliente_id(),
                 pedido.getItens().stream().map(ItemDetalhamento::new).toList(),
                 pedido.getTotal(),
                 pedido.getStatus()

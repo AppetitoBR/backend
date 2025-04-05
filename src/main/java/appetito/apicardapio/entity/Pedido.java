@@ -30,7 +30,7 @@ public class Pedido {
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long pedido_id;
 
-        private Long usuario_id;
+        private Long cliente_id;
 
         @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
         @JsonManagedReference
@@ -40,7 +40,7 @@ public class Pedido {
 
 
         @Enumerated(EnumType.STRING)
-        private StatusPedido status = StatusPedido.PENDENTE;
+        private StatusPedido status = StatusPedido.ABERTO;
 
     public void calcularTotal() {
             this.total = itens.stream()
@@ -48,8 +48,8 @@ public class Pedido {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
 
-        public Pedido(Long usuario_id) {
-                this.usuario_id = usuario_id;
+        public Pedido(Long cliente_id) {
+                this.cliente_id = cliente_id;
         }
     }
 

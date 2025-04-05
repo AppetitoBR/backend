@@ -33,9 +33,9 @@ public class Mesa {
     @Column(nullable = false)
     private String status; // status vai ser o default e depois atualizado caso haja tal
 
-    @Lob
-    @Column(columnDefinition = "LONGBLOB")
-    private byte[] qrcode; // vai ser referenciado pela api na criação
+  //  @Lob
+   // @Column(columnDefinition = "LONGBLOB")
+    //private byte[] qrcode; // vai ser referenciado pela api na criação
 
     public Mesa(MesaCadastro mesaCadastro) {
         this.nome = mesaCadastro.nome();
