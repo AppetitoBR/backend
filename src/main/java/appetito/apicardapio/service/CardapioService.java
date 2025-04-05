@@ -2,6 +2,7 @@ package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.detalhamento.CardapioDetalhamento;
 import appetito.apicardapio.entity.Cardapio;
+import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.repository.CardapioRepository;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,8 +30,8 @@ public class CardapioService {
     }
 
     // Listar cardápios por estabelecimento
-    public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Long estabelecimento_id) {
-        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimento(estabelecimento_id);
+    public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Estabelecimento estabelecimento) {
+        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimento(estabelecimento);// mudar o quanto antes
         if (cardapios.isEmpty()) {
             throw new ResourceNotFoundException("Nenhum cardápio encontrado para o estabelecimento informado");
         }
@@ -46,8 +47,8 @@ public class CardapioService {
         cardapioRepository.deleteById(id);
     }
     // deleta o estabelecimento apenas se ele pertencer a ele
-    public boolean deletarSePertencerAoEstabelecimento(Long cardapioId, Long estabelecimentoId) {
-        Optional<Cardapio> cardapioOpt = cardapioRepository.findByIdAndEstabelecimento(cardapioId, estabelecimentoId);
+    public boolean deletarSePertencerAoEstabelecimento(Long cardapioId, Estabelecimento estabelecimento) {
+        Optional<Cardapio> cardapioOpt = cardapioRepository.findByIdAndEstabelecimento(cardapioId, estabelecimento); // mudar o quanto antes
 
         if (cardapioOpt.isEmpty()) {
             return false;

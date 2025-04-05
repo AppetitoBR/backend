@@ -3,48 +3,70 @@ package appetito.apicardapio.controller;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.entity.Cliente;
 import appetito.apicardapio.dto.DadosTokenJWT;
+import appetito.apicardapio.security.DiscordAlert;
 import appetito.apicardapio.security.TokenService;
 import appetito.apicardapio.dto.DadosAutenticacao;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @RestController
 @RequestMapping("/login")
 public class AutenticacaoController {
 
-    private final AuthenticationManager authenticationManager;
+    private final DaoAuthenticationProvider dashboardAuthProvider;
+    private final DaoAuthenticationProvider appAuthProvider;
     private final TokenService tokenService;
 
-    public AutenticacaoController(AuthenticationManager authenticationManager, TokenService tokenService) {
-        this.authenticationManager = authenticationManager;
+    public AutenticacaoController(
+            @Qualifier("dashboardAuthenticationProvider") DaoAuthenticationProvider dashboardAuthProvider,
+            @Qualifier("appAuthenticationProvider") DaoAuthenticationProvider appAuthProvider,
+            TokenService tokenService) {
+
+        this.dashboardAuthProvider = dashboardAuthProvider;
+        this.appAuthProvider = appAuthProvider;
         this.tokenService = tokenService;
     }
 
     @PostMapping("/dashboard")
     public ResponseEntity<?> loginDashboard(@RequestBody @Valid DadosAutenticacao dados) {
-        var authenticationToken = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
-        var authentication = authenticationManager.authenticate(authenticationToken);
-
-        var usuario = (UsuarioDashboard) authentication.getPrincipal();
+        var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
+        var auth = dashboardAuthProvider.authenticate(token);
+        var usuario = (UsuarioDashboard) auth.getPrincipal();
         var tokenJWT = tokenService.generateToken(usuario);
+        // enviar requisição para as logs da api no discord
+        var emailDoUsuario = usuario.getEmail();
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        var ip = request.getRemoteAddr();
+        new DiscordAlert().AlertDiscord("✅ Login em Dashboard realizado com sucesso por: " + emailDoUsuario + " (IP: " + ip + ")");
 
         return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
     }
 
     @PostMapping("/app")
     public ResponseEntity<?> loginApp(@RequestBody @Valid DadosAutenticacao dados) {
-        var authenticationToken = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
-        var authentication = authenticationManager.authenticate(authenticationToken);
+        var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
+        var auth = appAuthProvider.authenticate(token);
+        var cliente = (Cliente) auth.getPrincipal();
+        // enviar requisição para as logs da api no discord
+        var emailDoCliente = cliente.getEmail();
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        var ip = request.getRemoteAddr();
+        new DiscordAlert().AlertDiscord("✅ Login em Dashboard realizado com sucesso por: " + emailDoCliente + " (IP: " + ip + ")");
 
-        var cliente = (Cliente) authentication.getPrincipal();
         var tokenJWT = tokenService.generateToken(cliente);
-
         return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
     }
 }
+
+

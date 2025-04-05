@@ -20,11 +20,9 @@ public class Cardapio {
     @Column(name = "cardapio_id", nullable = false)
     private Long id;
 
-    @Column(name = "usuario_id", nullable = false)
-    private Long usuario;
-
-    @Column(name = "estabelecimento_id", nullable = false)
-    private Long estabelecimento;
+    @ManyToOne
+    @JoinColumn(name = "estabelecimento_id")
+    private Estabelecimento estabelecimento;
 
     @Column(nullable = false)
     private String nome;
@@ -44,8 +42,6 @@ public class Cardapio {
 
     public Cardapio(CardapioCadastro cardapioCadastro) {
         this.nome = cardapioCadastro.nome();
-        this.estabelecimento = cardapioCadastro.estabelecimento_id();
-        this.usuario = cardapioCadastro.usuario_id();
         this.secao = cardapioCadastro.secao();
         this.descricao = cardapioCadastro.descricao();
         this.vigencia_inicio = LocalDate.now();
