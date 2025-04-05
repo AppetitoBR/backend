@@ -46,6 +46,8 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login/dashboard").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login/app").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/usuarios/cadastrar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cliente/cadastrar").permitAll()
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
