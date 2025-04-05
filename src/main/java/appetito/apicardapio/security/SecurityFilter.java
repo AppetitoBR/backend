@@ -42,8 +42,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (tokenJWT != null) {
             try {
                 DecodedJWT decodedJWT = tokenService.decodeToken(tokenJWT);
-
-                // Verifica se o token contém as claims necessárias
                 if (decodedJWT.getSubject() == null) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido: subject ausente");
                     return;
@@ -51,8 +49,6 @@ public class SecurityFilter extends OncePerRequestFilter {
 
                 String username = decodedJWT.getSubject();
                 UserDetails userDetails;
-
-                // Verifica o escopo do token (dashboard ou app)
                 String papel = decodedJWT.getClaim("papel").asString();
 
                 if ("DASHBOARD".equalsIgnoreCase(papel)) {

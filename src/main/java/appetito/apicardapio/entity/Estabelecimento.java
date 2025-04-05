@@ -42,14 +42,16 @@ public class Estabelecimento {
     @Column(nullable = false)
     private String segmento;
 
-    @Column(name = "usuario_cadastro_id", nullable = false)
-    private Long usuario_cadastro;
+    @ManyToOne
+    @JoinColumn(name = "usuario_cadastro_id", nullable = false)
+    private UsuarioDashboard usuarioCadastro;
 
     @Column(nullable = false)
     private LocalDateTime data_alteracao_cadastro = LocalDateTime.now();
 
-    @Column(name = "usuario_alteracao_id", nullable = false)
-    private Long usuario_alteracao;
+    @ManyToOne
+    @JoinColumn(name = "usuario_alteracao_id", nullable = false)
+    private UsuarioDashboard usuarioAlteracao;
 
     @Lob
     private String observacao;
@@ -67,7 +69,6 @@ public class Estabelecimento {
         this.cnpj = dadosEstabelecimento.cnpj();
         this.tipo = dadosEstabelecimento.tipo();
         this.segmento = dadosEstabelecimento.segmento();
-        this.usuario_cadastro = dadosEstabelecimento.usuario_cadastro_id();
 
     }
 

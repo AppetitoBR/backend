@@ -3,7 +3,6 @@ import appetito.apicardapio.entity.Estabelecimento;
 import java.time.LocalDateTime;
 
 public record EstabelecimentoDetalhamento(
-        Long estabelecimento_id,
         String razao_social,
         String nome_fantasia,
         String cnpj,
@@ -21,7 +20,6 @@ public record EstabelecimentoDetalhamento(
 ) {
     public EstabelecimentoDetalhamento(Estabelecimento estabelecimento) {
         this(
-                estabelecimento.getEstabelecimento_id(),
                 estabelecimento.getRazao_social(),
                 estabelecimento.getNomeFantasia(),
                 estabelecimento.getCnpj(),
@@ -29,9 +27,9 @@ public record EstabelecimentoDetalhamento(
                 estabelecimento.getEndereco(),
                 estabelecimento.getTipo(),
                 estabelecimento.getData_cadastro(),
-                estabelecimento.getUsuario_cadastro(),
+                estabelecimento.getUsuarioCadastro().getUsuario_dashboard_id(),
                 estabelecimento.getData_alteracao_cadastro(),
-                estabelecimento.getUsuario_alteracao(),
+                estabelecimento.getUsuarioAlteracao().getUsuario_dashboard_id(),
                 estabelecimento.getObservacao(),
                 estabelecimento.getLogomarca(),
                 estabelecimento.getUrl_cardapio_digital(),

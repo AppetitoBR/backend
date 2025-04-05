@@ -9,6 +9,5 @@ public record EstabelecimentoCadastro(
         @NotBlank String cnpj,
         String endereco,
         @NotBlank String tipo,
-        @NotBlank String segmento,
-        @NotNull Long usuario_cadastro_id
+        @NotBlank String segmento
 ) {}
