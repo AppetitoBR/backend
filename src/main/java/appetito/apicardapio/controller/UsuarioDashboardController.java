@@ -6,6 +6,7 @@ import appetito.apicardapio.dto.GetAll.UsuarioDados;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.UsuarioDashboardRepository;
+import appetito.apicardapio.security.DiscordAlert;
 import appetito.apicardapio.service.UsuarioDashboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,16 +47,29 @@ public class UsuarioDashboardController {
     }
 
     @PostMapping("/cadastrar")
-    public ResponseEntity<UsuarioDashboardDetalhamento> cadastrarUsuarioDashboard(@RequestBody @Valid UsuarioDashboardCadastro dadosUsuario, UriComponentsBuilder uriU) {
+    public ResponseEntity<?> cadastrarUsuarioDashboard(
+            @RequestBody @Valid UsuarioDashboardCadastro dadosUsuario,
+            UriComponentsBuilder uriBuilder) {
+
+        if (usuarioRepository.existsByEmail(dadosUsuario.email())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("E-mail já cadastrado!");
+        }
+
         var usuario = new UsuarioDashboard(dadosUsuario);
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         usuarioRepository.save(usuario);
-        var uri = uriU.path("/usuarios/{id}").buildAndExpand(usuario.getUsuario_dashboard_id()).toUri();
+        var email = dadosUsuario.email();
+        new DiscordAlert().AlertDiscord("Novo Usuario Dashboard cadastrado: " + email);
+
+        var uri = uriBuilder.path("/usuarios/{id}")
+                .buildAndExpand(usuario.getUsuario_dashboard_id())
+                .toUri();
+
         return ResponseEntity.created(uri).body(new UsuarioDashboardDetalhamento(usuario));
     }
 
-    @Operation(summary = "Upload da imagem de perfil do usuário")
-    @PostMapping(value = "/{id}/upload-imagem", consumes = "multipart/form-data")
+  //  @Operation(summary = "Upload da imagem de perfil do usuário")
+    //@PostMapping(value = "/{id}/upload-imagem", consumes = "multipart/form-data")
   //  public ResponseEntity<String> uploadImagemPerfil(@PathVariable Long id, @RequestPart("file") MultipartFile file) {
   //      if (file.isEmpty()) {
    //         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo de imagem não pode estar vazio!");
