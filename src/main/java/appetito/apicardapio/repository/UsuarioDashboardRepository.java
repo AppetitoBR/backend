@@ -8,5 +8,6 @@ import java.util.Optional;
 public interface UsuarioDashboardRepository extends JpaRepository<UsuarioDashboard, Long> {
     Optional<UsuarioDashboard> findByEmail(String email);
 
+    boolean existsByEmail(String email);
 }
 
