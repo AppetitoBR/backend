@@ -9,8 +9,6 @@ public record CardapioDetalhamento(
         String nome,
         String secao,
         String descricao,
-        Long estabelecimento_id,
-        Long usuario_id,
         LocalDate vigencia_inicio,
         LocalDate vigencia_fim,
         Boolean ativo
@@ -21,8 +19,6 @@ public record CardapioDetalhamento(
                 cardapio.getNome(),
                 cardapio.getSecao(),
                 cardapio.getDescricao(),
-                cardapio.getEstabelecimento(),
-                cardapio.getUsuario(),
                 cardapio.getVigencia_inicio(),
                 cardapio.getVigencia_fim(),
                 cardapio.getAtivo()

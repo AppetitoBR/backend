@@ -2,6 +2,7 @@ package appetito.apicardapio.controller;
 import appetito.apicardapio.dto.cadastro.CardapioCadastro;
 import appetito.apicardapio.dto.detalhamento.CardapioDetalhamento;
 import appetito.apicardapio.entity.Cardapio;
+import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.CardapioRepository;
 import appetito.apicardapio.service.CardapioService;
@@ -16,7 +17,7 @@ import appetito.apicardapio.dto.GetAll.CardapioDados;
 import java.util.List;
 
 @RestController
-@RequestMapping("/cardapios")
+@RequestMapping("/cardapio")
 public class CardapioController {
 
     @Autowired
@@ -25,21 +26,18 @@ public class CardapioController {
     @Autowired
     private CardapioRepository cardapioRepository;
 
-    // Somente ADMIN e GERENTE podem cadastrar um cardápio
+    // DASHBOARD
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
     @Transactional
-    public ResponseEntity<CardapioDetalhamento> cadastrarCardapio(
-            @RequestBody @Valid CardapioCadastro dadosCardapio,
-            UriComponentsBuilder uriBuilder
-    ) {
+    public ResponseEntity<CardapioDetalhamento> cadastrarCardapioDoEstabelecimento(@RequestBody @Valid CardapioCadastro dadosCardapio, UriComponentsBuilder uriBuilder) {
         var cardapio = new Cardapio(dadosCardapio);
         cardapioRepository.save(cardapio);
         var uri = uriBuilder.path("/cardapio/{id}").buildAndExpand(cardapio.getId()).toUri();
         return ResponseEntity.created(uri).body(new CardapioDetalhamento(cardapio));
     }
 
-    // Apenas ADMIN pode listar todos os cardápios
+    // APP
     @GetMapping
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     @Transactional
@@ -52,6 +50,7 @@ public class CardapioController {
         return ResponseEntity.ok(lista);
     }
 
+    // VOU MUDAR, DASHBOARD
     // ADMIN e GERENTE podem buscar um cardápio específico
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
@@ -59,33 +58,27 @@ public class CardapioController {
     public ResponseEntity<CardapioDetalhamento> buscarCardapioPorId(@PathVariable Long id) {
         CardapioDetalhamento cardapioDetalhamento = cardapioService.buscarCardapioPorId(id);
         return ResponseEntity.ok(cardapioDetalhamento);
-    }
+    } // ACHO DESNECESSARIO, MAS PODEMOS VER UMA FORMA QUE PEGUE O ID DO ESTABELECIMENTO E DPS EU FAÇO UM FINDBYID
 
     // Todos podem listar cardápios de um estabelecimento
+    // APP
     @GetMapping("/estabelecimento/{estabelecimentoId}")
     @Transactional
-    public ResponseEntity<List<CardapioDetalhamento>> listarCardapiosPorEstabelecimento(@PathVariable Long estabelecimentoId) {
-        List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimentoId);
+    public ResponseEntity<List<CardapioDetalhamento>> listarCardapiosPorEstabelecimento(@PathVariable Estabelecimento estabelecimento) {
+        List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimento);
         return ResponseEntity.ok(cardapios);
-    }
-    // Apenas ADMIN pode deletar qualquer cardápio
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
-    @Transactional
-    public ResponseEntity<Void> removerCardapio(@PathVariable Long id) {
-        cardapioService.deletarCardapio(id);
-        return ResponseEntity.noContent().build();
     }
 
     // Apenas GERENTE pode deletar um cardápio do seu próprio estabelecimento
+    // DASHBOARD
     @Transactional
     @DeleteMapping("/estabelecimento/{estabelecimentoId}/cardapio/{cardapioId}")
     @PreAuthorize("hasRole('GERENTE')")
     public ResponseEntity<Void> deletarCardapiodoEstabelecimento(
-            @PathVariable Long estabelecimentoId,
+            @PathVariable Estabelecimento estabelecimento,
             @PathVariable Long cardapioId
     ) {
-        boolean deletado = cardapioService.deletarSePertencerAoEstabelecimento(cardapioId, estabelecimentoId);
+        boolean deletado = cardapioService.deletarSePertencerAoEstabelecimento(cardapioId, estabelecimento);
         return deletado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }
