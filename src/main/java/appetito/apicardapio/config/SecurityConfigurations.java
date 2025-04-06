@@ -26,6 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -42,44 +43,52 @@ public class SecurityConfigurations {
     @Autowired
     private AppUserDetailsService appUserDetailsService;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login/dashboard").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login/app").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/usuarios/cadastrar").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/cliente/cadastrar").permitAll()
-                        .requestMatchers(
-                                "/swagger-ui.html",
-                                "/swagger-ui/**",
-                                "/v3/api-docs",
-                                "/v3/api-docs/**",
-                                "/webjars/**",
-                                "/swagger-resources/**",
-                                "/swagger-resources"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
-    }
+    @Configuration
+    @EnableWebSecurity
+    public class SecurityConfigurations {
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000")); // <- só localhost:3000
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+        @Autowired
+        private SecurityFilter securityFilter;
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+            return http
+                    .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Usa a configuração personalizada
+                    .csrf(AbstractHttpConfigurer::disable)
+                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    .authorizeHttpRequests(auth -> auth
+                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/login/dashboard").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/login/app").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/cliente/cadastrar").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/usuarios/cadastrar").permitAll()
+                            .requestMatchers(
+                                    "/swagger-ui.html",
+                                    "/swagger-ui/**",
+                                    "/v3/api-docs",
+                                    "/v3/api-docs/**"
+                            ).permitAll()
+                            .anyRequest().authenticated()
+                    )
+                    .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                    .build();
+        }
+
+        @Bean
+        CorsConfigurationSource corsConfigurationSource() {
+            CorsConfiguration configuration = new CorsConfiguration();
+            configuration.setAllowedOrigins(Arrays.asList(
+                    "http://localhost:3000",
+                    "https://stargateit.appetito.com.br"
+            ));
+            configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+            configuration.setAllowedHeaders(Arrays.asList("*"));
+            configuration.setAllowCredentials(true);
+            configuration.setExposedHeaders(Arrays.asList("Authorization", "content-type"));
+            UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+            source.registerCorsConfiguration("/**", configuration);
+            return source;
+        }
     }
 
     @Bean
