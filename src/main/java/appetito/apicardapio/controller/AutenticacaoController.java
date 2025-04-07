@@ -9,13 +9,16 @@ import appetito.apicardapio.dto.DadosAutenticacao;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
 
 @RestController
 @RequestMapping("/login")
@@ -37,32 +40,40 @@ public class AutenticacaoController {
 
     @PostMapping("/dashboard")
     public ResponseEntity<?> loginDashboard(@RequestBody @Valid DadosAutenticacao dados) {
-        var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
-        var auth = dashboardAuthProvider.authenticate(token);
-        var usuario = (UsuarioDashboard) auth.getPrincipal();
-        var tokenJWT = tokenService.generateToken(usuario);
-        // enviar requisição para as logs da api no discord
-        var emailDoUsuario = usuario.getEmail();
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        var ip = request.getRemoteAddr();
-        new DiscordAlert().AlertDiscord("✅ Login em Dashboard realizado com sucesso por: " + emailDoUsuario + " (IP: " + ip + ")");
+        try {
+            var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
+            var auth = dashboardAuthProvider.authenticate(token);
+            var usuario = (UsuarioDashboard) auth.getPrincipal();
+            var tokenJWT = tokenService.generateToken(usuario);
 
-        return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
+            var emailDoUsuario = usuario.getEmail();
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            var ip = request.getRemoteAddr();
+            new DiscordAlert().AlertDiscord("✅ Login em Dashboard realizado com sucesso por: " + emailDoUsuario + " (IP: " + ip + ")");
+
+            return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
+        }
     }
 
     @PostMapping("/app")
     public ResponseEntity<?> loginApp(@RequestBody @Valid DadosAutenticacao dados) {
-        var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
-        var auth = appAuthProvider.authenticate(token);
-        var cliente = (Cliente) auth.getPrincipal();
-        // enviar requisição para as logs da api no discord
-        var emailDoCliente = cliente.getEmail();
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        var ip = request.getRemoteAddr();
-        new DiscordAlert().AlertDiscord("✅ Login em Cliente realizado com sucesso por: " + emailDoCliente + " (IP: " + ip + ")");
+        try {
+            var token = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
+            var auth = appAuthProvider.authenticate(token);
+            var cliente = (Cliente) auth.getPrincipal();
 
-        var tokenJWT = tokenService.generateToken(cliente);
-        return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
+            var emailDoCliente = cliente.getEmail();
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            var ip = request.getRemoteAddr();
+            new DiscordAlert().AlertDiscord("✅ Login em Cliente realizado com sucesso por: " + emailDoCliente + " (IP: " + ip + ")");
+
+            var tokenJWT = tokenService.generateToken(cliente);
+            return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
+        }
     }
 }
 
