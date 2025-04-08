@@ -13,4 +13,6 @@ public interface EstabelecimentoRepository extends JpaRepository<Estabelecimento
     List<Estabelecimento> findByNomeFantasiaContainingIgnoreCase(String nomeFantasia);
 
     boolean existsByUsuarioCadastro(UsuarioDashboard usuarioDashboard);
+
+    List<Estabelecimento> findByEstabelecimentoId(Long estabelecimento_id);
 }

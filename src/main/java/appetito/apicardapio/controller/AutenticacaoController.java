@@ -8,6 +8,8 @@ import appetito.apicardapio.security.TokenService;
 import appetito.apicardapio.dto.DadosAutenticacao;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +52,8 @@ public class AutenticacaoController {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
             var ip = request.getRemoteAddr();
             new DiscordAlert().AlertDiscord("✅ Login em Dashboard realizado com sucesso por: " + emailDoUsuario + " (IP: " + ip + ")");
-
+            Logger log = LoggerFactory.getLogger(getClass());
+            log.warn(usuario.getAuthorities().toString());
             return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
@@ -68,7 +71,8 @@ public class AutenticacaoController {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
             var ip = request.getRemoteAddr();
             new DiscordAlert().AlertDiscord("✅ Login em Cliente realizado com sucesso por: " + emailDoCliente + " (IP: " + ip + ")");
-
+            Logger log = LoggerFactory.getLogger(getClass());
+            log.warn(cliente.getAuthorities().toString());
             var tokenJWT = tokenService.generateToken(cliente);
             return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
         } catch (AuthenticationException e) {

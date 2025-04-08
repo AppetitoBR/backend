@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-@Table(name = "Estabelecimento")
+@Table(name = "estabelecimento")
 @Data
 @Entity(name = "Estabelecimentos")
 @Getter
@@ -16,7 +16,8 @@ public class Estabelecimento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long estabelecimento_id;
+    @Column(name = "estabelecimento_id")
+    private Long estabelecimentoId;
 
     @Column(nullable = false)
     private String razao_social;
@@ -49,9 +50,9 @@ public class Estabelecimento {
     @Column(nullable = false)
     private LocalDateTime data_alteracao_cadastro = LocalDateTime.now();
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_alteracao_id", nullable = false)
-    private UsuarioDashboard usuarioAlteracao;
+ //   @ManyToOne
+  //  @JoinColumn(name = "usuario_alteracao_id")
+  //  private UsuarioDashboard usuarioAlteracao;
 
     @Lob
     private String observacao;
@@ -69,11 +70,6 @@ public class Estabelecimento {
         this.cnpj = dadosEstabelecimento.cnpj();
         this.tipo = dadosEstabelecimento.tipo();
         this.segmento = dadosEstabelecimento.segmento();
-
-    }
-
-
-    public void setNome(String estabelecimentoTeste) {
 
     }
 }

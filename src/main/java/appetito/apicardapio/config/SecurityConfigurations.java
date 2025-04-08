@@ -72,8 +72,7 @@ public class SecurityConfigurations {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
-                "http://localhost:3000/login",
-                "http://seu-frontend.com" // Adicione outros domínios se necessário
+                "https://appetito.com.br"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));

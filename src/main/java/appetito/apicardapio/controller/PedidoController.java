@@ -4,12 +4,10 @@ import appetito.apicardapio.dto.GetAll.PedidoDados;
 import appetito.apicardapio.dto.cadastro.PedidoCadastro;
 import appetito.apicardapio.dto.detalhamento.PedidoDetalhamento;
 import appetito.apicardapio.dto.put.ItemAtualizacao;
-import appetito.apicardapio.dto.put.PedidoAtualizacao;
 import appetito.apicardapio.entity.Pedido;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.service.PedidoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +18,11 @@ import java.util.List;
 @RequestMapping("/pedidos")
 public class PedidoController {
 
-    @Autowired
-    private PedidoService pedidoService;
+    private final PedidoService pedidoService;
+
+    public PedidoController(PedidoService pedidoService) {
+        this.pedidoService = pedidoService;
+    }
 
     @PostMapping
     public ResponseEntity<PedidoDetalhamento> criarPedido(@RequestBody @Valid PedidoCadastro pedidoCadastro) {
