@@ -4,6 +4,8 @@ import appetito.apicardapio.enums.PapelUsuario;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "usuario_estabelecimento")
@@ -17,21 +19,22 @@ public class UsuarioEstabelecimento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long usuario_estabelecimento_id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "estabelecimento_id")
+    private Estabelecimento estabelecimento;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_dashboard_id")
     private UsuarioDashboard usuario;
-
-    @ManyToOne
-    @JoinColumn(name = "estabelecimento_id", nullable = false)
-    private Estabelecimento estabelecimento;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "papel", nullable = false)
     private PapelUsuario papel;
 
-    public UsuarioEstabelecimento(UsuarioDashboard usuario, Estabelecimento estabelecimento, PapelUsuario papel) {
-        this.usuario = usuario;
-        this.estabelecimento = estabelecimento;
-        this.papel = papel;
+    public UsuarioEstabelecimento(List<Estabelecimento> estabelecimentoCriado, UsuarioDashboard usuarioDashboard, PapelUsuario papelUsuario) {
+        this.papel = papelUsuario;
+        this.usuario = usuarioDashboard;
+        this.estabelecimento = estabelecimentoCriado.getFirst();
     }
+
 }

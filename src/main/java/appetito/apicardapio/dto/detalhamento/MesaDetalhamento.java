@@ -16,7 +16,7 @@ public record MesaDetalhamento(
                 mesa.getCapacidade(),
                 mesa.getStatus(),
                 // mesa.getQrcode(),
-                mesa.getEstabelecimento().getEstabelecimento_id()
+                mesa.getEstabelecimento().getEstabelecimentoId()
         );
     }
 }

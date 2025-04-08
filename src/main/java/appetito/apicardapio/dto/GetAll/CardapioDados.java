@@ -10,7 +10,7 @@ public record CardapioDados(
 ) {
     public CardapioDados(Cardapio cardapio) {
         this(
-                cardapio.getEstabelecimento().getEstabelecimento_id(),
+                cardapio.getEstabelecimento().getEstabelecimentoId(),
                 cardapio.getNome(),
                 cardapio.getDescricao(),
                 cardapio.getAtivo()

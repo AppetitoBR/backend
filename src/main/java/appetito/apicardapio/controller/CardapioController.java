@@ -43,7 +43,6 @@ public class CardapioController {
     @Transactional
     public ResponseEntity<List<CardapioDados>> listarCardapiosPorEstabelecimento(@PathVariable String nomeFantasia) {
         List<Cardapio> cardapios = cardapioRepository.findByEstabelecimentoNomeFantasiaIgnoreCase(nomeFantasia);
-
         if (cardapios.isEmpty()) {
             throw new ResourceNotFoundException("Nenhum cardápio encontrado para o estabelecimento: " + nomeFantasia);
         }
@@ -62,14 +61,6 @@ public class CardapioController {
         return ResponseEntity.ok(cardapioDetalhamento);
     } // ACHO DESNECESSARIO, MAS PODEMOS VER UMA FORMA QUE PEGUE O ID DO ESTABELECIMENTO E DPS EU FAÇO UM FINDBYID
 
-    // Todos podem listar cardápios de um estabelecimento
-    // APP
-    @GetMapping("/estabelecimento/{estabelecimentoId}")
-    @Transactional
-    public ResponseEntity<List<CardapioDetalhamento>> listarCardapiosPorEstabelecimento(@PathVariable Estabelecimento estabelecimento) {
-        List<CardapioDetalhamento> cardapios = cardapioService.listarCardapiosPorEstabelecimento(estabelecimento);
-        return ResponseEntity.ok(cardapios);
-    }
 
     // Apenas GERENTE pode deletar um cardápio do seu próprio estabelecimento
     // DASHBOARD

@@ -14,4 +14,6 @@ public interface CardapioRepository extends JpaRepository<Cardapio, Long> {
     Optional<Cardapio> findByIdAndEstabelecimento(Long cardapioId, Estabelecimento estabelecimento);
 
     List<Cardapio> findByEstabelecimentoNomeFantasiaIgnoreCase(String nomeFantasia);
+
+    List<Cardapio> findByEstabelecimentoNomeFantasia(String nomeFantasia);
 }

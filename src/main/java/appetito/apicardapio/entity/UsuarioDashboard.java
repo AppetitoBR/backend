@@ -3,9 +3,10 @@ package appetito.apicardapio.entity;
 import appetito.apicardapio.dto.cadastro.UsuarioDashboardCadastro;
 import appetito.apicardapio.enums.Situacao;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.extern.java.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +20,8 @@ import java.util.stream.Collectors;
 @Data
 @Table(name = "usuario_dashboard")
 @Entity(name = "UsuarioDashboard")
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class UsuarioDashboard implements UserDetails {
@@ -64,11 +67,11 @@ public class UsuarioDashboard implements UserDetails {
         if (estabelecimentos == null || estabelecimentos.isEmpty()) {
             return List.of(new SimpleGrantedAuthority("ROLE_USUARIODASHBOARD"));
         }
-
         return estabelecimentos.stream()
                 .map(est -> new SimpleGrantedAuthority("ROLE_" + est.getPapel().name()))
                 .collect(Collectors.toList());
     }
+
 
     @Override
     public String getPassword() {
