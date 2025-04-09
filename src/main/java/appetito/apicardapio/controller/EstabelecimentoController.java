@@ -109,22 +109,6 @@ public class EstabelecimentoController {
     @GetMapping("estabelecimento/{nomeFantasia}")
     @Transactional
     public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentoPorNomeFantasia(@PathVariable String nomeFantasia){
-       // HttpServletRequest request) throws AccessDeniedException
-       // Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-       // if (!(principal instanceof Cliente)) {
-        ///    String ip = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
-           //         .orElse(request.getRemoteAddr());
-//
-          //  Logger log = (Logger) LoggerFactory.getLogger(getClass());
-        //    log.warn("🍯 HONEYPOT ALERT: Acesso indevido ao endpoint de cliente. IP: {}, User-Agent: {}, Tipo: {}",
-         //           ip,
-        //            request.getHeader("User-Agent"),
-        //            principal.getClass().getSimpleName());
-        //    new DiscordAlert().AlertDiscord("Acesso não autorizado ao listar estabelecimentos IP: " + ip);
-//
-         //   throw new AccessDeniedException("Acesso não autorizado");
-       // }
         List<Estabelecimento> estabelecimentos = estabelecimentoRepository
                 .findByNomeFantasiaContainingIgnoreCase(nomeFantasia);
         List<EstabelecimentoDados> resultado = estabelecimentos.stream()
