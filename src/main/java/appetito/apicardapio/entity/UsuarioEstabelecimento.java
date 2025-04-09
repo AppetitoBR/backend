@@ -1,6 +1,8 @@
 package appetito.apicardapio.entity;
 
 import appetito.apicardapio.enums.PapelUsuario;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,20 +23,24 @@ public class UsuarioEstabelecimento {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estabelecimento_id")
+    @JsonBackReference
     private Estabelecimento estabelecimento;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_dashboard_id")
+    @JsonIgnore
     private UsuarioDashboard usuario;
+
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "papel", nullable = false)
     private PapelUsuario papel;
 
-    public UsuarioEstabelecimento(List<Estabelecimento> estabelecimentoCriado, UsuarioDashboard usuarioDashboard, PapelUsuario papelUsuario) {
+    public UsuarioEstabelecimento(Estabelecimento estabelecimento, UsuarioDashboard usuarioDashboard, PapelUsuario papelUsuario) {
         this.papel = papelUsuario;
         this.usuario = usuarioDashboard;
-        this.estabelecimento = estabelecimentoCriado.getFirst();
+        this.estabelecimento = estabelecimento;
     }
 
 }
