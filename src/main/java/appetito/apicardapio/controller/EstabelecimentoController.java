@@ -1,6 +1,7 @@
 package appetito.apicardapio.controller;
 
 import appetito.apicardapio.dto.DadosFuncionario;
+import appetito.apicardapio.dto.GetAll.FuncionarioDados;
 import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
 import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
 import appetito.apicardapio.dto.GetAll.EstabelecimentoDados;
@@ -176,11 +177,72 @@ public class EstabelecimentoController {
         var emailDoPatrao = administrador.getEmail();
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         var ip = request.getRemoteAddr();
-        new DiscordAlert().AlertDiscord("👨‍💼 **" + emailDoPatrao + "** adicionou 👷 **" + emailDoFuncionario + "** ao estabelecimento com sucesso!\n" + "🌐 IP: `" + ip + "`");
+        new DiscordAlert().AlertDiscord("👨‍💼 **" + emailDoPatrao + "** adicionou 👷 **" + emailDoFuncionario + "** ao estabelecimento com sucesso!\n" + " 🌐 IP: " + ip );
 
         UsuarioEstabelecimento vinculo = new UsuarioEstabelecimento(estabelecimento, funcionario, dto.papel());
         usuarioEstabelecimentoRepository.save(vinculo);
         return ResponseEntity.status(HttpStatus.CREATED).build();
 
     }
+    @PutMapping("/funcionarios")
+    @Transactional
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<Void> atualizarPapelFuncionario(@RequestBody @Valid DadosFuncionario dto) throws AccessDeniedException {
+        UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
+                .findAllByUsuario(administrador)
+                .stream()
+                .filter(v -> v.getPapel() == PapelUsuario.ADMINISTRADOR)
+                .map(UsuarioEstabelecimento::getEstabelecimento)
+                .findFirst()
+                .orElseThrow(() -> new AccessDeniedException("Você não possui um estabelecimento como administrador."));
+
+        if (dto.papel() == PapelUsuario.ADMINISTRADOR) {
+            throw new IllegalArgumentException("Você não pode promover outro usuário a ADMINISTRADOR.");
+        }
+
+        UsuarioDashboard funcionario = usuarioDashboardRepository.findByEmail(dto.email())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário com e-mail não encontrado."));
+
+        UsuarioEstabelecimento vinculo = usuarioEstabelecimentoRepository
+                .findByUsuarioAndEstabelecimento(funcionario, estabelecimento)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não está vinculado ao seu estabelecimento."));
+        vinculo.setPapel(dto.papel());
+        usuarioEstabelecimentoRepository.save(vinculo);
+
+        var emailDoFuncionario = funcionario.getEmail();
+        var emailDoPatrao = administrador.getEmail();
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+        var ip = request.getRemoteAddr();
+        new DiscordAlert().AlertDiscord("✏️ **" + emailDoPatrao + "** alterou o papel de 👷 **" + emailDoFuncionario + "** para **" + dto.papel().name() + "** 🌐 IP: " + ip);
+
+        return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/funcionarios")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<List<FuncionarioDados>> listarFuncionarios() throws AccessDeniedException {
+        UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
+                .findAllByUsuario(administrador)
+                .stream()
+                .filter(v -> v.getPapel() == PapelUsuario.ADMINISTRADOR)
+                .map(UsuarioEstabelecimento::getEstabelecimento)
+                .findFirst()
+                .orElseThrow(() -> new AccessDeniedException("Você não possui um estabelecimento como administrador."));
+
+        List<FuncionarioDados> funcionarios = usuarioEstabelecimentoRepository
+                .findAllByEstabelecimento(estabelecimento)
+                .stream()
+                .filter(v -> !v.getUsuario().getUsuario_dashboard_id().equals(administrador.getUsuario_dashboard_id())) // metodo para ocultar apenas o administrador
+                .map(v -> new FuncionarioDados(
+                        v.getUsuario().getUsuario_dashboard_id(),
+                        v.getUsuario().getNome_completo(),
+                        v.getUsuario().getEmail(),
+                        v.getPapel()))
+                .toList();
+
+        return ResponseEntity.ok(funcionarios);
+    }
+
 }
