@@ -2,6 +2,7 @@ package appetito.apicardapio.entity;
 
 import appetito.apicardapio.dto.cadastro.UsuarioDashboardCadastro;
 import appetito.apicardapio.enums.Situacao;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.java.Log;
@@ -47,6 +48,11 @@ public class UsuarioDashboard implements UserDetails {
   //  private String redes_sociais;
     private LocalDate data_cadastro;
     private LocalDate data_atualizacao;
+
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<UsuarioEstabelecimento> vinculos;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<UsuarioEstabelecimento> estabelecimentos = new ArrayList<>();

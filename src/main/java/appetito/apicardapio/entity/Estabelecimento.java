@@ -1,10 +1,14 @@
 package appetito.apicardapio.entity;
 
 import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Table(name = "estabelecimento")
 @Data
 @Entity(name = "Estabelecimentos")
@@ -49,6 +53,10 @@ public class Estabelecimento {
 
     @Column(nullable = false)
     private LocalDateTime data_alteracao_cadastro = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "estabelecimento", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<UsuarioEstabelecimento> vinculos = new ArrayList<>();
 
  //   @ManyToOne
   //  @JoinColumn(name = "usuario_alteracao_id")
