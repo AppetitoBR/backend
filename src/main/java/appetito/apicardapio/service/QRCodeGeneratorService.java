@@ -8,7 +8,7 @@ import com.google.zxing.common.BitMatrix;
 import java.io.ByteArrayOutputStream;
 
 public class QRCodeGeneratorService {
-    public byte[] gerarQRCode(String texto) {
+    public static byte[] gerarQRCode(String texto) {
         try {
             int largura = 300;
             int altura = 300;
