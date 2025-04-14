@@ -42,21 +42,22 @@ public class MesaService {
                 .stream()
                 .findFirst()
                 .map(UsuarioEstabelecimento::getEstabelecimento)
-                .orElseThrow(() -> new RuntimeException("Estabelecimento não encontrado para o usuário"));
+                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado para o usuário"));
 
         Mesa mesa = new Mesa();
         mesa.setNome(dadosMesa.nome());
         mesa.setCapacidade(dadosMesa.capacidade());
         mesa.setEstabelecimento(estabelecimento);
-        mesaRepository.save(mesa);
 
-        // quero ver se consigo fazer de forma dinamica
-        String url = "http://localhost:3000/mesa/" + mesa.getId();
+        String nomeFantasia = estabelecimento.getNomeFantasia();
+        String url = "http://localhost:3000/" + nomeFantasia + "/mesa/" + mesa.getId();
         byte[] qrCodeBytes = QRCodeGeneratorService.gerarQRCode(url);
         mesa.setQrcode(qrCodeBytes);
         mesaRepository.save(mesa);
         return new MesaDetalhamento(mesa);
     }
+
+    // mudar ainda
     public MesaDetalhamento atualizarMesa(Long id, MesaCadastro dadosMesa) {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
@@ -67,7 +68,7 @@ public class MesaService {
         mesaRepository.save(mesa);
         return new MesaDetalhamento(mesa);
     }
-
+    //mudar ainda
     public void excluirMesa(Long id) {
         if (!mesaRepository.existsById(id)) {
             throw new ResourceNotFoundException("Mesa não encontrada");
@@ -75,6 +76,7 @@ public class MesaService {
         mesaRepository.deleteById(id);
     }
 
+    //mudar ainda
     public List<MesaDetalhamento> listarMesas() {
         return mesaRepository.findAll().stream()
                 .map(MesaDetalhamento::new)

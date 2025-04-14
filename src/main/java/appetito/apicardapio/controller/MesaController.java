@@ -59,7 +59,7 @@ public class MesaController {
         List<MesaDetalhamento> mesas = mesaService.listarMesas();
         return ResponseEntity.ok(mesas);
     }
-    @GetMapping("/mesas/{id}/qrcode")
+    @GetMapping("/{id}/qrcode")
     public ResponseEntity<byte[]> obterQRCodeDaMesa(@PathVariable Long id) {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
