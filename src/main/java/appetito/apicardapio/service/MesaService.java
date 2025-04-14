@@ -48,6 +48,7 @@ public class MesaService {
         mesa.setNome(dadosMesa.nome());
         mesa.setCapacidade(dadosMesa.capacidade());
         mesa.setEstabelecimento(estabelecimento);
+        mesaRepository.save(mesa);
 
         String nomeFantasia = estabelecimento.getNomeFantasia();
         String url = "http://localhost:3000/" + nomeFantasia + "/mesa/" + mesa.getId();
