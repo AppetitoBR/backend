@@ -1,6 +1,7 @@
 package appetito.apicardapio.controller;
 
 import appetito.apicardapio.dto.DadosFuncionario;
+import appetito.apicardapio.dto.GetAll.CardapioDados;
 import appetito.apicardapio.dto.GetAll.FuncionarioDados;
 import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
 import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
@@ -15,11 +16,13 @@ import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.UsuarioDashboardRepository;
 import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.security.DiscordAlert;
+import appetito.apicardapio.service.CardapioService;
 import ch.qos.logback.classic.Logger;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,6 +46,8 @@ public class EstabelecimentoController {
     private final EstabelecimentoRepository estabelecimentoRepository;
     private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
     private final UsuarioDashboardRepository usuarioDashboardRepository;
+    @Autowired
+    private CardapioService cardapioService;
 
     public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, UsuarioDashboardRepository usuarioDashboardRepository) {
         this.estabelecimentoRepository = estabelecimentoRepository;
@@ -218,7 +223,7 @@ public class EstabelecimentoController {
         List<FuncionarioDados> funcionarios = usuarioEstabelecimentoRepository
                 .findAllByEstabelecimento(estabelecimento)
                 .stream()
-                .filter(v -> !v.getUsuario().getUsuario_dashboard_id().equals(administrador.getUsuario_dashboard_id())) // metodo para ocultar apenas o administrador
+                .filter(v -> !v.getUsuario().getUsuario_dashboard_id().equals(administrador.getUsuario_dashboard_id()))
                 .map(v -> new FuncionarioDados(
                         v.getUsuario().getUsuario_dashboard_id(),
                         v.getUsuario().getNome_completo(),
@@ -228,5 +233,16 @@ public class EstabelecimentoController {
 
         return ResponseEntity.ok(funcionarios);
     }
+    @GetMapping("/{nomeFantasia}/cardapio")
+    public ResponseEntity<List<CardapioDados>> listarCardapiosDoEstabelecimento(
+            @PathVariable String nomeFantasia
+    ) {
+        List<CardapioDados> cardapios = cardapioService
+                .listarCardapiosComProdutosPorNomeFantasia(nomeFantasia);
 
+        if (cardapios == null || cardapios.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(cardapios);
+    }
 }

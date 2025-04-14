@@ -10,8 +10,10 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -53,30 +55,22 @@ public class ProdutoController {
         produtoService.deleteProduto(id);
     }
 
-    @GetMapping("/cardapio/{id}")
-    public ResponseEntity<List<ProdutoDados>> getAllProdutosbyCardapio(@PathVariable Long id) {
-        var lista = produtoRepository.findAllByCardapio(id)
-                .stream()
-                .map(ProdutoDados::new)
-                .toList();
-        return ResponseEntity.ok(lista);
+
+    @PutMapping("/{id}/imagem")
+    public Produto setImagemProduto(@PathVariable Long id, @RequestParam("imagem") MultipartFile imagem) throws IOException {
+        return produtoService.setImagemProduto(id, imagem);
     }
 
- //   @Operation(summary = "Upload da imagem de perfil do usuário")
- //   @PostMapping(value = "/{id}/upload-imagem", consumes = "multipart/form-data")
- //   public ResponseEntity<String> uploadImagemProduto(
- //           @PathVariable Long id,
- //           @RequestPart("file") MultipartFile file
-  //  ) {
- //       try {
- //           Produto produto = produtoService.salvarImagemPerfil(id, file);
-  //          if (produto != null) {
-   //             return ResponseEntity.ok("Imagem do produto foi salva");
-  //          } else {
-  //              return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Produto não encontrado");
- //           }
-  //      } catch (IOException e) {
-  //          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao salvar imagem");
-   //     }
- //   }
+    @GetMapping("/{id}/imagem")
+    public ResponseEntity<byte[]> getImagemProduto(@PathVariable Long id) {
+        Produto produto = produtoService.getProdutoById(id);
+
+        if (produto.getImagens() != null) {
+            return ResponseEntity.ok()
+                    .header("Content-Type", "image/jpeg")
+                    .body(produto.getImagens());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

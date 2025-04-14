@@ -55,6 +55,8 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.POST, "/login/app").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cliente/cadastrar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios/cadastrar").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/estabelecimento/*/cardapio").permitAll()
+                        .requestMatchers(HttpMethod.GET, "produtos/*/imagem").permitAll()
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
@@ -75,7 +77,7 @@ public class SecurityConfigurations {
                 "https://appetito.com.br"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(Arrays.asList("Authorization", "content-type"));
 
