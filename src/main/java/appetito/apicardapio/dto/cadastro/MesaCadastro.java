@@ -6,6 +6,5 @@ import jakarta.validation.constraints.NotNull;
 
 public record MesaCadastro(
         @NotBlank String nome,
-        @NotNull Integer capacidade,
-        @NotNull Estabelecimento estabelecimento_id
+        @NotNull Integer capacidade
 ) {}
