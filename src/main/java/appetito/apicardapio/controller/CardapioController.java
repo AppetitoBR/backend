@@ -9,6 +9,7 @@ import appetito.apicardapio.repository.CardapioRepository;
 import appetito.apicardapio.service.CardapioService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
