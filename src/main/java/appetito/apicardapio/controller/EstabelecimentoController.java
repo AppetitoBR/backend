@@ -6,15 +6,10 @@ import appetito.apicardapio.dto.GetAll.FuncionarioDados;
 import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
 import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
 import appetito.apicardapio.dto.GetAll.EstabelecimentoDados;
-import appetito.apicardapio.entity.Cliente;
-import appetito.apicardapio.entity.Estabelecimento;
-import appetito.apicardapio.entity.UsuarioDashboard;
-import appetito.apicardapio.entity.UsuarioEstabelecimento;
+import appetito.apicardapio.entity.*;
 import appetito.apicardapio.enums.PapelUsuario;
 import appetito.apicardapio.exception.ResourceNotFoundException;
-import appetito.apicardapio.repository.EstabelecimentoRepository;
-import appetito.apicardapio.repository.UsuarioDashboardRepository;
-import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
+import appetito.apicardapio.repository.*;
 import appetito.apicardapio.security.DiscordAlert;
 import appetito.apicardapio.service.CardapioService;
 import ch.qos.logback.classic.Logger;
@@ -22,7 +17,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,6 +31,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static appetito.apicardapio.enums.PapelUsuario.ADMINISTRADOR;
 
@@ -46,13 +41,17 @@ public class EstabelecimentoController {
     private final EstabelecimentoRepository estabelecimentoRepository;
     private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
     private final UsuarioDashboardRepository usuarioDashboardRepository;
-    @Autowired
-    private CardapioService cardapioService;
+    private final CardapioService cardapioService;
+    private final MesaRepository mesaRepository;
+    private final CardapioRepository cardapioRepository;
 
-    public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, UsuarioDashboardRepository usuarioDashboardRepository) {
+    public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, UsuarioDashboardRepository usuarioDashboardRepository, MesaRepository mesaRepository, CardapioService cardapioService, CardapioRepository cardapioRepository) {
         this.estabelecimentoRepository = estabelecimentoRepository;
         this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
         this.usuarioDashboardRepository = usuarioDashboardRepository;
+        this.mesaRepository = mesaRepository;
+        this.cardapioService = cardapioService;
+        this.cardapioRepository = cardapioRepository;
     }
     @PostMapping
     @Transactional
@@ -60,6 +59,8 @@ public class EstabelecimentoController {
             @RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento,
             UriComponentsBuilder uriE,
             HttpServletRequest request) throws AccessDeniedException {
+
+        // Verificar se o usuário tem permissão para cadastrar um estabelecimento
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof UsuarioDashboard usuarioDashboard)) {
             String ip = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
@@ -70,17 +71,30 @@ public class EstabelecimentoController {
                     principal.getClass().getSimpleName());
             throw new AccessDeniedException("Acesso negado. Somente usuários autorizados podem cadastrar estabelecimentos.");
         }
+
+        // Verificar se o usuário já possui um estabelecimento
         boolean jaPossuiEstabelecimento = usuarioEstabelecimentoRepository.existsByUsuario(usuarioDashboard);
         if (jaPossuiEstabelecimento) {
             throw new AccessDeniedException("Você já possui um estabelecimento cadastrado.");
         }
+
+        // Criar o estabelecimento
         Estabelecimento estabelecimento = new Estabelecimento(dadosEstabelecimento);
         estabelecimento.setUsuarioCadastro(usuarioDashboard);
         estabelecimentoRepository.save(estabelecimento);
 
+        // Gerar URL do cardápio digital, se necessário
+        if (estabelecimento.getUrl_cardapio_digital() == null) {
+            String urlCardapio = "https://" + estabelecimento.getNomeFantasia() + ".localhost:8080";
+            estabelecimento.setUrl_cardapio_digital(urlCardapio);
+            estabelecimentoRepository.save(estabelecimento);
+        }
+
+        // Vincular o usuário ao estabelecimento com o papel de administrador
         UsuarioEstabelecimento usuariodoestabelecimento = new UsuarioEstabelecimento(estabelecimento, usuarioDashboard, ADMINISTRADOR);
         usuarioEstabelecimentoRepository.save(usuariodoestabelecimento);
 
+        // Criar a URI de resposta
         var uri = uriE.path("/estabelecimento/{id}").buildAndExpand(estabelecimento.getEstabelecimentoId()).toUri();
         return ResponseEntity.created(uri).body(new EstabelecimentoDetalhamento(estabelecimento));
     }
@@ -126,7 +140,7 @@ public class EstabelecimentoController {
     @DeleteMapping("/dashboard/me")
     @Transactional
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<Void> deletarMeuEstabelecimento() throws AccessDeniedException {
+    public ResponseEntity<Void> deletarMeuEstabelecimento() {
         UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<UsuarioEstabelecimento> vinculos = usuarioEstabelecimentoRepository.findAllByUsuario(usuario);
         if (vinculos.isEmpty()) {
@@ -169,6 +183,9 @@ public class EstabelecimentoController {
         new DiscordAlert().AlertDiscord("👨‍💼 **" + emailDoPatrao + "** adicionou 👷 **" + emailDoFuncionario + "** ao estabelecimento com sucesso!\n" + " 🌐 IP: " + ip );
 
         UsuarioEstabelecimento vinculo = new UsuarioEstabelecimento(estabelecimento, funcionario, dto.papel());
+
+
+        estabelecimentoRepository.save(estabelecimento);
         usuarioEstabelecimentoRepository.save(vinculo);
         return ResponseEntity.status(HttpStatus.CREATED).build();
 
@@ -245,4 +262,31 @@ public class EstabelecimentoController {
         }
         return ResponseEntity.ok(cardapios);
     }
+
+    @GetMapping("/{nomeFantasia}/mesa/{id}/cardapio")
+    public ResponseEntity<List<CardapioDados>> listarCardapiosPorMesa(
+            @PathVariable String nomeFantasia,
+            @PathVariable Long id) {
+
+        Estabelecimento estabelecimento = estabelecimentoRepository
+                .findByNomeFantasia(nomeFantasia)
+                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
+
+        Mesa mesa = mesaRepository.findById(id)
+                .filter(m -> m.getEstabelecimento().equals(estabelecimento))
+                .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada ou não pertence ao estabelecimento"));
+
+        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimentoNomeFantasia(nomeFantasia);
+
+        if (cardapios.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<CardapioDados> cardapioDados = cardapios.stream()
+                .map(CardapioDados::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(cardapioDados);
+    }
+
 }
