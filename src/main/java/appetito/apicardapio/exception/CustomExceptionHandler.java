@@ -45,7 +45,7 @@ public class CustomExceptionHandler {
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex, WebRequest request) {
-        String mensagemErro = "🚨 Erro inesperado na API:\n```\n" + ex.getClass().getSimpleName() + ": " + ex.getMessage() + "\n```";
+        String mensagemErro = "🚨 Erro inesperado na API:\n" + ex.getClass().getSimpleName() + ": " + ex.getMessage() + "\n";
         discordAlert.AlertDiscord(mensagemErro);
 
         ErrorResponse errorResponse = new ErrorResponse("Erro interno", ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
