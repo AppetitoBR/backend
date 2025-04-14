@@ -42,7 +42,7 @@ public class MesaService {
                 .stream()
                 .findFirst()
                 .map(UsuarioEstabelecimento::getEstabelecimento)
-                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado para o usuário"));
+                .orElseThrow(() -> new RuntimeException("Estabelecimento não encontrado para o usuário"));
 
         Mesa mesa = new Mesa();
         mesa.setNome(dadosMesa.nome());
@@ -50,8 +50,7 @@ public class MesaService {
         mesa.setEstabelecimento(estabelecimento);
         mesaRepository.save(mesa);
 
-        String nomeFantasia = estabelecimento.getNomeFantasia();
-        String url = "http://localhost:3000/" + nomeFantasia + "/mesa/" + mesa.getId();
+        String url = "http://localhost:8080/" + estabelecimento.getNomeFantasia() + "/mesa/" + mesa.getId() + "/cardapio";
         byte[] qrCodeBytes = QRCodeGeneratorService.gerarQRCode(url);
         mesa.setQrcode(qrCodeBytes);
         mesaRepository.save(mesa);
