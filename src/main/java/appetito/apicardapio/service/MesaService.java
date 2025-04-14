@@ -7,15 +7,12 @@ import appetito.apicardapio.entity.Mesa;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.entity.UsuarioEstabelecimento;
 import appetito.apicardapio.repository.MesaRepository;
-import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
