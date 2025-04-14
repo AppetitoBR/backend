@@ -9,5 +9,4 @@ import java.util.List;
 
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     List<Produto> findAllByAtivoTrue();
-    List<Produto> findAllByCardapio(Long id);
 }

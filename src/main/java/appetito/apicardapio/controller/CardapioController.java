@@ -37,31 +37,6 @@ public class CardapioController {
         return ResponseEntity.created(uri).body(new CardapioDetalhamento(cardapio));
     }
 
-    // APP
-    @GetMapping("/estabelecimento/{nomeFantasia}")
-    @PreAuthorize("hasRole('CLIENTE')")
-    @Transactional
-    public ResponseEntity<List<CardapioDados>> listarCardapiosPorEstabelecimento(@PathVariable String nomeFantasia) {
-        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimentoNomeFantasiaIgnoreCase(nomeFantasia);
-        if (cardapios.isEmpty()) {
-            throw new ResourceNotFoundException("Nenhum cardápio encontrado para o estabelecimento: " + nomeFantasia);
-        }
-
-        var lista = cardapios.stream().map(CardapioDados::new).toList();
-        return ResponseEntity.ok(lista);
-    }
-
-    // VOU MUDAR, DASHBOARD
-    // ADMIN e GERENTE podem buscar um cardápio específico
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
-    @Transactional
-    public ResponseEntity<CardapioDetalhamento> buscarCardapioPorId(@PathVariable Long id) {
-        CardapioDetalhamento cardapioDetalhamento = cardapioService.buscarCardapioPorId(id);
-        return ResponseEntity.ok(cardapioDetalhamento);
-    } // ACHO DESNECESSARIO, MAS PODEMOS VER UMA FORMA QUE PEGUE O ID DO ESTABELECIMENTO E DPS EU FAÇO UM FINDBYID
-
-
     // Apenas GERENTE pode deletar um cardápio do seu próprio estabelecimento
     // DASHBOARD
     @Transactional

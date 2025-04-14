@@ -1,5 +1,6 @@
 package appetito.apicardapio.service;
 
+import appetito.apicardapio.dto.GetAll.CardapioDados;
 import appetito.apicardapio.dto.detalhamento.CardapioDetalhamento;
 import appetito.apicardapio.entity.Cardapio;
 import appetito.apicardapio.entity.Estabelecimento;
@@ -21,32 +22,14 @@ public class CardapioService {
         this.cardapioRepository = cardapioRepository;
     }
 
+    public List<CardapioDados> listarCardapiosComProdutosPorNomeFantasia(String nomeFantasia) {
+        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimentoNomeFantasia(nomeFantasia);
 
-    // Buscar um cardápio por ID
-    public CardapioDetalhamento buscarCardapioPorId(Long cardapio_id) {
-        Cardapio cardapio = cardapioRepository.findById(cardapio_id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado"));
-        return new CardapioDetalhamento(cardapio);
-    }
-
-    // Listar cardápios por estabelecimento
-    public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Estabelecimento estabelecimento) {
-        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimento(estabelecimento);// mudar o quanto antes
-        if (cardapios.isEmpty()) {
-            throw new ResourceNotFoundException("Nenhum cardápio encontrado para o estabelecimento informado");
-        }
         return cardapios.stream()
-                .map(CardapioDetalhamento::new)
-                .collect(Collectors.toList());
+                .map(CardapioDados::new)
+                .toList();
     }
 
-    public void deletarCardapio(Long id) {
-        if (!cardapioRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Cardapio não encontrada");
-        }
-        cardapioRepository.deleteById(id);
-    }
-    // deleta o estabelecimento apenas se ele pertencer a ele
     public boolean deletarSePertencerAoEstabelecimento(Long cardapioId, Estabelecimento estabelecimento) {
         Optional<Cardapio> cardapioOpt = cardapioRepository.findByIdAndEstabelecimento(cardapioId, estabelecimento); // mudar o quanto antes
 

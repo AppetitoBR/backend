@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Entity
@@ -39,6 +40,9 @@ public class Cardapio {
 
     @Column(nullable = false)
     private Boolean ativo = true;
+
+    @OneToMany(mappedBy = "cardapio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Produto> produtos;
 
     public Cardapio(CardapioCadastro cardapioCadastro) {
         this.nome = cardapioCadastro.nome();
