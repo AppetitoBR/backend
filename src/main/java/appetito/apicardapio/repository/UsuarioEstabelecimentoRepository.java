@@ -16,4 +16,6 @@ public interface UsuarioEstabelecimentoRepository extends JpaRepository<UsuarioE
     boolean existsByUsuarioAndEstabelecimento(UsuarioDashboard usuario, Estabelecimento estabelecimento);
     Optional<UsuarioEstabelecimento> findByUsuarioAndEstabelecimento(UsuarioDashboard funcionario, Estabelecimento estabelecimento);
     List<UsuarioEstabelecimento> findAllByEstabelecimento(Estabelecimento estabelecimento);
+
+    List<UsuarioEstabelecimento> findByUsuario(UsuarioDashboard usuario);
 }
