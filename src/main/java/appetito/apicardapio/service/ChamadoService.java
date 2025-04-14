@@ -35,29 +35,35 @@ public class ChamadoService {
 
     public Chamado solicitarChamado(ChamadoCadastro dadosChamado, HttpServletRequest request) throws AccessDeniedException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UsuarioDashboard usuarioDashboard)) {
+
+        if (!(principal instanceof Cliente cliente)) {
             String ip = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
                     .orElse(request.getRemoteAddr());
-            ch.qos.logback.classic.Logger log = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(getClass());
-            log.warn("🍯 HONEYPOT ALERT: Tentativa de criar estabelecimento sem ser UsuarioDashboard. IP: {}, Tipo: {}",
-                    ip,
-                    principal.getClass().getSimpleName());
-            new DiscordAlert().AlertDiscord("❌ Tentativa indevida da API em chamado/pendentes - IP: " + ip);
+
+            ch.qos.logback.classic.Logger log =
+                    (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(getClass());
+
+            log.warn("🍯 HONEYPOT ALERT: Tentativa de criar chamado sem ser Cliente. IP: {}, Tipo: {}",
+                    ip, principal.getClass().getSimpleName());
+
+            new DiscordAlert().AlertDiscord(
+                    "❌ Tentativa indevida da API em chamado/pendentes - IP: " + ip
+            );
+
             throw new AccessDeniedException("Honey Pot");
         }
-        Cliente cliente = (Cliente) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Mesa mesa = mesaRepository.findById(dadosChamado.mesa_id())
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
+
         Chamado chamado = new Chamado();
         chamado.setMesa(mesa);
-        chamado.setCliente(cliente);
+        chamado.setCliente((Cliente) principal);
         chamado.setMensagemAdicional(dadosChamado.mensagem());
         chamado.setStatus(StatusChamado.CHAMADO);
 
         return chamadoRepository.save(chamado);
     }
-
     public List<Chamado> listarChamadosPendentes(HttpServletRequest request) throws AccessDeniedException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof UsuarioDashboard)) {
