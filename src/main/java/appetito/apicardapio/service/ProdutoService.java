@@ -32,19 +32,21 @@ public class ProdutoService {
         Cardapio cardapio = cardapioRepository.findById(produtoCadastro.cardapio())
                 .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado"));
 
+        atualizarDadosProduto(produto, produtoCadastro, cardapio);
+        return produtoRepository.save(produto);
+    }
+    private void atualizarDadosProduto(Produto produto, ProdutoCadastro dto, Cardapio cardapio) {
         produto.setCardapio(cardapio);
-        produto.setNome_curto(produtoCadastro.nome_curto());
-        produto.setNome_longo(produtoCadastro.nome_longo());
-        produto.setCategoria(produtoCadastro.categoria());
-        produto.setTamanho(produtoCadastro.tamanho());
-        produto.setPreco_custo(produtoCadastro.preco_custo());
-        produto.setPreco_venda(produtoCadastro.preco_venda());
-        produto.setEstoque(produtoCadastro.estoque());
-        produto.setEstoque_minimo(produtoCadastro.estoque_minimo());
-        produto.setAtivo(produtoCadastro.ativo());
-        produto.setUnidade_medida(produtoCadastro.unidade_medida());
-        produtoRepository.save(produto);
-        return produto;
+        produto.setNome_curto(dto.nome_curto());
+        produto.setNome_longo(dto.nome_longo());
+        produto.setCategoria(dto.categoria());
+        produto.setTamanho(dto.tamanho());
+        produto.setPreco_custo(dto.preco_custo());
+        produto.setPreco_venda(dto.preco_venda());
+        produto.setEstoque(dto.estoque());
+        produto.setEstoque_minimo(dto.estoque_minimo());
+        produto.setAtivo(dto.ativo());
+        produto.setUnidade_medida(dto.unidade_medida());
     }
 
     public void deleteProduto(Long id) {

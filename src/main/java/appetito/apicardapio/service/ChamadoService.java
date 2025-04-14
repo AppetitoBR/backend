@@ -109,5 +109,6 @@ public class ChamadoService {
         chamado.setDataHoraFechamento(LocalDateTime.now());
         return chamadoRepository.save(chamado);
     }
+
 }
 
