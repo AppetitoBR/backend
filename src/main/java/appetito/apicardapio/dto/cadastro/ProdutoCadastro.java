@@ -15,6 +15,5 @@ public record ProdutoCadastro(
         @NotNull Integer estoque,
         @NotNull Integer estoque_minimo,
         @NotNull Boolean ativo,
-        @NotBlank String unidade_medida,
-        @NotBlank String imagens
+        @NotBlank String unidade_medida
 ) {}

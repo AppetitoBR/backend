@@ -12,7 +12,7 @@ public record ProdutoDados(
         String tamanho,
         BigDecimal preco_custo,
         boolean ativo,
-        String imagemUrl // Agora, só temos o campo imagemUrl
+        String imagemUrl
 ) {
     public ProdutoDados(Produto produto) {
         this(
@@ -22,7 +22,7 @@ public record ProdutoDados(
                 produto.getTamanho(),
                 produto.getPreco_custo(),
                 produto.getAtivo(),
-                "/produtos/" + produto.getProduto_id() + "/imagem" // Gerando a URL da imagem
+                "/produtos/" + produto.getProduto_id() + "/imagem"
         );
     }
 }
