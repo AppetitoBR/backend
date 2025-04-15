@@ -1,6 +1,8 @@
 package appetito.apicardapio.entity;
 
 import appetito.apicardapio.dto.cadastro.CardapioCadastro;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,6 +44,7 @@ public class Cardapio {
     private Boolean ativo = true;
 
     @OneToMany(mappedBy = "cardapio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Produto> produtos;
 
     public Cardapio(CardapioCadastro cardapioCadastro) {

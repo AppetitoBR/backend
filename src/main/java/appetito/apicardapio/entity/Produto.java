@@ -1,6 +1,7 @@
 package appetito.apicardapio.entity;
 
 import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,7 @@ public class Produto {
 
     @ManyToOne
     @JoinColumn(name = "cardapio_id", nullable = false)
+    @JsonBackReference
     private Cardapio cardapio;
 
     private String nome_curto;
