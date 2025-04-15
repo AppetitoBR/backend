@@ -32,8 +32,7 @@ public class ProdutoService {
 
         byte[] imagemBytes = arquivoImagem.getBytes();
         produto.setImagens(imagemBytes);
-        produtoRepository.save(produto);
 
-        return produto;
+        return produtoRepository.save(produto);
     }
 }
