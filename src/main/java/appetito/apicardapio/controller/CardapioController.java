@@ -71,8 +71,4 @@ public class CardapioController {
         cardapioService.deletarCardapio(id, usuario);
         return ResponseEntity.noContent().build();
     }
-
-
-
-
 }
