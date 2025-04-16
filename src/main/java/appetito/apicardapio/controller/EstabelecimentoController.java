@@ -158,6 +158,7 @@ public class EstabelecimentoController {
             @RequestBody @Valid DadosFuncionario dto) throws AccessDeniedException {
 
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
                 .findAllByUsuario(administrador)
                 .stream()
@@ -165,6 +166,11 @@ public class EstabelecimentoController {
                 .map(UsuarioEstabelecimento::getEstabelecimento)
                 .findFirst()
                 .orElseThrow(() -> new AccessDeniedException("Você não possui um estabelecimento como administrador."));
+
+        if (dto.papel() == null || !papelPermitido(dto.papel())) {
+            throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
+        }
+
         if (dto.papel() == PapelUsuario.ADMINISTRADOR) {
             throw new IllegalArgumentException("Você não pode vincular outro administrador.");
         }
@@ -176,6 +182,7 @@ public class EstabelecimentoController {
         if (jaVinculado) {
             throw new IllegalArgumentException("Usuário já está vinculado a este estabelecimento.");
         }
+
         var emailDoFuncionario = funcionario.getEmail();
         var emailDoPatrao = administrador.getEmail();
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
@@ -184,12 +191,12 @@ public class EstabelecimentoController {
 
         UsuarioEstabelecimento vinculo = new UsuarioEstabelecimento(estabelecimento, funcionario, dto.papel());
 
-
         estabelecimentoRepository.save(estabelecimento);
         usuarioEstabelecimentoRepository.save(vinculo);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
 
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
     @PutMapping("/funcionarios")
     @Transactional
     @PreAuthorize("hasRole('ADMINISTRADOR')")
@@ -204,8 +211,8 @@ public class EstabelecimentoController {
                 .findFirst()
                 .orElseThrow(() -> new AccessDeniedException("Você não possui um estabelecimento como administrador."));
 
-        if (dto.papel() == PapelUsuario.ADMINISTRADOR) {
-            throw new IllegalArgumentException("Você não pode promover outro usuário a ADMINISTRADOR.");
+        if (dto.papel() == null || !papelPermitido(dto.papel())) {
+            throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
         }
 
         UsuarioDashboard funcionario = usuarioDashboardRepository.findByEmail(dto.email())
@@ -214,6 +221,7 @@ public class EstabelecimentoController {
         UsuarioEstabelecimento vinculo = usuarioEstabelecimentoRepository
                 .findByUsuarioAndEstabelecimento(funcionario, estabelecimento)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não está vinculado ao seu estabelecimento."));
+
         vinculo.setPapel(dto.papel());
         usuarioEstabelecimentoRepository.save(vinculo);
 
@@ -225,6 +233,13 @@ public class EstabelecimentoController {
 
         return ResponseEntity.noContent().build();
     }
+
+    private boolean papelPermitido(PapelUsuario papel) {
+        return papel == PapelUsuario.ATENDENTE
+                || papel == PapelUsuario.GERENTE
+                || papel == PapelUsuario.COZINHEIRO;
+    }
+
     @GetMapping("/funcionarios")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<List<FuncionarioDados>> listarFuncionarios() throws AccessDeniedException {
