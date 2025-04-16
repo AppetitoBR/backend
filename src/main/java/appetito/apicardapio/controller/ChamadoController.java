@@ -47,4 +47,5 @@ public class ChamadoController {
         return ResponseEntity.ok(new ChamadoDetalhamento(chamado));
     }
 
+
 }
