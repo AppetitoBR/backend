@@ -16,4 +16,6 @@ public interface UsuarioEstabelecimentoRepository extends JpaRepository<UsuarioE
     List<UsuarioEstabelecimento> findAllByEstabelecimento(Estabelecimento estabelecimento);
 
     List<UsuarioEstabelecimento> findByUsuario(UsuarioDashboard usuario);
+
+    void deleteAllByEstabelecimento(Estabelecimento estabelecimento);
 }

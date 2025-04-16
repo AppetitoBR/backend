@@ -4,9 +4,13 @@ import appetito.apicardapio.dto.cadastro.UsuarioDashboardCadastro;
 import appetito.apicardapio.dto.detalhamento.UsuarioDashboardDetalhamento;
 import appetito.apicardapio.dto.GetAll.UsuarioDados;
 import appetito.apicardapio.entity.Cliente;
+import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.UsuarioDashboard;
+import appetito.apicardapio.entity.UsuarioEstabelecimento;
+import appetito.apicardapio.enums.PapelUsuario;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.UsuarioDashboardRepository;
+import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.security.DiscordAlert;
 import appetito.apicardapio.service.UsuarioDashboardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,10 +39,14 @@ public class UsuarioDashboardController {
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final UsuarioDashboardRepository usuarioRepository;
     private final UsuarioDashboardService usuarioService;
+    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
+    private final EstabelecimentoRepository estabelecimentoRepository;
 
-    public UsuarioDashboardController(UsuarioDashboardRepository usuarioRepository, UsuarioDashboardService usuarioService, EstabelecimentoRepository estabelecimentoRepository) {
+    public UsuarioDashboardController(UsuarioDashboardRepository usuarioRepository, UsuarioDashboardService usuarioService, EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository1) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioService = usuarioService;
+        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
+        this.estabelecimentoRepository = estabelecimentoRepository1;
     }
 
     @PostMapping("/cadastrar")
@@ -133,19 +141,27 @@ public class UsuarioDashboardController {
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<UsuarioDashboardDetalhamento> deletarUsuario() {
+    public ResponseEntity<?> deletarUsuarioDashboard() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (!(authentication.getPrincipal() instanceof Cliente cliente)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado.");
         }
 
-        var usuario = usuarioRepository.findById(cliente.getId()).orElse(null);
-        if (usuario == null) {
-            return ResponseEntity.notFound().build();
+        List<UsuarioEstabelecimento> vinculos = usuarioEstabelecimentoRepository.findByUsuario(usuario);
+        for (UsuarioEstabelecimento vinculo : vinculos) {
+            if (vinculo.getPapel() == PapelUsuario.ADMINISTRADOR) {
+                Estabelecimento est = vinculo.getEstabelecimento();
+                usuarioEstabelecimentoRepository.deleteAllByEstabelecimento(est);
+                estabelecimentoRepository.delete(est);
+            } else {
+                usuarioEstabelecimentoRepository.delete(vinculo);
+            }
         }
+
         usuarioRepository.delete(usuario);
-        return ResponseEntity.ok(new UsuarioDashboardDetalhamento(usuario));
+
+        return ResponseEntity.ok("Conta e vínculos removidos com sucesso.");
     }
 
     @PutMapping("/me")
