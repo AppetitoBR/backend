@@ -1,10 +1,7 @@
 package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.cadastro.ChamadoCadastro;
-import appetito.apicardapio.entity.Chamado;
-import appetito.apicardapio.entity.Cliente;
-import appetito.apicardapio.entity.Mesa;
-import appetito.apicardapio.entity.UsuarioDashboard;
+import appetito.apicardapio.entity.*;
 import appetito.apicardapio.enums.StatusChamado;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.ChamadoRepository;
@@ -80,7 +77,7 @@ public class ChamadoService {
     }
     public Chamado atenderChamado(Long chamadoId, HttpServletRequest request) throws AccessDeniedException  {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UsuarioDashboard)) {
+        if (!(principal instanceof UsuarioDashboard usuario)) {
             String ip = request.getHeader("X-Forwarded-For");
             if (ip == null || ip.isEmpty()) {
                 ip = request.getRemoteAddr();
@@ -115,6 +112,13 @@ public class ChamadoService {
         chamado.setDataHoraFechamento(LocalDateTime.now());
         return chamadoRepository.save(chamado);
     }
-
+    private void validarMesa(Mesa mesa, Estabelecimento estabelecimento) throws AccessDeniedException {
+        if (!mesa.getEstabelecimento().getEstabelecimentoId().equals(estabelecimento.getEstabelecimentoId())) {
+            throw new AccessDeniedException("A mesa não pertence ao seu estabelecimento");
+        }
+        /*
+        Valida se a mesa pertence ao estabelecimento
+         */
+    }
 }
 
