@@ -59,7 +59,7 @@ public class AutenticacaoController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
         }
     }
-
+// mudar o que o professor pediu -- questao de autenticacao com os modulos
     @PostMapping("/app")
     public ResponseEntity<?> loginApp(@RequestBody @Valid DadosAutenticacao dados) {
         try {
