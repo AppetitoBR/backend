@@ -50,7 +50,4 @@ public class ClienteController {
 
         return ResponseEntity.created(uri).body(new ClienteDetalhamento(cliente));
     }
-
-
-
 }

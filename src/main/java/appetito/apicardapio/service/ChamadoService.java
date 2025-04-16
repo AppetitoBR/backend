@@ -153,6 +153,21 @@ public class ChamadoService {
         Valida se a mesa pertence ao estabelecimento
          */
     }
+    public List<Chamado> listarChamadosDoCliente(HttpServletRequest request) throws AccessDeniedException {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!(principal instanceof Cliente cliente)) {
+            String ip = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
+                    .orElse(request.getRemoteAddr());
+
+            Logger log = LoggerFactory.getLogger(getClass());
+            log.warn("Token indevido, tentou acessar chamados do cliente. IP: {}, Tipo: {}", ip, principal.getClass().getSimpleName());
+            new DiscordAlert().AlertDiscord("❌ Tentativa indevida da API em chamado/meus - IP: " + ip);
+            throw new AccessDeniedException("Honey Pot");
+        }
+
+        return chamadoRepository.findByCliente(cliente);
+    }
 
 }
 
