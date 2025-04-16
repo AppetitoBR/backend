@@ -54,11 +54,12 @@ public class MesaController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
-    public ResponseEntity<List<MesaDetalhamento>> listarMesas() {
-        List<MesaDetalhamento> mesas = mesaService.listarMesas();
+    @GetMapping("/{nomeFantasia}/mesas")
+    public ResponseEntity<List<MesaDetalhamento>> listarMesas(@PathVariable String nomeFantasia) {
+        List<MesaDetalhamento> mesas = mesaService.listarMesasPorEstabelecimento(nomeFantasia);
         return ResponseEntity.ok(mesas);
     }
+
     @GetMapping("/{id}/qrcode")
     public ResponseEntity<byte[]> obterQRCodeDaMesa(@PathVariable Long id) {
         Mesa mesa = mesaRepository.findById(id)
