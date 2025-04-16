@@ -299,8 +299,6 @@ public class EstabelecimentoController {
     }
 
     // vou colocar no service dps
-
-
     private boolean papelPermitido(PapelUsuario papel) {
         return papel == PapelUsuario.ATENDENTE
                 || papel == PapelUsuario.GERENTE

@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,12 +42,14 @@ public class UsuarioDashboardController {
     private final UsuarioDashboardService usuarioService;
     private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
     private final EstabelecimentoRepository estabelecimentoRepository;
+    private final RestTemplateAutoConfiguration restTemplateAutoConfiguration;
 
-    public UsuarioDashboardController(UsuarioDashboardRepository usuarioRepository, UsuarioDashboardService usuarioService, EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository1) {
+    public UsuarioDashboardController(UsuarioDashboardRepository usuarioRepository, UsuarioDashboardService usuarioService, EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository1, RestTemplateAutoConfiguration restTemplateAutoConfiguration) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioService = usuarioService;
         this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
         this.estabelecimentoRepository = estabelecimentoRepository1;
+        this.restTemplateAutoConfiguration = restTemplateAutoConfiguration;
     }
 
     @PostMapping("/cadastrar")

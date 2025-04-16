@@ -6,6 +6,7 @@ import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.Mesa;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.entity.UsuarioEstabelecimento;
+import appetito.apicardapio.enums.PapelUsuario;
 import appetito.apicardapio.repository.MesaRepository;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
@@ -40,9 +41,10 @@ public class MesaService {
         Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
                 .findByUsuario(usuario)
                 .stream()
+                .filter(v -> v.getPapel() == PapelUsuario.ADMINISTRADOR || v.getPapel() == PapelUsuario.GERENTE)
                 .findFirst()
                 .map(UsuarioEstabelecimento::getEstabelecimento)
-                .orElseThrow(() -> new RuntimeException("Estabelecimento não encontrado para o usuário"));
+                .orElseThrow(() -> new AccessDeniedException("Você não possui permissão para cadastrar mesas"));
 
         Mesa mesa = new Mesa();
         mesa.setNome(dadosMesa.nome());
@@ -54,33 +56,60 @@ public class MesaService {
         byte[] qrCodeBytes = QRCodeGeneratorService.gerarQRCode(url);
         mesa.setQrcode(qrCodeBytes);
         mesaRepository.save(mesa);
+
         return new MesaDetalhamento(mesa);
     }
 
-    // mudar ainda
+
     public MesaDetalhamento atualizarMesa(Long id, MesaCadastro dadosMesa) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!(auth.getPrincipal() instanceof UsuarioDashboard usuario)) {
+            throw new AccessDeniedException("Usuário não autenticado.");
+        }
+
         Mesa mesa = mesaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada."));
 
-        mesa.setNome(dadosMesa.nome());
-        mesa.setCapacidade(dadosMesa.capacidade());
-
+        boolean vinculado = usuarioEstabelecimentoRepository.existsByUsuarioAndEstabelecimento(usuario, mesa.getEstabelecimento());
+        if (!vinculado) {
+            throw new AccessDeniedException("Você não tem permissão para atualizar esta mesa.");
+        }
         mesaRepository.save(mesa);
         return new MesaDetalhamento(mesa);
     }
-    //mudar ainda
+
     public void excluirMesa(Long id) {
-        if (!mesaRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Mesa não encontrada");
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!(auth.getPrincipal() instanceof UsuarioDashboard usuario)) {
+            throw new AccessDeniedException("Usuário não autenticado.");
         }
-        mesaRepository.deleteById(id);
+
+        Mesa mesa = mesaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada."));
+
+        boolean vinculado = usuarioEstabelecimentoRepository.existsByUsuarioAndEstabelecimento(usuario, mesa.getEstabelecimento());
+        if (!vinculado) {
+            throw new AccessDeniedException("Você não tem permissão para excluir esta mesa.");
+        }
+
+        mesaRepository.delete(mesa);
     }
 
-    //mudar ainda
-    public List<MesaDetalhamento> listarMesas() {
-        return mesaRepository.findAll().stream()
-                .map(MesaDetalhamento::new)
-                .collect(Collectors.toList());
+    public List<MesaDetalhamento> listarMesasPorEstabelecimento(String nomeFantasia) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!(auth.getPrincipal() instanceof UsuarioDashboard usuario)) {
+            throw new AccessDeniedException("Usuário não autenticado.");
         }
+
+        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository.findAllByUsuario(usuario).stream()
+                .map(UsuarioEstabelecimento::getEstabelecimento)
+                .filter(e -> e.getNomeFantasia().equalsIgnoreCase(nomeFantasia))
+                .findFirst()
+                .orElseThrow(() -> new AccessDeniedException("Você não tem acesso a esse estabelecimento."));
+
+        List<Mesa> mesas = mesaRepository.findAllByEstabelecimento(estabelecimento);
+        return mesas.stream().map(MesaDetalhamento::new).toList();
+    }
 
 }
