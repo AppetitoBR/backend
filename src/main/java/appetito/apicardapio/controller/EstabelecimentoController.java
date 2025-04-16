@@ -150,7 +150,6 @@ public class EstabelecimentoController {
         estabelecimentoRepository.delete(estabelecimento);
         return ResponseEntity.noContent().build();
     }
-
     @PostMapping("/funcionarios")
     @Transactional
     @PreAuthorize("hasRole('ADMINISTRADOR')")
@@ -234,11 +233,6 @@ public class EstabelecimentoController {
         return ResponseEntity.noContent().build();
     }
 
-    private boolean papelPermitido(PapelUsuario papel) {
-        return papel == PapelUsuario.ATENDENTE
-                || papel == PapelUsuario.GERENTE
-                || papel == PapelUsuario.COZINHEIRO;
-    }
 
     @GetMapping("/funcionarios")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
@@ -302,6 +296,15 @@ public class EstabelecimentoController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(cardapioDados);
+    }
+
+    // vou colocar no service dps
+
+
+    private boolean papelPermitido(PapelUsuario papel) {
+        return papel == PapelUsuario.ATENDENTE
+                || papel == PapelUsuario.GERENTE
+                || papel == PapelUsuario.COZINHEIRO;
     }
 
 }
