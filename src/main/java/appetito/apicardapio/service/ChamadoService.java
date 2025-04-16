@@ -6,6 +6,7 @@ import appetito.apicardapio.enums.StatusChamado;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.ChamadoRepository;
 import appetito.apicardapio.repository.MesaRepository;
+import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.security.DiscordAlert;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -25,9 +26,12 @@ public class ChamadoService {
 
     private final MesaRepository mesaRepository;
 
-    public ChamadoService(ChamadoRepository chamadoRepository, MesaRepository mesaRepository) {
+    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
+
+    public ChamadoService(ChamadoRepository chamadoRepository, MesaRepository mesaRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository) {
         this.chamadoRepository = chamadoRepository;
         this.mesaRepository = mesaRepository;
+        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
     }
 
     public Chamado solicitarChamado(ChamadoCadastro dadosChamado, HttpServletRequest request) throws AccessDeniedException {
@@ -75,8 +79,9 @@ public class ChamadoService {
         }
         return chamadoRepository.findByStatus(StatusChamado.CHAMADO);
     }
-    public Chamado atenderChamado(Long chamadoId, HttpServletRequest request) throws AccessDeniedException  {
+    public Chamado atenderChamado(Long chamadoId, HttpServletRequest request) throws AccessDeniedException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         if (!(principal instanceof UsuarioDashboard usuario)) {
             String ip = request.getHeader("X-Forwarded-For");
             if (ip == null || ip.isEmpty()) {
@@ -89,11 +94,20 @@ public class ChamadoService {
         }
         Chamado chamado = chamadoRepository.findById(chamadoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Chamado não encontrado"));
+
+        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
+                .findAllByUsuario(usuario)
+                .stream()
+                .map(UsuarioEstabelecimento::getEstabelecimento)
+                .findFirst()
+                .orElseThrow(() -> new AccessDeniedException("Você não está vinculado a um estabelecimento."));
+
+        validarMesa(chamado.getMesa(), estabelecimento);
         chamado.setStatus(StatusChamado.ATENDIDO);
         chamado.setDataHoraAtendimento(LocalDateTime.now());
+
         return chamadoRepository.save(chamado);
     }
-
     public Chamado cancelarChamado(Long chamadoId, HttpServletRequest request) throws AccessDeniedException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof Cliente)) {
@@ -120,5 +134,6 @@ public class ChamadoService {
         Valida se a mesa pertence ao estabelecimento
          */
     }
+
 }
 
