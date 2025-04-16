@@ -69,11 +69,11 @@ public class MesaController {
         if (qrCodeBytes == null || qrCodeBytes.length == 0) {
             return ResponseEntity.noContent().build();
         }
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_PNG);
         headers.setContentLength(qrCodeBytes.length);
 
         return new ResponseEntity<>(qrCodeBytes, headers, HttpStatus.OK);
     }
+    // falta algumas validaçoes
 }
