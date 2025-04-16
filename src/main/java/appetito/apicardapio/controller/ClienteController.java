@@ -114,4 +114,22 @@ public class ClienteController {
         }
         return ResponseEntity.ok(new ClienteDetalhamento(cliente));
     }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deletarCliente() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (!(authentication.getPrincipal() instanceof Cliente cliente)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Cliente não autenticado.");
+        }
+
+        var clienteExistente = clienteRepository.findById(cliente.getId()).orElse(null);
+        if (clienteExistente == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não encontrado.");
+        }
+
+        clienteRepository.delete(clienteExistente);
+        return ResponseEntity.ok("Conta do cliente excluída com sucesso.");
+    }
+
 }
