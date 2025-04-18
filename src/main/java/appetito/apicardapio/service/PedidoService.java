@@ -9,9 +9,11 @@ import appetito.apicardapio.repository.PedidoRepository;
 import appetito.apicardapio.repository.ProdutoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,15 +35,32 @@ public class PedidoService {
         if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario)) {
             throw new ResourceNotFoundException("Usuário não autenticado.");
         }
+
+        if (pedidoCadastro.itens().isEmpty()) {
+            throw new IllegalArgumentException("O pedido deve conter pelo menos um item.");
+        }
+
         Pedido pedido = new Pedido(usuario.getUsuario_dashboard_id());
         criarItensDoPedido(pedidoCadastro, pedido).forEach(pedido.getItens()::add);
         pedido.calcularTotal();
+
+        if (pedido.getTotal().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("O total do pedido não pode ser zero ou negativo.");
+        }
+
         return pedidoRepository.save(pedido);
     }
 
     public Pedido buscarPedido(Long id) {
-        return pedidoRepository.findById(id)
+        Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario) ||
+                !pedido.getCliente_id().equals(usuario.getUsuario_dashboard_id())) {
+            throw new AccessDeniedException("Você não tem permissão para acessar esse pedido.");
+        }
+        return pedido;
     }
 
     public List<Pedido> listarPedidos() {
@@ -83,18 +102,15 @@ public class PedidoService {
                 .map(ItemAtualizacao::produto_id)
                 .distinct()
                 .toList();
-
         Map<Long, Produto> produtosMap = produtoRepository.findAllById(produtoIds)
                 .stream()
                 .collect(Collectors.toMap(Produto::getProduto_id, Function.identity()));
-
         Map<Long, ItemAtualizacao> itensParaAtualizar = itensAtualizacao.stream()
                 .collect(Collectors.toMap(
                         ItemAtualizacao::produto_id,
                         Function.identity(),
                         (existente, novo) -> novo
                 ));
-
         Iterator<PedidoItem> iterator = pedido.getItens().iterator();
         while (iterator.hasNext()) {
             PedidoItem item = iterator.next();
@@ -107,7 +123,6 @@ public class PedidoService {
                 iterator.remove();
             }
         }
-
         itensParaAtualizar.forEach((produtoId, itemAtualizacao) -> {
             Produto produto = produtosMap.get(produtoId);
             if (produto == null) {
