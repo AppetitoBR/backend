@@ -67,59 +67,47 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 
-        // Verificação de segurança
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario) ||
                 !pedido.getCliente_id().equals(usuario.getUsuario_dashboard_id())) {
             throw new ResourceNotFoundException("Operação não permitida");
         }
-
-        // Atualização eficiente dos itens
         atualizarItensDoPedidoEficiente(pedido, itensAtualizacao);
-
-        // Recalcula o total automaticamente
         pedido.calcularTotal();
 
         return pedido;
     }
 
     private void atualizarItensDoPedidoEficiente(Pedido pedido, List<ItemAtualizacao> itensAtualizacao) {
-        // 1. Obter todos os IDs de produtos de uma vez
         List<Long> produtoIds = itensAtualizacao.stream()
                 .map(ItemAtualizacao::produto_id)
                 .distinct()
                 .toList();
 
-        // 2. Buscar produtos em lote (otimizado)
         Map<Long, Produto> produtosMap = produtoRepository.findAllById(produtoIds)
                 .stream()
                 .collect(Collectors.toMap(Produto::getProduto_id, Function.identity()));
 
-        // 3. Criar mapa de atualizações
         Map<Long, ItemAtualizacao> itensParaAtualizar = itensAtualizacao.stream()
                 .collect(Collectors.toMap(
                         ItemAtualizacao::produto_id,
                         Function.identity(),
-                        (existente, novo) -> novo // Resolver conflitos (manter o último)
+                        (existente, novo) -> novo
                 ));
 
-        // 4. Processar itens existentes
         Iterator<PedidoItem> iterator = pedido.getItens().iterator();
         while (iterator.hasNext()) {
             PedidoItem item = iterator.next();
             ItemAtualizacao atualizacao = itensParaAtualizar.get(item.getProduto_id());
 
             if (atualizacao != null) {
-                // Atualizar apenas a quantidade do item existente
                 item.setQuantidade(atualizacao.quantidade());
                 itensParaAtualizar.remove(item.getProduto_id());
             } else {
-                // Remover item que não está na lista de atualização
                 iterator.remove();
             }
         }
 
-        // 5. Adicionar novos itens
         itensParaAtualizar.forEach((produtoId, itemAtualizacao) -> {
             Produto produto = produtosMap.get(produtoId);
             if (produto == null) {
