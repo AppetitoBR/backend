@@ -1,8 +1,13 @@
 package appetito.apicardapio.repository;
 
+import appetito.apicardapio.entity.Cliente;
 import appetito.apicardapio.entity.Pedido;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PedidoRepository extends JpaRepository<Pedido, Long> {
+import java.util.List;
 
+public interface PedidoRepository extends JpaRepository<Pedido, Long> {
+    List<Pedido> findByCliente(Cliente cliente);
+
+    List<Pedido> findAllByMesa_Estabelecimento_EstabelecimentoId(Long estabelecimentoId);
 }
