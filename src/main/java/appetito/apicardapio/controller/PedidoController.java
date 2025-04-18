@@ -44,26 +44,27 @@ public class PedidoController {
                 .toList();
         return ResponseEntity.ok(pedidos);
     }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<PedidoDetalhamento> buscarPedido(@PathVariable Long id) {
-        Pedido pedido = pedidoService.buscarPedido(id);
-        if (pedido != null) {
-            return ResponseEntity.ok(new PedidoDetalhamento(pedido));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    /*
+        @GetMapping("/{id}")
+        public ResponseEntity<PedidoDetalhamento> buscarPedido(@PathVariable Long id) {
+            Pedido pedido = pedidoService.buscarPedido(id);
+            if (pedido != null) {
+                return ResponseEntity.ok(new PedidoDetalhamento(pedido));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
         }
-    }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirPedido(@PathVariable Long id) {
-        try {
-            pedidoService.excluirPedido(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> excluirPedido(@PathVariable Long id) {
+            try {
+                pedidoService.excluirPedido(id);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            } catch (RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
         }
-    }
+     */
     @PutMapping("/{pedidoId}")
     public ResponseEntity<Pedido> atualizarItensPedido(
             @PathVariable Long pedidoId,
