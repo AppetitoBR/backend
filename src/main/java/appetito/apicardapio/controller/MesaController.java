@@ -25,7 +25,7 @@ public class MesaController {
     @Autowired
     private MesaService mesaService;
 
-    private final MesaRepository  mesaRepository;
+    private final MesaRepository mesaRepository;
 
     public MesaController(MesaRepository mesaRepository) {
         this.mesaRepository = mesaRepository;
@@ -48,6 +48,7 @@ public class MesaController {
         MesaDetalhamento mesaDetalhamento = mesaService.atualizarMesa(id, dadosMesa);
         return ResponseEntity.ok(mesaDetalhamento);
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluirMesa(@PathVariable Long id) {
         mesaService.excluirMesa(id);
@@ -75,5 +76,4 @@ public class MesaController {
 
         return new ResponseEntity<>(qrCodeBytes, headers, HttpStatus.OK);
     }
-    // falta algumas validaçoes
 }
