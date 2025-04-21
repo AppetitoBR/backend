@@ -12,6 +12,7 @@ import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.UsuarioDashboardRepository;
 import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.security.DiscordAlert;
+import appetito.apicardapio.service.EmailService;
 import appetito.apicardapio.service.UsuarioDashboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,14 +43,13 @@ public class UsuarioDashboardController {
     private final UsuarioDashboardService usuarioService;
     private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
     private final EstabelecimentoRepository estabelecimentoRepository;
-    private final RestTemplateAutoConfiguration restTemplateAutoConfiguration;
-
-    public UsuarioDashboardController(UsuarioDashboardRepository usuarioRepository, UsuarioDashboardService usuarioService, EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository1, RestTemplateAutoConfiguration restTemplateAutoConfiguration) {
+    private final EmailService emailService;
+    public UsuarioDashboardController(UsuarioDashboardRepository usuarioRepository, UsuarioDashboardService usuarioService, EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository1, RestTemplateAutoConfiguration restTemplateAutoConfiguration, EmailService emailService) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioService = usuarioService;
         this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
         this.estabelecimentoRepository = estabelecimentoRepository1;
-        this.restTemplateAutoConfiguration = restTemplateAutoConfiguration;
+        this.emailService = emailService;
     }
 
     @PostMapping("/cadastrar")
@@ -64,6 +64,8 @@ public class UsuarioDashboardController {
         var usuario = new UsuarioDashboard(dadosUsuario);
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         usuarioRepository.save(usuario);
+        emailService.enviarEmailTexto(usuario.getEmail(), "Novo usuario cadastrado", "Voce esta recebendo um email de cadastro");
+
         var email = dadosUsuario.email();
         new DiscordAlert().AlertDiscord("Novo Usuario Dashboard cadastrado: " + email);
 
