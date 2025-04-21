@@ -64,7 +64,7 @@ public class UsuarioDashboardController {
         var usuario = new UsuarioDashboard(dadosUsuario);
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         usuarioRepository.save(usuario);
-        emailService.enviarEmailTexto(usuario.getEmail(), "Novo usuario cadastrado", "Voce esta recebendo um email de cadastro");
+        emailService.enviarEmailTexto(usuario.getEmail(), "Novo usuario cadastrado", "Voce esta recebendo um email de cadastro"); // em teste
 
         var email = dadosUsuario.email();
         new DiscordAlert().AlertDiscord("Novo Usuario Dashboard cadastrado: " + email);
