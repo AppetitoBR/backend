@@ -41,40 +41,41 @@ jobs:
       - name: Deploy via SFTP para a VPS
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: vps58320.publiccloud.com.br
-          username: root
-          password: s#20sitsSrv251
+          host: ${{ secrets.HOST_VPS }}
+          username: ${{ secrets.USER_VPS }}
+          password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           source: "dist/*.jar"
           target: "/root/projetos/appetito-api"
 
-      - name: Parar e Remover Container Existente
+      - name: Parar e Remover Container Existente (Docker)
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: vps58320.publiccloud.com.br
-          username: root
-          password: s#20sitsSrv251
+          host: ${{ secrets.HOST_VPS }}
+          username: ${{ secrets.USER_VPS }}
+          password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           script: |
-            docker rm -f api-cardapio || true
-
-      - name: Construir Imagem Docker com Novo JAR
+            if [ $(docker ps -q -f name=api-cardapio) ]; then
+            docker stop api-cardapio || true
+            docker rm api-cardapio || true
+            fi
+      - name: Construir a Imagem Docker com o Novo JAR
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: vps58320.publiccloud.com.br
-          username: root
-          password: s#20sitsSrv251
+          host: ${{ secrets.HOST_VPS }}
+          username: ${{ secrets.USER_VPS }}
+          password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           script: |
             cd /root/projetos/appetito-api
             docker build -t api-cardapio .
-
-      - name: Iniciar Container com Novo JAR
+      - name: Iniciar a Aplicação com o Novo JAR
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: vps58320.publiccloud.com.br
-          username: root
-          password: s#20sitsSrv251
+          host: ${{ secrets.HOST_VPS }}
+          username: ${{ secrets.USER_VPS }}
+          password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           script: |
             docker run -d --name api-cardapio -p 8080:8080 api-cardapio
