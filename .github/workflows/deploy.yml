@@ -48,7 +48,7 @@ jobs:
           source: "dist/*.jar"
           target: "/root/projetos/appetito-api"
 
-      - name: Parar e Remover Containers Existentes (Docker Compose)
+      - name: Parar e Remover Container Existente
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: vps58320.publiccloud.com.br
@@ -56,10 +56,9 @@ jobs:
           password: s#20sitsSrv251
           port: 22
           script: |
-            cd /root/projetos/appetito-api
-            docker-compose down
+            docker rm -f api-cardapio || true
 
-      - name: Construir a Imagem Docker com o Novo JAR
+      - name: Construir Imagem Docker com Novo JAR
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: vps58320.publiccloud.com.br
@@ -68,9 +67,9 @@ jobs:
           port: 22
           script: |
             cd /root/projetos/appetito-api
-            docker-compose build
+            docker build -t api-cardapio .
 
-      - name: Iniciar a Aplicação com o Novo JAR
+      - name: Iniciar Container com Novo JAR
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: vps58320.publiccloud.com.br
@@ -78,6 +77,4 @@ jobs:
           password: s#20sitsSrv251
           port: 22
           script: |
-            cd /root/projetos/appetito-api
-            docker-compose up -d
-            
+            docker run -d --name api-cardapio -p 8080:8080 api-cardapio
