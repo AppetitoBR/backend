@@ -80,3 +80,4 @@ jobs:
           script: |
             cd /root/projetos/appetito-api
             docker-compose up -d
+            
