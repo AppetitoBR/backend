@@ -1,14 +1,12 @@
 package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.cadastro.ChamadoCadastro;
-import appetito.apicardapio.entity.Chamado;
-import appetito.apicardapio.entity.Cliente;
-import appetito.apicardapio.entity.Mesa;
-import appetito.apicardapio.entity.UsuarioDashboard;
+import appetito.apicardapio.entity.*;
 import appetito.apicardapio.enums.StatusChamado;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.ChamadoRepository;
 import appetito.apicardapio.repository.MesaRepository;
+import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.security.DiscordAlert;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -28,39 +26,46 @@ public class ChamadoService {
 
     private final MesaRepository mesaRepository;
 
-    public ChamadoService(ChamadoRepository chamadoRepository, MesaRepository mesaRepository) {
+    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
+
+    public ChamadoService(ChamadoRepository chamadoRepository, MesaRepository mesaRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository) {
         this.chamadoRepository = chamadoRepository;
         this.mesaRepository = mesaRepository;
+        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
     }
 
     public Chamado solicitarChamado(ChamadoCadastro dadosChamado, HttpServletRequest request) throws AccessDeniedException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UsuarioDashboard usuarioDashboard)) {
+
+        if (!(principal instanceof Cliente cliente)) {
             String ip = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
                     .orElse(request.getRemoteAddr());
-            ch.qos.logback.classic.Logger log = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(getClass());
-            log.warn("🍯 HONEYPOT ALERT: Tentativa de criar estabelecimento sem ser UsuarioDashboard. IP: {}, Tipo: {}",
-                    ip,
-                    principal.getClass().getSimpleName());
-            new DiscordAlert().AlertDiscord("❌ Tentativa indevida da API em chamado/pendentes - IP: " + ip);
+                Logger log = LoggerFactory.getLogger(getClass());
+            log.warn("🍯 HONEYPOT ALERT: Tentativa de criar chamado sem ser Cliente. IP: {}, Tipo: {}",
+                    ip, principal.getClass().getSimpleName());
+            new DiscordAlert().AlertDiscord(
+                    "❌ Tentativa indevida da API em chamado/pendentes - IP: " + ip
+            );
             throw new AccessDeniedException("Honey Pot");
         }
-        Cliente cliente = (Cliente) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Mesa mesa = mesaRepository.findById(dadosChamado.mesa_id())
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
+
+        validarMesa(mesa, mesa.getEstabelecimento());
+
         Chamado chamado = new Chamado();
         chamado.setMesa(mesa);
-        chamado.setCliente(cliente);
+        chamado.setCliente((Cliente) principal);
         chamado.setMensagemAdicional(dadosChamado.mensagem());
         chamado.setStatus(StatusChamado.CHAMADO);
 
         return chamadoRepository.save(chamado);
     }
-
     public List<Chamado> listarChamadosPendentes(HttpServletRequest request) throws AccessDeniedException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UsuarioDashboard)) {
+
+        if (!(principal instanceof UsuarioDashboard usuario)) {
             String ip = request.getHeader("X-Forwarded-For");
             if (ip == null || ip.isEmpty()) {
                 ip = request.getRemoteAddr();
@@ -70,11 +75,20 @@ public class ChamadoService {
             new DiscordAlert().AlertDiscord("❌ Tentativa indevida da API em chamado/pendentes - IP: " + ip);
             throw new AccessDeniedException("Honey Pot");
         }
-        return chamadoRepository.findByStatus(StatusChamado.CHAMADO);
+
+        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
+                .findAllByUsuario(usuario)
+                .stream()
+                .map(UsuarioEstabelecimento::getEstabelecimento)
+                .findFirst()
+                .orElseThrow(() -> new AccessDeniedException("Você não está vinculado a um estabelecimento."));
+
+        return chamadoRepository.findByStatusAndMesa_Estabelecimento(StatusChamado.CHAMADO, estabelecimento);
     }
-    public Chamado atenderChamado(Long chamadoId, HttpServletRequest request) throws AccessDeniedException  {
+    public Chamado atenderChamado(Long chamadoId, HttpServletRequest request) throws AccessDeniedException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UsuarioDashboard)) {
+
+        if (!(principal instanceof UsuarioDashboard usuario)) {
             String ip = request.getHeader("X-Forwarded-For");
             if (ip == null || ip.isEmpty()) {
                 ip = request.getRemoteAddr();
@@ -86,28 +100,74 @@ public class ChamadoService {
         }
         Chamado chamado = chamadoRepository.findById(chamadoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Chamado não encontrado"));
+
+        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
+                .findAllByUsuario(usuario)
+                .stream()
+                .map(UsuarioEstabelecimento::getEstabelecimento)
+                .findFirst()
+                .orElseThrow(() -> new AccessDeniedException("Você não está vinculado a um estabelecimento."));
+
+        validarMesa(chamado.getMesa(), estabelecimento);
         chamado.setStatus(StatusChamado.ATENDIDO);
         chamado.setDataHoraAtendimento(LocalDateTime.now());
+
         return chamadoRepository.save(chamado);
     }
-
     public Chamado cancelarChamado(Long chamadoId, HttpServletRequest request) throws AccessDeniedException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof Cliente)) {
-            String ip = request.getHeader("X-Forwarded-For");
-            if (ip == null || ip.isEmpty()) {
-                ip = request.getRemoteAddr();
+
+        Chamado chamado = chamadoRepository.findById(chamadoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Chamado não encontrado"));
+
+        if (principal instanceof Cliente cliente) {
+            if (!chamado.getCliente().getId().equals(cliente.getId())) {
+                throw new AccessDeniedException("Você não pode cancelar chamados de outros clientes.");
             }
+        } else if (principal instanceof UsuarioDashboard usuario) {
+            Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
+                    .findAllByUsuario(usuario)
+                    .stream()
+                    .map(UsuarioEstabelecimento::getEstabelecimento)
+                    .findFirst()
+                    .orElseThrow(() -> new AccessDeniedException("Você não está vinculado a um estabelecimento."));
+
+           validarMesa(chamado.getMesa(), estabelecimento);
+        } else {
+            String ip = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
+                    .orElse(request.getRemoteAddr());
             Logger log = LoggerFactory.getLogger(getClass());
             log.warn("Token indevido, tentou acessar endpoint de Dashboard, IP: {}, Tipo: {}, Endpoint: chamado/cancelar", ip, principal.getClass().getSimpleName());
             new DiscordAlert().AlertDiscord("❌ Tentativa indevida da API em chamado/cancelar/ - IP: " + ip);
             throw new AccessDeniedException("Honey Pot");
         }
-        Chamado chamado = chamadoRepository.findById(chamadoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Chamado não encontrado"));
         chamado.setStatus(StatusChamado.CANCELADO);
         chamado.setDataHoraFechamento(LocalDateTime.now());
         return chamadoRepository.save(chamado);
     }
+    private void validarMesa(Mesa mesa, Estabelecimento estabelecimento) throws AccessDeniedException {
+        if (!mesa.getEstabelecimento().getEstabelecimentoId().equals(estabelecimento.getEstabelecimentoId())) {
+            throw new AccessDeniedException("A mesa não pertence ao seu estabelecimento");
+        }
+        /*
+        Valida se a mesa pertence ao estabelecimento
+         */
+    }
+    public List<Chamado> listarChamadosDoCliente(HttpServletRequest request) throws AccessDeniedException {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!(principal instanceof Cliente cliente)) {
+            String ip = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
+                    .orElse(request.getRemoteAddr());
+
+            Logger log = LoggerFactory.getLogger(getClass());
+            log.warn("Token indevido, tentou acessar chamados do cliente. IP: {}, Tipo: {}", ip, principal.getClass().getSimpleName());
+            new DiscordAlert().AlertDiscord("❌ Tentativa indevida da API em chamado/meus - IP: " + ip);
+            throw new AccessDeniedException("Honey Pot");
+        }
+
+        return chamadoRepository.findByCliente(cliente);
+    }
+
 }
 

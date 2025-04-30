@@ -19,19 +19,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private TokenService tokenService;
+    private final TokenService tokenService;
+    private final DashboardUserDetailsService dashboardUserDetailsService;
+    private final AppUserDetailsService appUserDetailsService;
 
-    @Autowired
-    private DashboardUserDetailsService dashboardUserDetailsService;
-
-    @Autowired
-    private AppUserDetailsService appUserDetailsService;
+    public SecurityFilter(AppUserDetailsService appUserDetailsService, DashboardUserDetailsService dashboardUserDetailsService, TokenService tokenService) {
+        this.appUserDetailsService = appUserDetailsService;
+        this.dashboardUserDetailsService = dashboardUserDetailsService;
+        this.tokenService = tokenService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

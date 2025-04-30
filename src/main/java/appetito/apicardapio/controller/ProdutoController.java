@@ -3,15 +3,34 @@ package appetito.apicardapio.controller;
 import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
 import appetito.apicardapio.dto.GetAll.ProdutoDados;
 import appetito.apicardapio.dto.detalhamento.ProdutoDetalhamento;
+import appetito.apicardapio.entity.Cardapio;
+import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.Produto;
+import appetito.apicardapio.entity.UsuarioDashboard;
+import appetito.apicardapio.entity.UsuarioEstabelecimento;
+import appetito.apicardapio.exception.ResourceNotFoundException;
+import appetito.apicardapio.repository.CardapioRepository;
 import appetito.apicardapio.repository.ProdutoRepository;
+import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.service.ProdutoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -23,60 +42,73 @@ public class ProdutoController {
 
     @Autowired
     private ProdutoRepository produtoRepository;
+    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
+    private final CardapioRepository cardapioRepository;
 
-    @GetMapping
-    public ResponseEntity<List<ProdutoDados>> getAllProdutosAtivos() {
-        var lista = produtoRepository.findAllByAtivoTrue().stream().map(ProdutoDados::new).toList();
-        return ResponseEntity.ok(lista);
-    }
+    public ProdutoController(UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, CardapioRepository cardapioRepository) {
+        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
 
-    @GetMapping("/{id}")
-    public Produto getProdutoById(@PathVariable Long id) {
-        return produtoService.getProdutoById(id);
+        this.cardapioRepository = cardapioRepository;
     }
 
     @PostMapping
-    public ResponseEntity<ProdutoDetalhamento> cadastrarProduto(@RequestBody @Valid ProdutoCadastro dadosProduto, UriComponentsBuilder uriP){
-        var produto = new Produto(dadosProduto);
-        produtoRepository.save(new Produto(dadosProduto));
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
+    @Transactional
+    public ResponseEntity<ProdutoDetalhamento> cadastrarProduto(
+            @RequestBody @Valid ProdutoCadastro dadosProduto,
+            UriComponentsBuilder uriP) {
+        UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
+                .findAllByUsuario(usuario)
+                .stream()
+                .map(UsuarioEstabelecimento::getEstabelecimento)
+                .findFirst()
+                .orElseThrow(() -> new AccessDeniedException("Você não está vinculado a um estabelecimento."));
+
+        Cardapio cardapio = cardapioRepository.findById(dadosProduto.cardapio())
+                .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado."));
+
+        if (!cardapio.getEstabelecimento().equals(estabelecimento)) {
+            throw new AccessDeniedException("Você não pode adicionar produtos a este cardápio.");
+        }
+        Produto produto = new Produto(dadosProduto);
+        produto.setCardapio(cardapio);
+        produtoRepository.save(produto);
         var uri = uriP.path("/produto/{id}").buildAndExpand(produto.getProduto_id()).toUri();
         return ResponseEntity.created(uri).body(new ProdutoDetalhamento(produto));
     }
 
-    @PutMapping("/{id}")
-    public Produto updateProduto(@PathVariable Long id, @RequestBody ProdutoCadastro produtoCadastro) {
-        return produtoService.updateProduto(id, produtoCadastro);
+    @PutMapping(value = "/{id}/imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Atualiza a imagem do produto")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Imagem atualizada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado")
+    })
+    public ResponseEntity<ProdutoDetalhamento> setImagemProduto(
+            @PathVariable Long id,
+            @Parameter(description = "Imagem do produto", required = true,
+                    content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+            @RequestParam("imagem") MultipartFile imagem
+    ) throws IOException {
+
+        Produto produto = produtoService.setImagemProduto(id, imagem);
+        ProdutoDetalhamento detalhamento = new ProdutoDetalhamento(produto);
+
+        return ResponseEntity.ok(detalhamento);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteProduto(@PathVariable Long id) {
-        produtoService.deleteProduto(id);
-    }
+    @GetMapping("/{id}/imagem")
+    public ResponseEntity<byte[]> getImagemProduto(@PathVariable Long id) {
+        Produto produto = produtoService.getProdutoById(id);
 
-    @GetMapping("/cardapio/{id}")
-    public ResponseEntity<List<ProdutoDados>> getAllProdutosbyCardapio(@PathVariable Long id) {
-        var lista = produtoRepository.findAllByCardapio(id)
-                .stream()
-                .map(ProdutoDados::new)
-                .toList();
-        return ResponseEntity.ok(lista);
+        if (produto.getImagens() != null) {
+            return ResponseEntity.ok()
+                    .header("Content-Type", "image/jpeg")
+                    .body(produto.getImagens());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
-
- //   @Operation(summary = "Upload da imagem de perfil do usuário")
- //   @PostMapping(value = "/{id}/upload-imagem", consumes = "multipart/form-data")
- //   public ResponseEntity<String> uploadImagemProduto(
- //           @PathVariable Long id,
- //           @RequestPart("file") MultipartFile file
-  //  ) {
- //       try {
- //           Produto produto = produtoService.salvarImagemPerfil(id, file);
-  //          if (produto != null) {
-   //             return ResponseEntity.ok("Imagem do produto foi salva");
-  //          } else {
-  //              return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Produto não encontrado");
- //           }
-  //      } catch (IOException e) {
-  //          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao salvar imagem");
-   //     }
- //   }
 }

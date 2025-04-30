@@ -15,13 +15,12 @@ public record ProdutoDetalhamento(
         Integer estoque,
         Integer estoque_minimo,
         Boolean ativo,
-        String unidade_medida,
-        String imagens
+        String unidade_medida
 ) {
     public ProdutoDetalhamento(Produto produto) {
         this(
                 produto.getProduto_id(),
-                produto.getCardapio(),
+                produto.getCardapio().getId(),
                 produto.getNome_curto(),
                 produto.getNome_longo(),
                 produto.getCategoria(),
@@ -31,8 +30,7 @@ public record ProdutoDetalhamento(
                 produto.getEstoque(),
                 produto.getEstoque_minimo(),
                 produto.getAtivo(),
-                produto.getUnidade_medida(),
-                produto.getImagens()
+                produto.getUnidade_medida()
         );
     }
 }

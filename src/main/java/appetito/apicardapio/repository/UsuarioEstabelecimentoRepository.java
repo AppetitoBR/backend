@@ -4,7 +4,6 @@ import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.entity.UsuarioEstabelecimento;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,4 +14,8 @@ public interface UsuarioEstabelecimentoRepository extends JpaRepository<UsuarioE
     boolean existsByUsuarioAndEstabelecimento(UsuarioDashboard usuario, Estabelecimento estabelecimento);
     Optional<UsuarioEstabelecimento> findByUsuarioAndEstabelecimento(UsuarioDashboard funcionario, Estabelecimento estabelecimento);
     List<UsuarioEstabelecimento> findAllByEstabelecimento(Estabelecimento estabelecimento);
+
+    List<UsuarioEstabelecimento> findByUsuario(UsuarioDashboard usuario);
+
+    void deleteAllByEstabelecimento(Estabelecimento estabelecimento);
 }

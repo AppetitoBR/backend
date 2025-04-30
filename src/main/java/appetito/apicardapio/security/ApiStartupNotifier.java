@@ -21,7 +21,7 @@ public class ApiStartupNotifier {
     }
     @PreDestroy
     public void notificarStop() {
-        String mensagem = "API Desligada";
+        String mensagem = "❎ API Desligada";
         discordAlert.AlertDiscord(mensagem);
     }
 

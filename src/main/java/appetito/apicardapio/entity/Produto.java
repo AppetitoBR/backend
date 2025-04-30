@@ -1,6 +1,7 @@
 package appetito.apicardapio.entity;
 
 import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,8 +19,10 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long produto_id;
 
-    @Column(name = "cardapio_id", nullable = false)
-    private Long cardapio;
+    @ManyToOne
+    @JoinColumn(name = "cardapio_id", nullable = false)
+    @JsonBackReference
+    private Cardapio cardapio;
 
     private String nome_curto;
     private String nome_longo;
@@ -31,10 +34,12 @@ public class Produto {
     private Integer estoque_minimo;
     private Boolean ativo;
     private String unidade_medida;
-    private String imagens;
+
+    @Lob
+    @Column(name = "imagens")
+    private byte[] imagens;
 
     public Produto(ProdutoCadastro produtoCadastro) {
-        this.cardapio = produtoCadastro.cardapio();
         this.nome_curto = produtoCadastro.nome_curto();
         this.nome_longo = produtoCadastro.nome_longo();
         this.categoria = produtoCadastro.categoria();
@@ -44,6 +49,5 @@ public class Produto {
         this.ativo = produtoCadastro.ativo();
         this.estoque = produtoCadastro.estoque();
         this.estoque_minimo = produtoCadastro.estoque_minimo();
-        this.imagens = produtoCadastro.imagens();
     }
 }

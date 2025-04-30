@@ -38,7 +38,7 @@ public class UsuarioDashboard implements UserDetails {
    // private LocalDate data_nascimento;
   //  private String idioma_padrao;
    // private String nacionalidade;
-   // private byte[] imagem_perfil;
+   private byte[] imagem_perfil;
    @Enumerated(EnumType.STRING)
    @Column(name = "situacao")
    private Situacao situacao;

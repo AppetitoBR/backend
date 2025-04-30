@@ -1,13 +1,21 @@
 package appetito.apicardapio.service;
 
+import appetito.apicardapio.dto.GetAll.CardapioDados;
 import appetito.apicardapio.dto.detalhamento.CardapioDetalhamento;
 import appetito.apicardapio.entity.Cardapio;
 import appetito.apicardapio.entity.Estabelecimento;
+import appetito.apicardapio.entity.UsuarioDashboard;
+import appetito.apicardapio.enums.PapelUsuario;
 import appetito.apicardapio.repository.CardapioRepository;
 import appetito.apicardapio.exception.ResourceNotFoundException;
+import appetito.apicardapio.repository.EstabelecimentoRepository;
+import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
+import appetito.apicardapio.security.DiscordAlert;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -16,45 +24,37 @@ import java.util.stream.Collectors;
 public class CardapioService {
 
     private final CardapioRepository cardapioRepository;
+    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
 
-    public CardapioService(CardapioRepository cardapioRepository){
+    public CardapioService(CardapioRepository cardapioRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository){
         this.cardapioRepository = cardapioRepository;
+        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
     }
 
+    public List<CardapioDados> listarCardapiosComProdutosPorNomeFantasia(String nomeFantasia) {
+        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimentoNomeFantasia(nomeFantasia);
 
-    // Buscar um cardápio por ID
-    public CardapioDetalhamento buscarCardapioPorId(Long cardapio_id) {
-        Cardapio cardapio = cardapioRepository.findById(cardapio_id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado"));
-        return new CardapioDetalhamento(cardapio);
-    }
-
-    // Listar cardápios por estabelecimento
-    public List<CardapioDetalhamento> listarCardapiosPorEstabelecimento(Estabelecimento estabelecimento) {
-        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimento(estabelecimento);// mudar o quanto antes
-        if (cardapios.isEmpty()) {
-            throw new ResourceNotFoundException("Nenhum cardápio encontrado para o estabelecimento informado");
-        }
         return cardapios.stream()
-                .map(CardapioDetalhamento::new)
-                .collect(Collectors.toList());
+                .map(CardapioDados::new)
+                .toList();
     }
 
-    public void deletarCardapio(Long id) {
-        if (!cardapioRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Cardapio não encontrada");
-        }
-        cardapioRepository.deleteById(id);
-    }
-    // deleta o estabelecimento apenas se ele pertencer a ele
-    public boolean deletarSePertencerAoEstabelecimento(Long cardapioId, Estabelecimento estabelecimento) {
-        Optional<Cardapio> cardapioOpt = cardapioRepository.findByIdAndEstabelecimento(cardapioId, estabelecimento); // mudar o quanto antes
+    @Transactional
+    public void deletarCardapio(Long cardapioId, UsuarioDashboard usuario) throws AccessDeniedException {
+        Cardapio cardapio = cardapioRepository.findById(cardapioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado"));
 
-        if (cardapioOpt.isEmpty()) {
-            return false;
-        }
+        Estabelecimento estabelecimento = cardapio.getEstabelecimento();
 
-        cardapioRepository.deleteById(cardapioId);
-        return true;
+        boolean vinculado = usuarioEstabelecimentoRepository
+                .existsByUsuarioAndEstabelecimento(usuario, estabelecimento);
+
+        if (!vinculado) {
+            throw new AccessDeniedException("Você não está vinculado a este estabelecimento.");
+        }
+        var email = usuario.getEmail();
+        new DiscordAlert().AlertDiscord("O "+ email + "Deletou um cardapio com o ID: "+ cardapioId + " Do estabelecimento: "+ estabelecimento.getRazao_social());
+
+        cardapioRepository.delete(cardapio);
     }
 }

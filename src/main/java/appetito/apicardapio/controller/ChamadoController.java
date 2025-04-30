@@ -47,4 +47,13 @@ public class ChamadoController {
         return ResponseEntity.ok(new ChamadoDetalhamento(chamado));
     }
 
+    @GetMapping("/meus")
+    public ResponseEntity<List<ChamadoDetalhamento>> listarMeusChamados(HttpServletRequest request) throws AccessDeniedException {
+        List<ChamadoDetalhamento> chamados = chamadoService.listarChamadosDoCliente(request)
+                .stream()
+                .map(ChamadoDetalhamento::new)
+                .toList();
+        return ResponseEntity.ok(chamados);
+    }
+
 }
