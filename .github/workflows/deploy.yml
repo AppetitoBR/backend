@@ -6,16 +6,16 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Deploy via FTP
+name: Deploy via SFTP
 
 on:
   push:
     branches:
-      - main  # Altere para a branch desejada
+      - main
 
 jobs:
   deploy:
-    name: Deploy
+    name: Deploy API para VPS
     runs-on: ubuntu-latest
 
     steps:
@@ -38,11 +38,45 @@ jobs:
       - name: Criar Diretório de Deploy
         run: mkdir -p dist && cp -r target/*.jar dist/
 
-      - name: Deploy via FTP para a VPS
-        uses: locaweb/ftp-deploy@1.0.0
+      - name: Deploy via SFTP para a VPS
+        uses: appleboy/scp-action@v0.1.7
         with:
-          host: "ftp.stargateit.com.br"
-          user: "victorjsp@stargateit2"
-          password: "s#20sisFTP1251"
-          localDir: "dist"
-          remoteDir: "public_html/appetito"
+          host: vps58320.publiccloud.com.br
+          username: root
+          password: s#20sitsSrv251
+          port: 22
+          source: "dist/*.jar"
+          target: "/root/projetos/appetito-api"
+
+      - name: Parar e Remover Containers Existentes (Docker Compose)
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: vps58320.publiccloud.com.br
+          username: root
+          password: s#20sitsSrv251
+          port: 22
+          script: |
+            cd /root/projetos/appetito-api
+            docker-compose down
+
+      - name: Construir a Imagem Docker com o Novo JAR
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: vps58320.publiccloud.com.br
+          username: root
+          password: s#20sitsSrv251
+          port: 22
+          script: |
+            cd /root/projetos/appetito-api
+            docker-compose build
+
+      - name: Iniciar a Aplicação com o Novo JAR
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: vps58320.publiccloud.com.br
+          username: root
+          password: s#20sitsSrv251
+          port: 22
+          script: |
+            cd /root/projetos/appetito-api
+            docker-compose up -d
