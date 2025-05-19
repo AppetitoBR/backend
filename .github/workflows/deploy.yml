@@ -32,6 +32,7 @@ jobs:
       - name: Verificar Versão do Java
         run: java -version
 
+
       - name: Build do Projeto
         run: mvn clean install
 
