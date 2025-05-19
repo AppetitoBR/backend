@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.USER_VPS }}
           password: ${{ secrets.PASSWORD_VPS }}
           port: 22
-          source: "dist/*.jar"
+          source: "dist/*"
           target: "/root/projetos/appetito-api"
 
       - name: Parar e Remover Container Existente (Docker)
@@ -86,4 +86,3 @@ jobs:
           script: |
             echo "🚀 Iniciando novo container"
             docker run -d --name api-cardapio -p 8080:8080 api-cardapio
-
