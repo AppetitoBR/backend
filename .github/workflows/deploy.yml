@@ -68,7 +68,7 @@ jobs:
           password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           script: |
-            cd /root/projetos/appetito-api
+            cd /root/projetos/appetito-api/dist
             docker build -t api-cardapio .
 
       - name: Rodar container com a nova imagem
