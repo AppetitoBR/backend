@@ -72,7 +72,7 @@ jobs:
           password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           script: |
-            cd /root/projetos/appetito-api
+            cd /root/projetos/appetito-api/dist
             echo "📦 Build da imagem Docker"
             docker build -t api-cardapio .
 
