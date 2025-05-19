@@ -7,6 +7,9 @@ WORKDIR /app
 # Copia o código-fonte para dentro do contêiner
 COPY . .
 
+# Dá permissão executável para o mvnw
+RUN chmod +x mvnw
+
 # Compila a aplicação usando Maven
 RUN ./mvnw clean package -DskipTests
 
