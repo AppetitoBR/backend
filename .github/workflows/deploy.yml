@@ -36,7 +36,10 @@ jobs:
         run: mvn clean install
 
       - name: Criar Diretório de Deploy
-        run: mkdir -p dist && cp -r target/*.jar dist/
+        run: |
+          mkdir -p dist
+          cp target/*.jar dist/
+          cp Dockerfile dist/
 
       - name: Deploy via SFTP para a VPS
         uses: appleboy/scp-action@v0.1.7
