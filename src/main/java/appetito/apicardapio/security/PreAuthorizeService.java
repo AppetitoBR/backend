@@ -43,7 +43,4 @@ public class PreAuthorizeService {
 
     }
 
-//  00  ->  00
-    // ROLE = Usuario ->
-
 }
