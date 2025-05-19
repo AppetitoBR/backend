@@ -15,7 +15,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy API para VPS
+    name: Build e Deploy API para VPS
     runs-on: ubuntu-latest
 
     steps:
@@ -29,21 +29,16 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Verificar Versão do Java
-        run: java -version
+      - name: Build do Projeto (gera JAR)
+        run: mvn clean install -DskipTests
 
-      - name: Build do Projeto
-        run: mvn clean install
-
-      - name: Criar Diretório de Deploy
+      - name: Preparar artefatos para deploy
         run: |
           mkdir -p dist
           cp target/*.jar dist/
           cp Dockerfile dist/
-          cp mvnw dist/
-          cp -r .mvn dist/
 
-      - name: Deploy via SFTP para a VPS
+      - name: Enviar JAR + Dockerfile via SFTP para VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST_VPS }}
@@ -53,7 +48,7 @@ jobs:
           source: "dist/*"
           target: "/root/projetos/appetito-api"
 
-      - name: Parar e Remover Container Existente (Docker)
+      - name: Parar e remover container antigo (Docker)
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.HOST_VPS }}
@@ -61,12 +56,11 @@ jobs:
           password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           script: |
-            echo "🛑 Verificando e removendo container antigo (api-cardapio)"
             if docker ps -a --format '{{.Names}}' | grep -q '^api-cardapio$'; then
               docker rm -f api-cardapio
             fi
 
-      - name: Construir a Imagem Docker com o Novo JAR
+      - name: Build da imagem Docker na VPS
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.HOST_VPS }}
@@ -74,11 +68,10 @@ jobs:
           password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           script: |
-            cd /root/projetos/appetito-api/dist
-            echo "📦 Build da imagem Docker"
+            cd /root/projetos/appetito-api
             docker build -t api-cardapio .
 
-      - name: Iniciar a Aplicação com o Novo JAR
+      - name: Rodar container com a nova imagem
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.HOST_VPS }}
@@ -86,5 +79,4 @@ jobs:
           password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           script: |
-            echo "🚀 Iniciando novo container"
             docker run -d --name api-cardapio -p 8080:8080 api-cardapio
