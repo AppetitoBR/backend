@@ -56,10 +56,11 @@ jobs:
           password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           script: |
-            if [ $(docker ps -q -f name=api-cardapio) ]; then
-            docker stop api-cardapio || true
-            docker rm api-cardapio || true
+            echo "🛑 Verificando e removendo container antigo (api-cardapio)"
+            if docker ps -a --format '{{.Names}}' | grep -q '^api-cardapio$'; then
+              docker rm -f api-cardapio
             fi
+
       - name: Construir a Imagem Docker com o Novo JAR
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -69,7 +70,9 @@ jobs:
           port: 22
           script: |
             cd /root/projetos/appetito-api
+            echo "📦 Build da imagem Docker"
             docker build -t api-cardapio .
+
       - name: Iniciar a Aplicação com o Novo JAR
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -78,4 +81,6 @@ jobs:
           password: ${{ secrets.PASSWORD_VPS }}
           port: 22
           script: |
+            echo "🚀 Iniciando novo container"
             docker run -d --name api-cardapio -p 8080:8080 api-cardapio
+
