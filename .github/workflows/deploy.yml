@@ -40,6 +40,8 @@ jobs:
           mkdir -p dist
           cp target/*.jar dist/
           cp Dockerfile dist/
+          cp mvnw dist/
+          cp -r .mvn dist/
 
       - name: Deploy via SFTP para a VPS
         uses: appleboy/scp-action@v0.1.7
