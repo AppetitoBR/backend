@@ -20,10 +20,11 @@ FROM openjdk:21-jdk
 WORKDIR /app
 
 # Copia o JAR gerado pela fase anterior
-COPY --from=builder /app/target/api-cardapio-0.0.1-SNAPSHOT.jar app.jar
+COPY api-cardapio-0.0.1-SNAPSHOT.jar app.jar
 
 # Expõe a porta da aplicação
 EXPOSE 8080
 
 # Comando para rodar a aplicação
 CMD ["java", "-jar", "app.jar"]
+
