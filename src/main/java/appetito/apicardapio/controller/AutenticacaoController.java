@@ -24,11 +24,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 /**
  * Controlador responsável por lidar com autenticação de usuários para dois módulos distintos:
  * Dashboard (usuários internos) e App (clientes).
- *
+ * <p>
  * Possui dois endpoints:
  * - /login/dashboard → login de usuários do sistema interno
  * - /login/app       → login de clientes do cardápio
- *
+ * <p>
  * Utiliza dois `DaoAuthenticationProvider` distintos para lidar com os contextos de autenticação separadamente.
  */
 @RestController
