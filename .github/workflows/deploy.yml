@@ -71,6 +71,16 @@ jobs:
             cd /root/projetos/appetito-api/dist
             docker build -t api-cardapio .
 
+      - name: Limpar imagens Docker não utilizadas (dangling)
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST_VPS }}
+          username: ${{ secrets.USER_VPS }}
+          password: ${{ secrets.PASSWORD_VPS }}
+          port: 22
+          script: |
+            docker image prune -f
+
       - name: Rodar container com a nova imagem
         uses: appleboy/ssh-action@v0.1.10
         with:
