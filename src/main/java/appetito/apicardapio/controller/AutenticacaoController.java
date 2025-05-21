@@ -21,7 +21,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-
+/**
+ * Controlador responsável por lidar com autenticação de usuários para dois módulos distintos:
+ * Dashboard (usuários internos) e App (clientes).
+ * <p>
+ * Possui dois endpoints:
+ * - /login/dashboard → login de usuários do sistema interno
+ * - /login/app       → login de clientes do cardápio
+ * <p>
+ * Utiliza dois `DaoAuthenticationProvider` distintos para lidar com os contextos de autenticação separadamente.
+ */
 @RestController
 @RequestMapping("/login")
 public class AutenticacaoController {
@@ -30,6 +39,13 @@ public class AutenticacaoController {
     private final DaoAuthenticationProvider appAuthProvider;
     private final TokenService tokenService;
 
+    /**
+     * Construtor com injeção de dependência dos providers e do serviço de token JWT.
+     *
+     * @param dashboardAuthProvider Provider para autenticação de usuários do Dashboard.
+     * @param appAuthProvider       Provider para autenticação de clientes do App.
+     * @param tokenService          Serviço responsável pela geração de tokens JWT.
+     */
     public AutenticacaoController(
             @Qualifier("dashboardAuthenticationProvider") DaoAuthenticationProvider dashboardAuthProvider,
             @Qualifier("appAuthenticationProvider") DaoAuthenticationProvider appAuthProvider,
@@ -40,6 +56,12 @@ public class AutenticacaoController {
         this.tokenService = tokenService;
     }
 
+    /**
+     * Endpoint de login para usuários do Dashboard.
+     *
+     * @param dados Objeto contendo o email e a senha fornecidos para autenticação.
+     * @return Token JWT válido caso as credenciais estejam corretas, ou status 401 se inválidas.
+     */
     @PostMapping("/dashboard")
     public ResponseEntity<?> loginDashboard(@RequestBody @Valid DadosAutenticacao dados) {
         try {
@@ -54,12 +76,19 @@ public class AutenticacaoController {
             new DiscordAlert().AlertDiscord("✅ Login em Dashboard realizado com sucesso por: " + emailDoUsuario + " (IP: " + ip + ")");
             Logger log = LoggerFactory.getLogger(getClass());
             log.warn(usuario.getAuthorities().toString());
+
             return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
         }
     }
-// mudar o que o professor pediu -- questao de autenticacao com os modulos
+
+    /**
+     * Endpoint de login para clientes do App (Cardápio).
+     *
+     * @param dados Objeto contendo o email e a senha fornecidos para autenticação.
+     * @return Token JWT válido caso as credenciais estejam corretas, ou status 401 se inválidas.
+     */
     @PostMapping("/app")
     public ResponseEntity<?> loginApp(@RequestBody @Valid DadosAutenticacao dados) {
         try {
@@ -73,6 +102,7 @@ public class AutenticacaoController {
             new DiscordAlert().AlertDiscord("✅ Login em Cliente realizado com sucesso por: " + emailDoCliente + " (IP: " + ip + ")");
             Logger log = LoggerFactory.getLogger(getClass());
             log.warn(cliente.getAuthorities().toString());
+
             var tokenJWT = tokenService.generateToken(cliente);
             return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
         } catch (AuthenticationException e) {
@@ -80,5 +110,4 @@ public class AutenticacaoController {
         }
     }
 }
-
 
