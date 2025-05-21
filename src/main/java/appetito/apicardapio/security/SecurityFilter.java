@@ -20,6 +20,25 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * Filtro de segurança que intercepta todas as requisições HTTP para validar e
+ * autenticar o usuário com base em um token JWT.
+ *
+ * <p>
+ * Este filtro verifica a presença do token no header "Authorization",
+ * decodifica o token JWT e autentica o usuário com base no tipo (papel) declarado
+ * no token: {@code DASHBOARD} ou {@code CLIENTE}.
+ * </p>
+ *
+ * <p>
+ * Em caso de erro na verificação, o filtro bloqueia a requisição com o código apropriado
+ * (401 ou 403). Caso o token seja válido, o usuário é autenticado e a requisição continua.
+ * </p>
+ *
+ * <p><strong>⚠️ Planejamento futuro:</strong> está prevista a implementação de suporte
+ * para **duplo JWT** (ex: token de acesso + refresh token ou múltiplos tokens por domínio).
+ * Isso deve ser integrado neste filtro ou em um filtro complementar.</p>
+ */
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
@@ -27,12 +46,28 @@ public class SecurityFilter extends OncePerRequestFilter {
     private final DashboardUserDetailsService dashboardUserDetailsService;
     private final AppUserDetailsService appUserDetailsService;
 
+    /**
+     * Construtor que injeta os serviços necessários para autenticação.
+     *
+     * @param appUserDetailsService         serviço de autenticação para clientes (App)
+     * @param dashboardUserDetailsService   serviço de autenticação para usuários do dashboard
+     * @param tokenService                  serviço de manipulação e validação de JWT
+     */
     public SecurityFilter(AppUserDetailsService appUserDetailsService, DashboardUserDetailsService dashboardUserDetailsService, TokenService tokenService) {
         this.appUserDetailsService = appUserDetailsService;
         this.dashboardUserDetailsService = dashboardUserDetailsService;
         this.tokenService = tokenService;
     }
 
+    /**
+     * Executa a lógica de filtro para autenticação baseada em JWT.
+     *
+     * @param request     requisição HTTP
+     * @param response    resposta HTTP
+     * @param filterChain cadeia de filtros
+     * @throws ServletException em caso de erro do servlet
+     * @throws IOException      em caso de erro de I/O
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -42,6 +77,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (tokenJWT != null) {
             try {
                 DecodedJWT decodedJWT = tokenService.decodeToken(tokenJWT);
+
                 if (decodedJWT.getSubject() == null) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido: subject ausente");
                     return;
@@ -79,6 +115,12 @@ public class SecurityFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    /**
+     * Recupera o token JWT do cabeçalho {@code Authorization}.
+     *
+     * @param request requisição HTTP
+     * @return token JWT ou {@code null} se não encontrado
+     */
     private String recuperarToken(HttpServletRequest request) {
         var authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null) {
