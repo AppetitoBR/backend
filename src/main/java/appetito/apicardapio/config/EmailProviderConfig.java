@@ -13,5 +13,5 @@ public class EmailProviderConfig {
             case "zoho.com" -> "smtp.zoho.com";
             default -> throw new IllegalArgumentException("Provedor de e-mail não suportado: " + domain);
         };
-    } // retirar
+    } // vou tirar tudo provavelmente
 }
