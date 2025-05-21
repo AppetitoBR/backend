@@ -18,6 +18,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Entidade que representa um usuário do sistema de dashboard.
+ *
+ * Essa classe implementa a interface UserDetails do Spring Security,
+ * permitindo que seja utilizada no mecanismo de autenticação e autorização.
+ *
+ * Cada usuário pode ter vínculos com múltiplos estabelecimentos,
+ * cada vínculo com um papel específico (ADMIN, GERENTE, etc).
+ *
+ * Os papéis do usuário são convertidos em authorities para o Spring Security
+ * a partir dos vínculos estabelecidos.
+ */
 @Data
 @Table(name = "usuario_dashboard")
 @Entity(name = "UsuarioDashboard")
@@ -27,47 +39,83 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class UsuarioDashboard implements UserDetails {
 
+    /**
+     * Identificador único do usuário.
+     * Gerado automaticamente pelo banco.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long usuario_dashboard_id;
 
+    /**
+     * Nome completo do usuário.
+     */
     private String nome_completo;
- //   private String cpf;
+
+    /**
+     * Email do usuário, usado como username para autenticação.
+     */
     private String email;
+
+    /**
+     * Senha do usuário, armazenada de forma segura (hash).
+     */
     private String senha;
-   // private LocalDate data_nascimento;
-  //  private String idioma_padrao;
-   // private String nacionalidade;
-   private byte[] imagem_perfil;
-   @Enumerated(EnumType.STRING)
-   @Column(name = "situacao")
-   private Situacao situacao;
-    //private String situacao;
-    //private String contatos;
-   // private String endereco;
-  //  private String redes_sociais;
+
+    /**
+     * Imagem do perfil armazenada como array de bytes (blob).
+     */
+    private byte[] imagem_perfil;
+
+    /**
+     * Situação do usuário (ex: ATIVO, INATIVO).
+     * Usado para controle de acesso e status.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "situacao")
+    private Situacao situacao;
+
+    /**
+     * Data de cadastro do usuário no sistema.
+     */
     private LocalDate data_cadastro;
+
+    /**
+     * Data da última atualização dos dados do usuário.
+     */
     private LocalDate data_atualizacao;
 
-
+    /**
+     * Vínculos do usuário com estabelecimentos,
+     * representando a associação do usuário com um estabelecimento e o papel dele nesse contexto.
+     */
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<UsuarioEstabelecimento> vinculos;
 
+    /**
+     * Lista de estabelecimentos vinculados ao usuário,
+     * carregada ansiosamente (fetch EAGER) para uso imediato em decisões de segurança.
+     */
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<UsuarioEstabelecimento> estabelecimentos = new ArrayList<>();
 
+    /**
+     * Construtor que inicializa um usuário a partir de um DTO.
+     *
+     * @param dadosUsuario DTO contendo os dados para criação do usuário.
+     */
     public UsuarioDashboard(UsuarioDashboardCadastro dadosUsuario) {
         this.nome_completo = dadosUsuario.nome_completo();
-      //  this.cpf = dadosUsuario.cpf();
         this.email = dadosUsuario.email();
         this.senha = dadosUsuario.senha();
-      //  this.data_nascimento = dadosUsuario.data_nascimento();
-       // this.idioma_padrao = dadosUsuario.idioma_padrao();
-       // this.endereco = dadosUsuario.endereco();
-      //  this.redes_sociais = dadosUsuario.redes_sociais();
-      //  this.contatos = dadosUsuario.contatos();
     }
+
+    /**
+     * Retorna as authorities (perfis) do usuário para o Spring Security.
+     * Cada vínculo com estabelecimento gera uma ROLE específica no formato ROLE_<PAPEL>.
+     * Caso não haja vínculo, retorna a ROLE_USUARIODASHBOARD como padrão.
+     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (estabelecimentos == null || estabelecimentos.isEmpty()) {
@@ -78,32 +126,49 @@ public class UsuarioDashboard implements UserDetails {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * Retorna a senha do usuário.
+     */
     @Override
     public String getPassword() {
         return senha;
     }
 
+    /**
+     * Retorna o nome de usuário (email) usado para login.
+     */
     @Override
     public String getUsername() {
         return email;
     }
 
+    /**
+     * Indica se a conta não está expirada (sempre true no momento).
+     */
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
+    /**
+     * Indica se a conta não está bloqueada (sempre true no momento).
+     */
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
+    /**
+     * Indica se as credenciais não estão expiradas (sempre true no momento).
+     */
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
+    /**
+     * Indica se o usuário está habilitado (sempre true no momento).
+     */
     @Override
     public boolean isEnabled() {
         return true;
