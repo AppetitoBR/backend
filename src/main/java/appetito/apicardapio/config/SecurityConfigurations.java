@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,12 +20,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Classe de configuração de segurança da aplicação.
+ * <p>
+ * Configura o filtro de autenticação JWT, CORS, políticas de sessão, permissões de endpoints e dois
+ * `DaoAuthenticationProvider` diferentes: um para usuários do Dashboard e outro para clientes do App.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -43,6 +44,18 @@ public class SecurityConfigurations {
     @Autowired
     private AppUserDetailsService appUserDetailsService;
 
+    /**
+     * Configura a cadeia de filtros de segurança para a aplicação.
+     * <p>
+     * - Desabilita CSRF.
+     * - Define a política de sessão como STATELESS.
+     * - Permite requisições públicas para endpoints de login, cadastro, cardápio e documentação Swagger.
+     * - Aplica filtro JWT antes do filtro padrão de autenticação.
+     *
+     * @param http objeto de configuração do Spring Security.
+     * @return SecurityFilterChain configurada.
+     * @throws Exception caso haja falha na configuração.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -69,6 +82,11 @@ public class SecurityConfigurations {
                 .build();
     }
 
+    /**
+     * Configuração global de CORS para permitir requisições de origens específicas.
+     *
+     * @return CorsConfigurationSource com regras definidas.
+     */
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -86,10 +104,21 @@ public class SecurityConfigurations {
         return source;
     }
 
+    /**
+     * Bean responsável por codificar senhas usando o algoritmo BCrypt.
+     *
+     * @return Instância de PasswordEncoder.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    /**
+     * Provider de autenticação para usuários do Dashboard.
+     *
+     * @return DaoAuthenticationProvider configurado.
+     */
     @Bean
     public DaoAuthenticationProvider dashboardAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -98,6 +127,11 @@ public class SecurityConfigurations {
         return provider;
     }
 
+    /**
+     * Provider de autenticação para clientes do App.
+     *
+     * @return DaoAuthenticationProvider configurado.
+     */
     @Bean
     public DaoAuthenticationProvider appAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
