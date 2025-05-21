@@ -41,7 +41,7 @@ public class UsuarioEstabelecimento {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estabelecimento_id")
-    @JsonBackReference // Para evitar loop infinito na serialização JSON
+    @JsonBackReference
     private Estabelecimento estabelecimento;
 
     /**
