@@ -198,7 +198,7 @@ public class EstabelecimentoController {
 
     @PutMapping("/funcionarios")
     @Transactional
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#id, authentication.principal)")
     public ResponseEntity<Void> atualizarPapelFuncionario(@RequestBody @Valid DadosFuncionario dto) throws AccessDeniedException {
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
