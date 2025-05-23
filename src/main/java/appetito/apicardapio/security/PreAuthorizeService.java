@@ -49,7 +49,7 @@ public class PreAuthorizeService {
      */
     public boolean ehAdministrador(Object principal, Estabelecimento estabelecimento) {
         if (!(principal instanceof UsuarioDashboard usuarioDashboard)) {
-            return false; // retorna false se não for um UsuarioDashboard
+            return false;
         }
         Optional<UsuarioEstabelecimento> vinculo =
                 usuarioEstabelecimentoRepository.findByUsuarioAndEstabelecimento(usuarioDashboard, estabelecimento);
