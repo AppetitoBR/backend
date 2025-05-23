@@ -119,24 +119,13 @@ public class EstabelecimentoController {
         return ResponseEntity.noContent().build();
     }
     // Adicionar no UsuarioDashboard Service depois
-    @GetMapping("/funcionarios")
+
+    @GetMapping
     @PreAuthorize("@preAuthorizeService.ehAdministrador(authentication.principal, #estabelecimentoId)")
     public ResponseEntity<List<FuncionarioDados>> listarFuncionarios(@RequestParam Long estabelecimentoId) throws AccessDeniedException {
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId)
-                .orElseThrow(() -> new AccessDeniedException("Estabelecimento não encontrado ou acesso negado"));
-
-        List<FuncionarioDados> funcionarios = usuarioEstabelecimentoRepository
-                .findAllByEstabelecimento(estabelecimento)
-                .stream()
-                .filter(v -> !v.getUsuario().getUsuario_dashboard_id().equals(administrador.getUsuario_dashboard_id()))
-                .map(v -> new FuncionarioDados(
-                        v.getUsuario().getUsuario_dashboard_id(),
-                        v.getUsuario().getNome_completo(),
-                        v.getUsuario().getEmail(),
-                        v.getPapel()))
-                .toList();
+        List<FuncionarioDados> funcionarios = estabelecimentoService.listarFuncionarios(estabelecimentoId, administrador);
 
         return ResponseEntity.ok(funcionarios);
     }
