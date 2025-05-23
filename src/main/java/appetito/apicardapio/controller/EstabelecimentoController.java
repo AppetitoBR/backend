@@ -35,20 +35,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/estabelecimento")
 public class EstabelecimentoController {
     private final EstabelecimentoRepository estabelecimentoRepository;
-    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
-    private final UsuarioDashboardRepository usuarioDashboardRepository;
     private final CardapioService cardapioService;
-    private final MesaRepository mesaRepository;
-    private final CardapioRepository cardapioRepository;
     private final EstabelecimentoService estabelecimentoService;
 
-    public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, UsuarioDashboardRepository usuarioDashboardRepository, MesaRepository mesaRepository, CardapioService cardapioService, CardapioRepository cardapioRepository, EstabelecimentoService estabelecimentoService) {
+    public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, CardapioService cardapioService, EstabelecimentoService estabelecimentoService) {
         this.estabelecimentoRepository = estabelecimentoRepository;
-        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
-        this.usuarioDashboardRepository = usuarioDashboardRepository;
-        this.mesaRepository = mesaRepository;
         this.cardapioService = cardapioService;
-        this.cardapioRepository = cardapioRepository;
         this.estabelecimentoService = estabelecimentoService;
     }
 
