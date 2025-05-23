@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Filtro de segurança que intercepta todas as requisições HTTP para validar e
@@ -84,14 +85,21 @@ public class SecurityFilter extends OncePerRequestFilter {
                 }
 
                 String username = decodedJWT.getSubject();
-                UserDetails userDetails;
                 String papel = decodedJWT.getClaim("papel").asString();
+                UserDetails userDetails;
 
                 if ("DASHBOARD".equalsIgnoreCase(papel)) {
                     userDetails = dashboardUserDetailsService.loadUserByUsername(username);
                 } else if ("CLIENTE".equalsIgnoreCase(papel)) {
                     userDetails = appUserDetailsService.loadUserByUsername(username);
+
+                    if (request.getRequestURI().startsWith("/dashboard")) {
+                        alertarHoneypot(request, username, papel);
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acesso não autorizado");
+                        return;
+                    }
                 } else {
+                    alertarHoneypot(request, username, papel);
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tipo de usuário não reconhecido");
                     return;
                 }
@@ -113,6 +121,17 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void alertarHoneypot(HttpServletRequest request, String username, String papel) {
+        String ip = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
+                .orElse(request.getRemoteAddr());
+        String uri = request.getRequestURI();
+
+        String msg = String.format("🍯 HONEYPOT ALERT\nUsuário: **%s**\nPapel: **%s**\nURI: `%s`\nIP: `%s`",
+                username, papel, uri, ip);
+
+        new DiscordAlert().AlertDiscord(msg);
     }
 
     /**

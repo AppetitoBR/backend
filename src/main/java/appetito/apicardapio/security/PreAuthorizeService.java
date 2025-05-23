@@ -26,15 +26,15 @@ public class PreAuthorizeService {
      * Verifica se o usuário tem permissão para gerenciar um estabelecimento.
      * Os papéis válidos para essa ação são GERENTE e ADMINISTRADOR.
      *
-     * @param estabelecimento o estabelecimento a ser gerenciado
+     * @param estabelecimentoId o estabelecimento a ser gerenciado
      * @param usuarioDashboard o usuário que está tentando realizar a ação
      * @return true se o usuário tiver papel de GERENTE ou ADMINISTRADOR no estabelecimento
      */
-    public boolean podeGerenciarEstabelecimento(Estabelecimento estabelecimento, UsuarioDashboard usuarioDashboard) {
+    public boolean podeGerenciarEstabelecimento(Long estabelecimentoId, UsuarioDashboard usuarioDashboard) {
         return usuarioEstabelecimentoRepository
-                .findByUsuarioAndEstabelecimentoAndPapelIn(
+                .findByUsuarioAndEstabelecimento_EstabelecimentoIdAndPapelIn(
                         usuarioDashboard,
-                        estabelecimento,
+                        estabelecimentoId,
                         List.of(PapelUsuario.GERENTE, PapelUsuario.ADMINISTRADOR)
                 )
                 .isPresent();

@@ -53,66 +53,44 @@ public class EstabelecimentoController {
         this.cardapioService = cardapioService;
         this.cardapioRepository = cardapioRepository;
     }
+
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     @Transactional
     public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento(
             @RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento,
-            UriComponentsBuilder uriE,
-            HttpServletRequest request) throws AccessDeniedException {
+            UriComponentsBuilder uriE) throws AccessDeniedException {
 
-        // Verificar se o usuário tem permissão para cadastrar um estabelecimento
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UsuarioDashboard usuarioDashboard)) {
-            String ip = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
-                    .orElse(request.getRemoteAddr());
-            Logger log = (Logger) LoggerFactory.getLogger(getClass());
-            log.warn("🍯 HONEYPOT ALERT: Tentativa de criar estabelecimento sem ser UsuarioDashboard. IP: {}, Tipo: {}",
-                    ip,
-                    principal.getClass().getSimpleName());
-            throw new AccessDeniedException("Acesso negado. Somente usuários autorizados podem cadastrar estabelecimentos.");
-        }
+        UsuarioDashboard usuarioDashboard = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // Verificar se o usuário já possui um estabelecimento
         boolean jaPossuiEstabelecimento = usuarioEstabelecimentoRepository.existsByUsuario(usuarioDashboard);
         if (jaPossuiEstabelecimento) {
             throw new AccessDeniedException("Você já possui um estabelecimento cadastrado.");
         }
 
-        // Criar o estabelecimento
         Estabelecimento estabelecimento = new Estabelecimento(dadosEstabelecimento);
         estabelecimento.setUsuarioCadastro(usuarioDashboard);
         estabelecimentoRepository.save(estabelecimento);
 
-        // Gerar URL do cardápio digital, se necessário
         if (estabelecimento.getUrl_cardapio_digital() == null) {
             String urlCardapio = "https://" + estabelecimento.getNomeFantasia() + ".localhost:8080";
             estabelecimento.setUrl_cardapio_digital(urlCardapio);
             estabelecimentoRepository.save(estabelecimento);
         }
 
-        // Vincular o usuário ao estabelecimento com o papel de administrador
-        UsuarioEstabelecimento usuariodoestabelecimento = new UsuarioEstabelecimento(estabelecimento, usuarioDashboard, ADMINISTRADOR);
+        UsuarioEstabelecimento usuariodoestabelecimento = new UsuarioEstabelecimento(estabelecimento, usuarioDashboard, PapelUsuario.ADMINISTRADOR);
         usuarioEstabelecimentoRepository.save(usuariodoestabelecimento);
 
-        // Criar a URI de resposta
         var uri = uriE.path("/estabelecimento/{id}").buildAndExpand(estabelecimento.getEstabelecimentoId()).toUri();
         return ResponseEntity.created(uri).body(new EstabelecimentoDetalhamento(estabelecimento));
     }
 
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/dashboard/me")
-    public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentosDoUsuario(HttpServletRequest request) throws AccessDeniedException {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UsuarioDashboard usuario)) {
-            String ip = request.getHeader("X-Forwarded-For");
-            if (ip == null || ip.isEmpty()) {
-                ip = request.getRemoteAddr();
-            }
-            Logger log = (Logger) LoggerFactory.getLogger(getClass());
-            log.warn("Token indevido acessou endpoint de dashboard. IP: {}, Tipo: {}, Endpoint: dashboard/me",
-                    ip, principal.getClass().getSimpleName());
-            throw new AccessDeniedException("HONEY POT 🍯");
-        }
+    public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentosDoUsuario() {
+        UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         List<Estabelecimento> estabelecimentos = usuarioEstabelecimentoRepository
                 .findAllByUsuario(usuario)
                 .stream()
@@ -122,6 +100,7 @@ public class EstabelecimentoController {
         List<EstabelecimentoDados> detalhamentos = estabelecimentos.stream()
                 .map(EstabelecimentoDados::new)
                 .toList();
+
         return ResponseEntity.ok(detalhamentos);
     }
 
@@ -137,34 +116,23 @@ public class EstabelecimentoController {
     }
 
 
-    @DeleteMapping("/dashboard/me")
+    @DeleteMapping("/dashboard/me/{id}")
     @Transactional
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<Void> deletarMeuEstabelecimento() {
-        UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<UsuarioEstabelecimento> vinculos = usuarioEstabelecimentoRepository.findAllByUsuario(usuario);
-        if (vinculos.isEmpty()) {
-            throw new ResourceNotFoundException("Você não possui estabelecimento cadastrado.");
-        }
-        Estabelecimento estabelecimento = vinculos.getFirst().getEstabelecimento();
+    @PreAuthorize("@preAuthorizeService.ehAdministrador(authentication.principal, #estabelecimento)")
+    public ResponseEntity<Void> deletarEstabelecimento(@PathVariable("id") Estabelecimento estabelecimento) {
         estabelecimentoRepository.delete(estabelecimento);
         return ResponseEntity.noContent().build();
     }
+
     @PostMapping("/funcionarios")
     @Transactional
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<Void> vincularFuncionario(
-            @RequestBody @Valid DadosFuncionario dto) throws AccessDeniedException {
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#dto.estabelecimentoId, authentication.principal)")
+    public ResponseEntity<Void> vincularFuncionario(@RequestBody @Valid DadosFuncionario dto) {
 
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
-                .findAllByUsuario(administrador)
-                .stream()
-                .filter(v -> v.getPapel() == PapelUsuario.ADMINISTRADOR)
-                .map(UsuarioEstabelecimento::getEstabelecimento)
-                .findFirst()
-                .orElseThrow(() -> new AccessDeniedException("Você não possui um estabelecimento como administrador."));
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dto.estabelecimentoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
 
         if (dto.papel() == null || !papelPermitido(dto.papel())) {
             throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
@@ -186,11 +154,10 @@ public class EstabelecimentoController {
         var emailDoPatrao = administrador.getEmail();
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         var ip = request.getRemoteAddr();
-        new DiscordAlert().AlertDiscord("👨‍💼 **" + emailDoPatrao + "** adicionou 👷 **" + emailDoFuncionario + "** ao estabelecimento com sucesso!\n" + " 🌐 IP: " + ip );
+        new DiscordAlert().AlertDiscord("👨‍💼 **" + emailDoPatrao + "** adicionou 👷 **" + emailDoFuncionario + "** ao estabelecimento com sucesso!\n 🌐 IP: " + ip);
 
         UsuarioEstabelecimento vinculo = new UsuarioEstabelecimento(estabelecimento, funcionario, dto.papel());
 
-        estabelecimentoRepository.save(estabelecimento);
         usuarioEstabelecimentoRepository.save(vinculo);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -198,17 +165,13 @@ public class EstabelecimentoController {
 
     @PutMapping("/funcionarios")
     @Transactional
-    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#id, authentication.principal)")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#dto.estabelecimentoId, authentication.principal)")
     public ResponseEntity<Void> atualizarPapelFuncionario(@RequestBody @Valid DadosFuncionario dto) throws AccessDeniedException {
+
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
-                .findAllByUsuario(administrador)
-                .stream()
-                .filter(v -> v.getPapel() == PapelUsuario.ADMINISTRADOR)
-                .map(UsuarioEstabelecimento::getEstabelecimento)
-                .findFirst()
-                .orElseThrow(() -> new AccessDeniedException("Você não possui um estabelecimento como administrador."));
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dto.estabelecimentoId())
+                .orElseThrow(() -> new AccessDeniedException("Estabelecimento não encontrado ou acesso negado"));
 
         if (dto.papel() == null || !papelPermitido(dto.papel())) {
             throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
@@ -219,7 +182,7 @@ public class EstabelecimentoController {
 
         UsuarioEstabelecimento vinculo = usuarioEstabelecimentoRepository
                 .findByUsuarioAndEstabelecimento(funcionario, estabelecimento)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não está vinculado ao seu estabelecimento."));
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não está vinculado ao estabelecimento informado."));
 
         vinculo.setPapel(dto.papel());
         usuarioEstabelecimentoRepository.save(vinculo);
@@ -228,23 +191,21 @@ public class EstabelecimentoController {
         var emailDoPatrao = administrador.getEmail();
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         var ip = request.getRemoteAddr();
-        new DiscordAlert().AlertDiscord("✏️ **" + emailDoPatrao + "** alterou o papel de 👷 **" + emailDoFuncionario + "** para **" + dto.papel().name() + "** 🌐 IP: " + ip);
+
+        new DiscordAlert().AlertDiscord(
+                "✏️ **" + emailDoPatrao + "** alterou o papel de 👷 **" + emailDoFuncionario + "** para **" + dto.papel().name() + "** 🌐 IP: " + ip);
 
         return ResponseEntity.noContent().build();
     }
 
 
     @GetMapping("/funcionarios")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<List<FuncionarioDados>> listarFuncionarios() throws AccessDeniedException {
+    @PreAuthorize("@preAuthorizeService.ehAdministrador(authentication.principal, #estabelecimentoId)")
+    public ResponseEntity<List<FuncionarioDados>> listarFuncionarios(@RequestParam Long estabelecimentoId) throws AccessDeniedException {
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
-                .findAllByUsuario(administrador)
-                .stream()
-                .filter(v -> v.getPapel() == PapelUsuario.ADMINISTRADOR)
-                .map(UsuarioEstabelecimento::getEstabelecimento)
-                .findFirst()
-                .orElseThrow(() -> new AccessDeniedException("Você não possui um estabelecimento como administrador."));
+
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId)
+                .orElseThrow(() -> new AccessDeniedException("Estabelecimento não encontrado ou acesso negado"));
 
         List<FuncionarioDados> funcionarios = usuarioEstabelecimentoRepository
                 .findAllByEstabelecimento(estabelecimento)
@@ -259,6 +220,7 @@ public class EstabelecimentoController {
 
         return ResponseEntity.ok(funcionarios);
     }
+
     @GetMapping("/{nomeFantasia}/cardapio")
     public ResponseEntity<List<CardapioDados>> listarCardapiosDoEstabelecimento(
             @PathVariable String nomeFantasia
