@@ -19,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Serviço responsável pelas operações relacionadas a estabelecimentos,
+ * incluindo cadastro, listagem, vínculo de funcionários e alteração de papéis.
+ */
 @Service
 @Transactional
 public class EstabelecimentoService {
@@ -27,13 +31,29 @@ public class EstabelecimentoService {
     private final EstabelecimentoRepository estabelecimentoRepository;
     private final UsuarioDashboardRepository usuarioDashboardRepository;
 
+    /**
+     * Construtor da classe EstabelecimentoService.
+     *
+     * @param usuarioEstabelecimentoRepository repositório de vínculo usuário-estabelecimento
+     * @param estabelecimentoRepository repositório de estabelecimentos
+     * @param usuarioDashboardRepository repositório de usuários do dashboard
+     */
     public EstabelecimentoService(UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository,
-                                  EstabelecimentoRepository estabelecimentoRepository, UsuarioDashboardRepository usuarioDashboardRepository) {
+                                  EstabelecimentoRepository estabelecimentoRepository,
+                                  UsuarioDashboardRepository usuarioDashboardRepository) {
         this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
         this.estabelecimentoRepository = estabelecimentoRepository;
         this.usuarioDashboardRepository = usuarioDashboardRepository;
     }
 
+    /**
+     * Cadastra um novo estabelecimento e vincula o usuário como ADMINISTRADOR.
+     *
+     * @param dadosEstabelecimento dados do novo estabelecimento
+     * @param usuarioDashboard usuário que está cadastrando o estabelecimento
+     * @return o estabelecimento cadastrado
+     * @throws AccessDeniedException se o usuário já possui um estabelecimento
+     */
     public Estabelecimento cadastrarEstabelecimento(EstabelecimentoCadastro dadosEstabelecimento, UsuarioDashboard usuarioDashboard) {
         boolean jaPossuiEstabelecimento = usuarioEstabelecimentoRepository.existsByUsuario(usuarioDashboard);
         if (jaPossuiEstabelecimento) {
@@ -54,9 +74,14 @@ public class EstabelecimentoService {
         usuarioEstabelecimentoRepository.save(usuariodoestabelecimento);
 
         return estabelecimento;
-
     }
 
+    /**
+     * Lista os estabelecimentos vinculados a um determinado usuário.
+     *
+     * @param usuario o usuário logado
+     * @return lista de dados dos estabelecimentos
+     */
     public List<EstabelecimentoDados> listarEstabelecimentosDoUsuario(UsuarioDashboard usuario) {
         List<Estabelecimento> estabelecimentos = usuarioEstabelecimentoRepository
                 .findAllByUsuario(usuario)
@@ -69,6 +94,12 @@ public class EstabelecimentoService {
                 .toList();
     }
 
+    /**
+     * Lista estabelecimentos com nome fantasia contendo o texto informado.
+     *
+     * @param nomeFantasia texto a ser buscado no nome fantasia
+     * @return lista de dados dos estabelecimentos encontrados
+     */
     public List<EstabelecimentoDados> listarPorNomeFantasia(String nomeFantasia) {
         List<Estabelecimento> estabelecimentos = estabelecimentoRepository
                 .findByNomeFantasiaContainingIgnoreCase(nomeFantasia);
@@ -78,14 +109,22 @@ public class EstabelecimentoService {
                 .toList();
     }
 
+    /**
+     * Vincula um funcionário a um estabelecimento com o papel informado.
+     *
+     * @param dto dados do funcionário e do estabelecimento
+     * @param administrador usuário administrador que está realizando o vínculo
+     * @param ip endereço IP da solicitação (usado para log no Discord)
+     * @throws IllegalArgumentException se o papel for inválido ou o usuário já estiver vinculado
+     * @throws ResourceNotFoundException se o estabelecimento ou funcionário não for encontrado
+     */
     public void vincularFuncionario(DadosFuncionario dto, UsuarioDashboard administrador, String ip) {
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(dto.estabelecimentoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
 
-        if (dto.papel() == null || papelPermitido(dto.papel())) {
+        if (dto.papel() == null || !papelPermitido(dto.papel())) {
             throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
         }
-
         if (dto.papel() == PapelUsuario.ADMINISTRADOR) {
             throw new IllegalArgumentException("Você não pode vincular outro administrador.");
         }
@@ -105,11 +144,20 @@ public class EstabelecimentoService {
         usuarioEstabelecimentoRepository.save(vinculo);
     }
 
+    /**
+     * Atualiza o papel de um funcionário em um estabelecimento.
+     *
+     * @param dto dados do funcionário com novo papel
+     * @param administrador usuário administrador que está realizando a atualização
+     * @param ip endereço IP da solicitação (usado para log no Discord)
+     * @throws AccessDeniedException se o estabelecimento não for encontrado
+     * @throws IllegalArgumentException se o papel for inválido ou o funcionário não estiver vinculado
+     */
     public void atualizarPapelFuncionario(DadosFuncionario dto, UsuarioDashboard administrador, String ip) throws AccessDeniedException {
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(dto.estabelecimentoId())
                 .orElseThrow(() -> new AccessDeniedException("Estabelecimento não encontrado ou acesso negado"));
 
-        if (dto.papel() == null || papelPermitido(dto.papel())) {
+        if (dto.papel() == null || !papelPermitido(dto.papel())) {
             throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
         }
 
@@ -127,6 +175,14 @@ public class EstabelecimentoService {
                 "✏️ **" + administrador.getEmail() + "** alterou o papel de 👷 **" + funcionario.getEmail() + "** para **" + dto.papel().name() + "** 🌐 IP: " + ip);
     }
 
+    /**
+     * Lista os funcionários vinculados a um estabelecimento, excluindo o administrador logado.
+     *
+     * @param estabelecimentoId ID do estabelecimento
+     * @param administrador usuário administrador logado
+     * @return lista de dados dos funcionários
+     * @throws AccessDeniedException se o estabelecimento não for encontrado
+     */
     public List<FuncionarioDados> listarFuncionarios(Long estabelecimentoId, UsuarioDashboard administrador) throws AccessDeniedException {
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId)
                 .orElseThrow(() -> new AccessDeniedException("Estabelecimento não encontrado ou acesso negado"));
@@ -141,10 +197,15 @@ public class EstabelecimentoService {
                 .toList();
     }
 
-
+    /**
+     * Verifica se um papel de usuário é permitido para vínculo.
+     *
+     * @param papel papel a ser verificado
+     * @return true se o papel for ATENDENTE, GERENTE ou COZINHEIRO
+     */
     private boolean papelPermitido(PapelUsuario papel) {
-        return papel != PapelUsuario.ATENDENTE
-                && papel != PapelUsuario.GERENTE
-                && papel != PapelUsuario.COZINHEIRO;
+        return papel == PapelUsuario.ATENDENTE
+                || papel == PapelUsuario.GERENTE
+                || papel == PapelUsuario.COZINHEIRO;
     }
 }
