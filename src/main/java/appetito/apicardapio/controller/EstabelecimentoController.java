@@ -90,81 +90,35 @@ public class EstabelecimentoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/funcionarios")
+    // Adicionar no UsuarioDashboard Service depois
+    @PostMapping
     @Transactional
     @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#dto.estabelecimentoId, authentication.principal)")
     public ResponseEntity<Void> vincularFuncionario(@RequestBody @Valid DadosFuncionario dto) {
-
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dto.estabelecimentoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
-
-        if (dto.papel() == null || !papelPermitido(dto.papel())) {
-            throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
-        }
-
-        if (dto.papel() == PapelUsuario.ADMINISTRADOR) {
-            throw new IllegalArgumentException("Você não pode vincular outro administrador.");
-        }
-
-        UsuarioDashboard funcionario = usuarioDashboardRepository.findByEmail(dto.email())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário com e-mail não encontrado."));
-
-        boolean jaVinculado = usuarioEstabelecimentoRepository.existsByUsuarioAndEstabelecimento(funcionario, estabelecimento);
-        if (jaVinculado) {
-            throw new IllegalArgumentException("Usuário já está vinculado a este estabelecimento.");
-        }
-
-        var emailDoFuncionario = funcionario.getEmail();
-        var emailDoPatrao = administrador.getEmail();
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-        var ip = request.getRemoteAddr();
-        new DiscordAlert().AlertDiscord("👨‍💼 **" + emailDoPatrao + "** adicionou 👷 **" + emailDoFuncionario + "** ao estabelecimento com sucesso!\n 🌐 IP: " + ip);
+        String ip = request.getRemoteAddr();
 
-        UsuarioEstabelecimento vinculo = new UsuarioEstabelecimento(estabelecimento, funcionario, dto.papel());
-
-        usuarioEstabelecimentoRepository.save(vinculo);
+        estabelecimentoService.vincularFuncionario(dto, administrador, ip);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
-    @PutMapping("/funcionarios")
+    // Adicionar no UsuarioDashboard Service depois
+    @PutMapping
     @Transactional
     @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#dto.estabelecimentoId, authentication.principal)")
     public ResponseEntity<Void> atualizarPapelFuncionario(@RequestBody @Valid DadosFuncionario dto) throws AccessDeniedException {
-
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dto.estabelecimentoId())
-                .orElseThrow(() -> new AccessDeniedException("Estabelecimento não encontrado ou acesso negado"));
-
-        if (dto.papel() == null || !papelPermitido(dto.papel())) {
-            throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
-        }
-
-        UsuarioDashboard funcionario = usuarioDashboardRepository.findByEmail(dto.email())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário com e-mail não encontrado."));
-
-        UsuarioEstabelecimento vinculo = usuarioEstabelecimentoRepository
-                .findByUsuarioAndEstabelecimento(funcionario, estabelecimento)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não está vinculado ao estabelecimento informado."));
-
-        vinculo.setPapel(dto.papel());
-        usuarioEstabelecimentoRepository.save(vinculo);
-
-        var emailDoFuncionario = funcionario.getEmail();
-        var emailDoPatrao = administrador.getEmail();
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-        var ip = request.getRemoteAddr();
+        String ip = request.getRemoteAddr();
 
-        new DiscordAlert().AlertDiscord(
-                "✏️ **" + emailDoPatrao + "** alterou o papel de 👷 **" + emailDoFuncionario + "** para **" + dto.papel().name() + "** 🌐 IP: " + ip);
+        estabelecimentoService.atualizarPapelFuncionario(dto, administrador, ip);
 
         return ResponseEntity.noContent().build();
     }
-
-
+    // Adicionar no UsuarioDashboard Service depois
     @GetMapping("/funcionarios")
     @PreAuthorize("@preAuthorizeService.ehAdministrador(authentication.principal, #estabelecimentoId)")
     public ResponseEntity<List<FuncionarioDados>> listarFuncionarios(@RequestParam Long estabelecimentoId) throws AccessDeniedException {

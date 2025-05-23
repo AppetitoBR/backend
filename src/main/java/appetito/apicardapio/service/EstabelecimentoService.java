@@ -3,7 +3,6 @@ package appetito.apicardapio.service;
 import appetito.apicardapio.dto.DadosFuncionario;
 import appetito.apicardapio.dto.GetAll.EstabelecimentoDados;
 import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
-import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
 import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.entity.UsuarioEstabelecimento;
@@ -82,7 +81,7 @@ public class EstabelecimentoService {
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(dto.estabelecimentoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
 
-        if (dto.papel() == null || !papelPermitido(dto.papel())) {
+        if (dto.papel() == null || papelPermitido(dto.papel())) {
             throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
         }
 
@@ -104,9 +103,35 @@ public class EstabelecimentoService {
         UsuarioEstabelecimento vinculo = new UsuarioEstabelecimento(estabelecimento, funcionario, dto.papel());
         usuarioEstabelecimentoRepository.save(vinculo);
     }
+
+    public void atualizarPapelFuncionario(DadosFuncionario dto, UsuarioDashboard administrador, String ip) throws AccessDeniedException {
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dto.estabelecimentoId())
+                .orElseThrow(() -> new AccessDeniedException("Estabelecimento não encontrado ou acesso negado"));
+
+        if (dto.papel() == null || papelPermitido(dto.papel())) {
+            throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
+        }
+
+        UsuarioDashboard funcionario = usuarioDashboardRepository.findByEmail(dto.email())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário com e-mail não encontrado."));
+
+        UsuarioEstabelecimento vinculo = usuarioEstabelecimentoRepository
+                .findByUsuarioAndEstabelecimento(funcionario, estabelecimento)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não está vinculado ao estabelecimento informado."));
+
+        vinculo.setPapel(dto.papel());
+        usuarioEstabelecimentoRepository.save(vinculo);
+
+        new DiscordAlert().AlertDiscord(
+                "✏️ **" + administrador.getEmail() + "** alterou o papel de 👷 **" + funcionario.getEmail() + "** para **" + dto.papel().name() + "** 🌐 IP: " + ip);
+    }
+
+
+
+
     private boolean papelPermitido(PapelUsuario papel) {
-        return papel == PapelUsuario.ATENDENTE
-                || papel == PapelUsuario.GERENTE
-                || papel == PapelUsuario.COZINHEIRO;
+        return papel != PapelUsuario.ATENDENTE
+                && papel != PapelUsuario.GERENTE
+                && papel != PapelUsuario.COZINHEIRO;
     }
 }
