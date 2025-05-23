@@ -4,19 +4,18 @@ import appetito.apicardapio.dto.DadosFuncionario;
 import appetito.apicardapio.dto.GetAll.CardapioDados;
 import appetito.apicardapio.dto.GetAll.FuncionarioDados;
 import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
-import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
 import appetito.apicardapio.dto.GetAll.EstabelecimentoDados;
+import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
 import appetito.apicardapio.entity.*;
 import appetito.apicardapio.enums.PapelUsuario;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.*;
 import appetito.apicardapio.security.DiscordAlert;
 import appetito.apicardapio.service.CardapioService;
-import ch.qos.logback.classic.Logger;
+import appetito.apicardapio.service.EstabelecimentoService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,10 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static appetito.apicardapio.enums.PapelUsuario.ADMINISTRADOR;
 
 @RestController
 @RequestMapping("/estabelecimento")
@@ -44,43 +40,27 @@ public class EstabelecimentoController {
     private final CardapioService cardapioService;
     private final MesaRepository mesaRepository;
     private final CardapioRepository cardapioRepository;
+    private final EstabelecimentoService estabelecimentoService;
 
-    public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, UsuarioDashboardRepository usuarioDashboardRepository, MesaRepository mesaRepository, CardapioService cardapioService, CardapioRepository cardapioRepository) {
+    public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, UsuarioDashboardRepository usuarioDashboardRepository, MesaRepository mesaRepository, CardapioService cardapioService, CardapioRepository cardapioRepository, EstabelecimentoService estabelecimentoService) {
         this.estabelecimentoRepository = estabelecimentoRepository;
         this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
         this.usuarioDashboardRepository = usuarioDashboardRepository;
         this.mesaRepository = mesaRepository;
         this.cardapioService = cardapioService;
         this.cardapioRepository = cardapioRepository;
+        this.estabelecimentoService = estabelecimentoService;
     }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping
-    @Transactional
     public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento(
             @RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento,
-            UriComponentsBuilder uriE) throws AccessDeniedException {
+            UriComponentsBuilder uriE) {
 
         UsuarioDashboard usuarioDashboard = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        boolean jaPossuiEstabelecimento = usuarioEstabelecimentoRepository.existsByUsuario(usuarioDashboard);
-        if (jaPossuiEstabelecimento) {
-            throw new AccessDeniedException("Você já possui um estabelecimento cadastrado.");
-        }
-
-        Estabelecimento estabelecimento = new Estabelecimento(dadosEstabelecimento);
-        estabelecimento.setUsuarioCadastro(usuarioDashboard);
-        estabelecimentoRepository.save(estabelecimento);
-
-        if (estabelecimento.getUrl_cardapio_digital() == null) {
-            String urlCardapio = "https://" + estabelecimento.getNomeFantasia() + ".localhost:8080";
-            estabelecimento.setUrl_cardapio_digital(urlCardapio);
-            estabelecimentoRepository.save(estabelecimento);
-        }
-
-        UsuarioEstabelecimento usuariodoestabelecimento = new UsuarioEstabelecimento(estabelecimento, usuarioDashboard, PapelUsuario.ADMINISTRADOR);
-        usuarioEstabelecimentoRepository.save(usuariodoestabelecimento);
-
+        Estabelecimento estabelecimento = estabelecimentoService.cadastrarEstabelecimento(dadosEstabelecimento, usuarioDashboard);
         var uri = uriE.path("/estabelecimento/{id}").buildAndExpand(estabelecimento.getEstabelecimentoId()).toUri();
         return ResponseEntity.created(uri).body(new EstabelecimentoDetalhamento(estabelecimento));
     }
@@ -90,28 +70,14 @@ public class EstabelecimentoController {
     @GetMapping("/dashboard/me")
     public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentosDoUsuario() {
         UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        List<Estabelecimento> estabelecimentos = usuarioEstabelecimentoRepository
-                .findAllByUsuario(usuario)
-                .stream()
-                .map(UsuarioEstabelecimento::getEstabelecimento)
-                .toList();
-
-        List<EstabelecimentoDados> detalhamentos = estabelecimentos.stream()
-                .map(EstabelecimentoDados::new)
-                .toList();
-
+        List<EstabelecimentoDados> detalhamentos = estabelecimentoService.listarEstabelecimentosDoUsuario(usuario);
         return ResponseEntity.ok(detalhamentos);
     }
 
-    @GetMapping("estabelecimento/{nomeFantasia}")
+    @GetMapping("/{nomeFantasia}")
     @Transactional
-    public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentoPorNomeFantasia(@PathVariable String nomeFantasia){
-        List<Estabelecimento> estabelecimentos = estabelecimentoRepository
-                .findByNomeFantasiaContainingIgnoreCase(nomeFantasia);
-        List<EstabelecimentoDados> resultado = estabelecimentos.stream()
-                .map(EstabelecimentoDados::new)
-                .toList();
+    public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentoPorNomeFantasia(@PathVariable String nomeFantasia) {
+        List<EstabelecimentoDados> resultado = estabelecimentoService.listarPorNomeFantasia(nomeFantasia);
         return ResponseEntity.ok(resultado);
     }
 
@@ -124,99 +90,42 @@ public class EstabelecimentoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/funcionarios")
+    // Adicionar no UsuarioDashboard Service depois
+    @PostMapping
     @Transactional
     @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#dto.estabelecimentoId, authentication.principal)")
     public ResponseEntity<Void> vincularFuncionario(@RequestBody @Valid DadosFuncionario dto) {
-
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dto.estabelecimentoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
-
-        if (dto.papel() == null || !papelPermitido(dto.papel())) {
-            throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
-        }
-
-        if (dto.papel() == PapelUsuario.ADMINISTRADOR) {
-            throw new IllegalArgumentException("Você não pode vincular outro administrador.");
-        }
-
-        UsuarioDashboard funcionario = usuarioDashboardRepository.findByEmail(dto.email())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário com e-mail não encontrado."));
-
-        boolean jaVinculado = usuarioEstabelecimentoRepository.existsByUsuarioAndEstabelecimento(funcionario, estabelecimento);
-        if (jaVinculado) {
-            throw new IllegalArgumentException("Usuário já está vinculado a este estabelecimento.");
-        }
-
-        var emailDoFuncionario = funcionario.getEmail();
-        var emailDoPatrao = administrador.getEmail();
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-        var ip = request.getRemoteAddr();
-        new DiscordAlert().AlertDiscord("👨‍💼 **" + emailDoPatrao + "** adicionou 👷 **" + emailDoFuncionario + "** ao estabelecimento com sucesso!\n 🌐 IP: " + ip);
+        String ip = request.getRemoteAddr();
 
-        UsuarioEstabelecimento vinculo = new UsuarioEstabelecimento(estabelecimento, funcionario, dto.papel());
-
-        usuarioEstabelecimentoRepository.save(vinculo);
+        estabelecimentoService.vincularFuncionario(dto, administrador, ip);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
-    @PutMapping("/funcionarios")
+    // Adicionar no UsuarioDashboard Service depois
+    @PutMapping
     @Transactional
     @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#dto.estabelecimentoId, authentication.principal)")
     public ResponseEntity<Void> atualizarPapelFuncionario(@RequestBody @Valid DadosFuncionario dto) throws AccessDeniedException {
-
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(dto.estabelecimentoId())
-                .orElseThrow(() -> new AccessDeniedException("Estabelecimento não encontrado ou acesso negado"));
-
-        if (dto.papel() == null || !papelPermitido(dto.papel())) {
-            throw new IllegalArgumentException("Papel de usuário inválido ou não permitido.");
-        }
-
-        UsuarioDashboard funcionario = usuarioDashboardRepository.findByEmail(dto.email())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário com e-mail não encontrado."));
-
-        UsuarioEstabelecimento vinculo = usuarioEstabelecimentoRepository
-                .findByUsuarioAndEstabelecimento(funcionario, estabelecimento)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não está vinculado ao estabelecimento informado."));
-
-        vinculo.setPapel(dto.papel());
-        usuarioEstabelecimentoRepository.save(vinculo);
-
-        var emailDoFuncionario = funcionario.getEmail();
-        var emailDoPatrao = administrador.getEmail();
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-        var ip = request.getRemoteAddr();
+        String ip = request.getRemoteAddr();
 
-        new DiscordAlert().AlertDiscord(
-                "✏️ **" + emailDoPatrao + "** alterou o papel de 👷 **" + emailDoFuncionario + "** para **" + dto.papel().name() + "** 🌐 IP: " + ip);
+        estabelecimentoService.atualizarPapelFuncionario(dto, administrador, ip);
 
         return ResponseEntity.noContent().build();
     }
+    // Adicionar no UsuarioDashboard Service depois
 
-
-    @GetMapping("/funcionarios")
+    @GetMapping
     @PreAuthorize("@preAuthorizeService.ehAdministrador(authentication.principal, #estabelecimentoId)")
     public ResponseEntity<List<FuncionarioDados>> listarFuncionarios(@RequestParam Long estabelecimentoId) throws AccessDeniedException {
         UsuarioDashboard administrador = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId)
-                .orElseThrow(() -> new AccessDeniedException("Estabelecimento não encontrado ou acesso negado"));
-
-        List<FuncionarioDados> funcionarios = usuarioEstabelecimentoRepository
-                .findAllByEstabelecimento(estabelecimento)
-                .stream()
-                .filter(v -> !v.getUsuario().getUsuario_dashboard_id().equals(administrador.getUsuario_dashboard_id()))
-                .map(v -> new FuncionarioDados(
-                        v.getUsuario().getUsuario_dashboard_id(),
-                        v.getUsuario().getNome_completo(),
-                        v.getUsuario().getEmail(),
-                        v.getPapel()))
-                .toList();
+        List<FuncionarioDados> funcionarios = estabelecimentoService.listarFuncionarios(estabelecimentoId, administrador);
 
         return ResponseEntity.ok(funcionarios);
     }
