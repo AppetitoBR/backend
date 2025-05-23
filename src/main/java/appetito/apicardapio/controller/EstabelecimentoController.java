@@ -4,19 +4,18 @@ import appetito.apicardapio.dto.DadosFuncionario;
 import appetito.apicardapio.dto.GetAll.CardapioDados;
 import appetito.apicardapio.dto.GetAll.FuncionarioDados;
 import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
-import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
 import appetito.apicardapio.dto.GetAll.EstabelecimentoDados;
+import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
 import appetito.apicardapio.entity.*;
 import appetito.apicardapio.enums.PapelUsuario;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.*;
 import appetito.apicardapio.security.DiscordAlert;
 import appetito.apicardapio.service.CardapioService;
-import ch.qos.logback.classic.Logger;
+import appetito.apicardapio.service.EstabelecimentoService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,10 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static appetito.apicardapio.enums.PapelUsuario.ADMINISTRADOR;
 
 @RestController
 @RequestMapping("/estabelecimento")
@@ -44,46 +40,30 @@ public class EstabelecimentoController {
     private final CardapioService cardapioService;
     private final MesaRepository mesaRepository;
     private final CardapioRepository cardapioRepository;
+    private final EstabelecimentoService estabelecimentoService;
 
-    public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, UsuarioDashboardRepository usuarioDashboardRepository, MesaRepository mesaRepository, CardapioService cardapioService, CardapioRepository cardapioRepository) {
+    public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, UsuarioDashboardRepository usuarioDashboardRepository, MesaRepository mesaRepository, CardapioService cardapioService, CardapioRepository cardapioRepository, EstabelecimentoService estabelecimentoService) {
         this.estabelecimentoRepository = estabelecimentoRepository;
         this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
         this.usuarioDashboardRepository = usuarioDashboardRepository;
         this.mesaRepository = mesaRepository;
         this.cardapioService = cardapioService;
         this.cardapioRepository = cardapioRepository;
+        this.estabelecimentoService = estabelecimentoService;
     }
-
     @PreAuthorize("isAuthenticated()")
     @PostMapping
-    @Transactional
     public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento(
             @RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento,
-            UriComponentsBuilder uriE) throws AccessDeniedException {
+            UriComponentsBuilder uriE) {
 
         UsuarioDashboard usuarioDashboard = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        boolean jaPossuiEstabelecimento = usuarioEstabelecimentoRepository.existsByUsuario(usuarioDashboard);
-        if (jaPossuiEstabelecimento) {
-            throw new AccessDeniedException("Você já possui um estabelecimento cadastrado.");
-        }
-
-        Estabelecimento estabelecimento = new Estabelecimento(dadosEstabelecimento);
-        estabelecimento.setUsuarioCadastro(usuarioDashboard);
-        estabelecimentoRepository.save(estabelecimento);
-
-        if (estabelecimento.getUrl_cardapio_digital() == null) {
-            String urlCardapio = "https://" + estabelecimento.getNomeFantasia() + ".localhost:8080";
-            estabelecimento.setUrl_cardapio_digital(urlCardapio);
-            estabelecimentoRepository.save(estabelecimento);
-        }
-
-        UsuarioEstabelecimento usuariodoestabelecimento = new UsuarioEstabelecimento(estabelecimento, usuarioDashboard, PapelUsuario.ADMINISTRADOR);
-        usuarioEstabelecimentoRepository.save(usuariodoestabelecimento);
-
+        Estabelecimento estabelecimento = estabelecimentoService.cadastrarEstabelecimento(dadosEstabelecimento, usuarioDashboard);
         var uri = uriE.path("/estabelecimento/{id}").buildAndExpand(estabelecimento.getEstabelecimentoId()).toUri();
         return ResponseEntity.created(uri).body(new EstabelecimentoDetalhamento(estabelecimento));
     }
+
 
 
     @PreAuthorize("isAuthenticated()")
