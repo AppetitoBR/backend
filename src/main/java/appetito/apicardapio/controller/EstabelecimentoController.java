@@ -74,15 +74,10 @@ public class EstabelecimentoController {
         return ResponseEntity.ok(detalhamentos);
     }
 
-
-    @GetMapping("estabelecimento/{nomeFantasia}")
+    @GetMapping("/{nomeFantasia}")
     @Transactional
-    public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentoPorNomeFantasia(@PathVariable String nomeFantasia){
-        List<Estabelecimento> estabelecimentos = estabelecimentoRepository
-                .findByNomeFantasiaContainingIgnoreCase(nomeFantasia);
-        List<EstabelecimentoDados> resultado = estabelecimentos.stream()
-                .map(EstabelecimentoDados::new)
-                .toList();
+    public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentoPorNomeFantasia(@PathVariable String nomeFantasia) {
+        List<EstabelecimentoDados> resultado = estabelecimentoService.listarPorNomeFantasia(nomeFantasia);
         return ResponseEntity.ok(resultado);
     }
 
