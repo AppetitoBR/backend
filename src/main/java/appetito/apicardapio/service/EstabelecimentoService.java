@@ -2,6 +2,7 @@ package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.DadosFuncionario;
 import appetito.apicardapio.dto.GetAll.EstabelecimentoDados;
+import appetito.apicardapio.dto.GetAll.FuncionarioDados;
 import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
 import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.UsuarioDashboard;
@@ -126,7 +127,19 @@ public class EstabelecimentoService {
                 "✏️ **" + administrador.getEmail() + "** alterou o papel de 👷 **" + funcionario.getEmail() + "** para **" + dto.papel().name() + "** 🌐 IP: " + ip);
     }
 
+    public List<FuncionarioDados> listarFuncionarios(Long estabelecimentoId, UsuarioDashboard administrador) throws AccessDeniedException {
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId)
+                .orElseThrow(() -> new AccessDeniedException("Estabelecimento não encontrado ou acesso negado"));
 
+        return usuarioEstabelecimentoRepository.findAllByEstabelecimento(estabelecimento).stream()
+                .filter(v -> !v.getUsuario().getUsuario_dashboard_id().equals(administrador.getUsuario_dashboard_id()))
+                .map(v -> new FuncionarioDados(
+                        v.getUsuario().getUsuario_dashboard_id(),
+                        v.getUsuario().getNome_completo(),
+                        v.getUsuario().getEmail(),
+                        v.getPapel()))
+                .toList();
+    }
 
 
     private boolean papelPermitido(PapelUsuario papel) {
