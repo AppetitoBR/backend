@@ -35,20 +35,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/estabelecimento")
 public class EstabelecimentoController {
     private final EstabelecimentoRepository estabelecimentoRepository;
-    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
-    private final UsuarioDashboardRepository usuarioDashboardRepository;
     private final CardapioService cardapioService;
-    private final MesaRepository mesaRepository;
-    private final CardapioRepository cardapioRepository;
     private final EstabelecimentoService estabelecimentoService;
 
-    public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, UsuarioDashboardRepository usuarioDashboardRepository, MesaRepository mesaRepository, CardapioService cardapioService, CardapioRepository cardapioRepository, EstabelecimentoService estabelecimentoService) {
+    public EstabelecimentoController(EstabelecimentoRepository estabelecimentoRepository, CardapioService cardapioService, EstabelecimentoService estabelecimentoService) {
         this.estabelecimentoRepository = estabelecimentoRepository;
-        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
-        this.usuarioDashboardRepository = usuarioDashboardRepository;
-        this.mesaRepository = mesaRepository;
         this.cardapioService = cardapioService;
-        this.cardapioRepository = cardapioRepository;
         this.estabelecimentoService = estabelecimentoService;
     }
 
@@ -148,32 +140,13 @@ public class EstabelecimentoController {
             @PathVariable String nomeFantasia,
             @PathVariable Long id) {
 
-        Estabelecimento estabelecimento = estabelecimentoRepository
-                .findByNomeFantasia(nomeFantasia)
-                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
-
-        Mesa mesa = mesaRepository.findById(id)
-                .filter(m -> m.getEstabelecimento().equals(estabelecimento))
-                .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada ou não pertence ao estabelecimento"));
-
-        List<Cardapio> cardapios = cardapioRepository.findByEstabelecimentoNomeFantasia(nomeFantasia);
+        List<CardapioDados> cardapios = cardapioService.listarCardapiosPorMesa(nomeFantasia, id);
 
         if (cardapios.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        List<CardapioDados> cardapioDados = cardapios.stream()
-                .map(CardapioDados::new)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(cardapioDados);
-    }
-
-    // vou colocar no service dps
-    private boolean papelPermitido(PapelUsuario papel) {
-        return papel == PapelUsuario.ATENDENTE
-                || papel == PapelUsuario.GERENTE
-                || papel == PapelUsuario.COZINHEIRO;
+        return ResponseEntity.ok(cardapios);
     }
 
 }
