@@ -116,7 +116,7 @@ public class EstabelecimentoController {
      * @param dto dados do funcionário e estabelecimento
      * @return resposta com status 201 (Created)
      */
-    @PostMapping
+    @PostMapping("/funcionario")
     @Transactional
     @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#dto.estabelecimentoId, authentication.principal)")
     public ResponseEntity<Void> vincularFuncionario(@RequestBody @Valid DadosFuncionario dto) {

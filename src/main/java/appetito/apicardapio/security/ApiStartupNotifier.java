@@ -35,7 +35,7 @@ public class ApiStartupNotifier {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void notificarStartup() {
-        String mensagem = "✅ API Online";
+        String mensagem = "✅ API Online agora";
         discordAlert.AlertDiscord(mensagem);
     }
 
