@@ -21,4 +21,8 @@ public interface UsuarioEstabelecimentoRepository extends JpaRepository<UsuarioE
     void deleteAllByEstabelecimento(Estabelecimento estabelecimento);
 
     Optional<UsuarioEstabelecimento> findByUsuarioAndEstabelecimentoAndPapelIn(UsuarioDashboard usuario, Estabelecimento estabelecimento, List<Object> papeis);
+
+    Optional<UsuarioEstabelecimento> findByUsuarioAndEstabelecimento_EstabelecimentoIdAndPapelIn(UsuarioDashboard usuarioDashboard, Long estabelecimentoId, List<PapelUsuario> gerente);
+
+    Optional<UsuarioEstabelecimento> findByUsuarioAndEstabelecimento_EstabelecimentoId(UsuarioDashboard usuario, Long id);
 }
