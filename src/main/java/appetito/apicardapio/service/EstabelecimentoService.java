@@ -62,4 +62,13 @@ public class EstabelecimentoService {
                 .map(EstabelecimentoDados::new)
                 .toList();
     }
+
+    public List<EstabelecimentoDados> listarPorNomeFantasia(String nomeFantasia) {
+        List<Estabelecimento> estabelecimentos = estabelecimentoRepository
+                .findByNomeFantasiaContainingIgnoreCase(nomeFantasia);
+
+        return estabelecimentos.stream()
+                .map(EstabelecimentoDados::new)
+                .toList();
+    }
 }

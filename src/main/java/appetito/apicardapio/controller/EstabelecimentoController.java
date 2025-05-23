@@ -66,24 +66,14 @@ public class EstabelecimentoController {
     }
 
 
-
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/dashboard/me")
     public ResponseEntity<List<EstabelecimentoDados>> listarEstabelecimentosDoUsuario() {
         UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        List<Estabelecimento> estabelecimentos = usuarioEstabelecimentoRepository
-                .findAllByUsuario(usuario)
-                .stream()
-                .map(UsuarioEstabelecimento::getEstabelecimento)
-                .toList();
-
-        List<EstabelecimentoDados> detalhamentos = estabelecimentos.stream()
-                .map(EstabelecimentoDados::new)
-                .toList();
-
+        List<EstabelecimentoDados> detalhamentos = estabelecimentoService.listarEstabelecimentosDoUsuario(usuario);
         return ResponseEntity.ok(detalhamentos);
     }
+
 
     @GetMapping("estabelecimento/{nomeFantasia}")
     @Transactional
