@@ -1,5 +1,6 @@
 package appetito.apicardapio.service;
 
+import appetito.apicardapio.dto.GetAll.EstabelecimentoDados;
 import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
 import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
 import appetito.apicardapio.entity.Estabelecimento;
@@ -11,6 +12,8 @@ import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional
@@ -46,5 +49,17 @@ public class EstabelecimentoService {
 
         return estabelecimento;
 
+    }
+
+    public List<EstabelecimentoDados> listarEstabelecimentosDoUsuario(UsuarioDashboard usuario) {
+        List<Estabelecimento> estabelecimentos = usuarioEstabelecimentoRepository
+                .findAllByUsuario(usuario)
+                .stream()
+                .map(UsuarioEstabelecimento::getEstabelecimento)
+                .toList();
+
+        return estabelecimentos.stream()
+                .map(EstabelecimentoDados::new)
+                .toList();
     }
 }

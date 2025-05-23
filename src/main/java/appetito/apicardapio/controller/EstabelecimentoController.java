@@ -51,6 +51,7 @@ public class EstabelecimentoController {
         this.cardapioRepository = cardapioRepository;
         this.estabelecimentoService = estabelecimentoService;
     }
+
     @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento(
