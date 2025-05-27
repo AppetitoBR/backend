@@ -27,13 +27,11 @@ import java.util.stream.Collectors;
 public class CardapioService {
 
     private final CardapioRepository cardapioRepository;
-    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
     private final EstabelecimentoRepository estabelecimentoRepository;
     private final MesaRepository mesaRepository;
 
-    public CardapioService(CardapioRepository cardapioRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository, MesaRepository mesaRepository){
+    public CardapioService(CardapioRepository cardapioRepository, EstabelecimentoRepository estabelecimentoRepository, MesaRepository mesaRepository){
         this.cardapioRepository = cardapioRepository;
-        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
         this.estabelecimentoRepository = estabelecimentoRepository;
         this.mesaRepository = mesaRepository;
     }
