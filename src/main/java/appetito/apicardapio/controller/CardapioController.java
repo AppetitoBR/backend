@@ -7,8 +7,10 @@ import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.entity.UsuarioEstabelecimento;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.CardapioRepository;
+import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.service.CardapioService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.Getter;
@@ -27,48 +29,36 @@ import java.util.List;
 @RestController
 @RequestMapping("/cardapio")
 public class CardapioController {
+    private final CardapioService cardapioService;
+    private final CardapioRepository cardapioRepository;
+    private final EstabelecimentoRepository estabelecimentoRepository;
 
-    @Autowired
-    private CardapioService cardapioService;
-
-    @Autowired
-    private CardapioRepository cardapioRepository;
-    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
-
-    public CardapioController(UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository) {
-        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
+    public CardapioController(CardapioService cardapioService, CardapioRepository cardapioRepository, EstabelecimentoRepository estabelecimentoRepository) {
+        this.cardapioService = cardapioService;
+        this.cardapioRepository = cardapioRepository;
+        this.estabelecimentoRepository = estabelecimentoRepository;
     }
 
     // DASHBOARD
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
+    @PostMapping("/{estabelecimentoId}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
     @Transactional
     public ResponseEntity<CardapioDetalhamento> cadastrarCardapioDoEstabelecimento(
+            @PathVariable Long estabelecimentoId,
             @RequestBody @Valid CardapioCadastro dadosCardapio,
-            UriComponentsBuilder uriBuilder) throws AccessDeniedException {
+            UriComponentsBuilder uriBuilder,
+            @AuthenticationPrincipal UsuarioDashboard usuario) {
 
-        UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-
-        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
-                .findAllByUsuario(usuario)
-                .stream()
-                .map(UsuarioEstabelecimento::getEstabelecimento)
-                .findFirst()
-                .orElseThrow(() -> new AccessDeniedException("Você não está vinculado a um estabelecimento."));
-
-        Cardapio cardapio = new Cardapio(dadosCardapio);
-        cardapio.setEstabelecimento(estabelecimento);
-        cardapioRepository.save(cardapio);
+        Cardapio cardapio = cardapioService.cadastrarCardapio(estabelecimentoId, dadosCardapio, usuario);
 
         var uri = uriBuilder.path("/cardapio/{id}").buildAndExpand(cardapio.getId()).toUri();
         return ResponseEntity.created(uri).body(new CardapioDetalhamento(cardapio));
     }
 
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
-    @DeleteMapping("/cardapio/{id}")
-    public ResponseEntity<Void> deletarCardapio(@PathVariable Long id, @AuthenticationPrincipal UsuarioDashboard usuario) throws AccessDeniedException {
-        cardapioService.deletarCardapio(id, usuario);
+    @DeleteMapping("/{estabelecimentoId}/cardapio/{id}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, principal)")
+    public ResponseEntity<Void> deletarCardapio(@PathVariable Long estabelecimentoId, @PathVariable Long id, @AuthenticationPrincipal UsuarioDashboard usuario) throws AccessDeniedException {
+        cardapioService.deletarCardapioDoEstabelecimento(estabelecimentoId, id, usuario);
         return ResponseEntity.noContent().build();
     }
 }

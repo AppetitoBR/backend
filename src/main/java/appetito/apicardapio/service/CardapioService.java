@@ -1,6 +1,7 @@
 package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.GetAll.CardapioDados;
+import appetito.apicardapio.dto.cadastro.CardapioCadastro;
 import appetito.apicardapio.dto.detalhamento.CardapioDetalhamento;
 import appetito.apicardapio.entity.Cardapio;
 import appetito.apicardapio.entity.Estabelecimento;
@@ -45,24 +46,6 @@ public class CardapioService {
                 .toList();
     }
 
-    @Transactional
-    public void deletarCardapio(Long cardapioId, UsuarioDashboard usuario) throws AccessDeniedException {
-        Cardapio cardapio = cardapioRepository.findById(cardapioId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado"));
-
-        Estabelecimento estabelecimento = cardapio.getEstabelecimento();
-
-        boolean vinculado = usuarioEstabelecimentoRepository
-                .existsByUsuarioAndEstabelecimento(usuario, estabelecimento);
-
-        if (!vinculado) {
-            throw new AccessDeniedException("Você não está vinculado a este estabelecimento.");
-        }
-        var email = usuario.getEmail();
-        new DiscordAlert().AlertDiscord("O "+ email + "Deletou um cardapio com o ID: "+ cardapioId + " Do estabelecimento: "+ estabelecimento.getRazao_social());
-
-        cardapioRepository.delete(cardapio);
-    }
     public List<CardapioDados> listarCardapiosPorMesa(String nomeFantasia, Long mesaId) {
 
         Estabelecimento estabelecimento = estabelecimentoRepository
@@ -78,5 +61,28 @@ public class CardapioService {
         return cardapios.stream()
                 .map(CardapioDados::new)
                 .collect(Collectors.toList());
+    }
+
+    public void deletarCardapioDoEstabelecimento(Long estabelecimentoId, Long cardapioId, UsuarioDashboard usuario) throws AccessDeniedException {
+        Cardapio cardapio = cardapioRepository.findById(cardapioId)
+                .orElseThrow(() -> new EntityNotFoundException("Cardápio não encontrado"));
+
+        if (!cardapio.getEstabelecimento().getEstabelecimentoId().equals(estabelecimentoId)) {
+            throw new AccessDeniedException("Cardápio não pertence a este estabelecimento.");
+        }
+
+        cardapioRepository.delete(cardapio);
+    }
+
+    public Cardapio cadastrarCardapio(Long estabelecimentoId, CardapioCadastro dadosCardapio, UsuarioDashboard usuario) {
+
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId)
+                .orElseThrow(() -> new EntityNotFoundException("Estabelecimento não encontrado."));
+
+        Cardapio cardapio = new Cardapio(dadosCardapio);
+        cardapio.setEstabelecimento(estabelecimento);
+        cardapioRepository.save(cardapio);
+
+        return cardapio;
     }
 }
