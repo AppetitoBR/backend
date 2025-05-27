@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
@@ -63,9 +66,17 @@ public class ClienteController {
     }
 
     @PostMapping("/{id}/upload-imagem")
-    public ResponseEntity<String> uploadImagemPerfil(@PathVariable Long id, @RequestPart("file") MultipartFile file, HttpServletRequest request) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> uploadImagemPerfil(@PathVariable Long id, @RequestPart("file") MultipartFile file, @AuthenticationPrincipal Cliente clienteAutenticado, HttpServletRequest request) {
         if (file.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo de imagem não pode estar vazio!");
+            return ResponseEntity.badRequest().body("Arquivo de imagem não pode estar vazio!");
+        }
+        if (!clienteAutenticado.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para alterar a imagem de outro usuário.");
+        }
+
+        if (!Objects.requireNonNull(file.getContentType()).startsWith("image/")) {
+            return ResponseEntity.badRequest().body("Arquivo deve ser uma imagem válida.");
         }
 
         try {
@@ -81,24 +92,24 @@ public class ClienteController {
     }
 
     @GetMapping("/{id}/imagem-perfil")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> buscarImagemPerfil(@PathVariable Long id, HttpServletRequest request) {
         try {
             byte[] imagem = clienteService.obterImagemPerfil(id, request);
             if (imagem == null) {
                 return ResponseEntity.notFound().build();
             }
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Content-Type", "image/png");
-            return new ResponseEntity<>(imagem, headers, HttpStatus.OK);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(imagem);
         } catch (AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
-
     @GetMapping("/me/imagem")
-    public ResponseEntity<byte[]> minhaImagemPerfil(HttpServletRequest request) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication.getPrincipal() instanceof Cliente cliente)) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<byte[]> minhaImagemPerfil(@AuthenticationPrincipal Cliente cliente, HttpServletRequest request) {
+        if (cliente == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
         byte[] imagem = clienteService.obterImagemPerfil(cliente.getId(), request);
@@ -106,23 +117,22 @@ public class ClienteController {
                 .contentType(MediaType.IMAGE_PNG)
                 .body(imagem);
     }
+
     @GetMapping("/me")
-    public ResponseEntity<?> meuPerfil() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication.getPrincipal() instanceof Cliente cliente)) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> meuPerfil(@AuthenticationPrincipal Cliente cliente) {
+        if (cliente == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado.");
         }
         return ResponseEntity.ok(new ClienteDetalhamento(cliente));
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<?> deletarCliente() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (!(authentication.getPrincipal() instanceof Cliente cliente)) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> deletarCliente(@AuthenticationPrincipal Cliente cliente) {
+        if (cliente == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Cliente não autenticado.");
         }
-
         var clienteExistente = clienteRepository.findById(cliente.getId()).orElse(null);
         if (clienteExistente == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não encontrado.");
