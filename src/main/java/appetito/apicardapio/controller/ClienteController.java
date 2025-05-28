@@ -89,7 +89,7 @@ public class ClienteController {
      */
     @PostMapping("/{id}/upload-imagem")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<String> uploadImagemPerfil(@PathVariable Long id, @RequestPart("file") MultipartFile file, @AuthenticationPrincipal Cliente clienteAutenticado, HttpServletRequest request) {
+    public ResponseEntity<String> uploadImagemPerfil(@PathVariable Long id, @RequestPart("file") MultipartFile file, @AuthenticationPrincipal Cliente clienteAutenticado) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("Arquivo de imagem não pode estar vazio!");
         }
@@ -122,7 +122,7 @@ public class ClienteController {
      */
     @GetMapping("/{id}/imagem-perfil")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<byte[]> buscarImagemPerfil(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<byte[]> buscarImagemPerfil(@PathVariable Long id) {
         try {
             byte[] imagem = clienteService.obterImagemPerfil(id);
             if (imagem == null) {
@@ -145,7 +145,7 @@ public class ClienteController {
      */
     @GetMapping("/me/imagem")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<byte[]> minhaImagemPerfil(@AuthenticationPrincipal Cliente cliente, HttpServletRequest request) {
+    public ResponseEntity<byte[]> minhaImagemPerfil(@AuthenticationPrincipal Cliente cliente) {
         if (cliente == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
