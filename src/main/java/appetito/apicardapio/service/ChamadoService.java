@@ -7,7 +7,6 @@ import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.ChamadoRepository;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.MesaRepository;
-import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.security.DiscordAlert;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -142,7 +141,7 @@ public class ChamadoService {
             if (!chamado.getCliente().getId().equals(cliente.getId())) {
                 throw new AccessDeniedException("Você não pode cancelar chamados de outros clientes.");
             }
-        } else if (principal instanceof UsuarioDashboard usuario) {
+        } else if (principal instanceof UsuarioDashboard) {
             Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId)
                     .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado"));
 
