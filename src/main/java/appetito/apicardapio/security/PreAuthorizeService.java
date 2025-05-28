@@ -4,6 +4,7 @@ import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.entity.UsuarioEstabelecimento;
 import appetito.apicardapio.enums.PapelUsuario;
+import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import org.springframework.stereotype.Component;
@@ -102,15 +103,17 @@ public class PreAuthorizeService {
      * Verifica se o usuário pode aceitar pedidos na cozinha.
      * Os papéis permitidos são COZINHEIRO, GERENTE e ADMINISTRADOR.
      *
-     * @param estabelecimento o estabelecimento que está processando pedidos
+     * @param estabelecimentoId o estabelecimento que está processando pedidos
      * @param usuarioDashboard o usuário que deseja aceitar pedidos
      * @return true se o usuário tiver permissão para aceitar pedidos da cozinha
      */
-    public boolean podeAceitarPedidoCozinha(Estabelecimento estabelecimento, UsuarioDashboard usuarioDashboard) {
+    public boolean podeAceitarPedidoCozinha(Long estabelecimentoId, UsuarioDashboard usuarioDashboard) {
+        estabelecimentoRepository.findById(estabelecimentoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado."));
         return usuarioEstabelecimentoRepository
-                .findByUsuarioAndEstabelecimentoAndPapelIn(
+                .findByUsuarioAndEstabelecimento_EstabelecimentoIdAndPapelIn(
                         usuarioDashboard,
-                        estabelecimento,
+                        estabelecimentoId,
                         List.of(PapelUsuario.COZINHEIRO, PapelUsuario.GERENTE, PapelUsuario.ADMINISTRADOR)
                 ).isPresent();
     }
