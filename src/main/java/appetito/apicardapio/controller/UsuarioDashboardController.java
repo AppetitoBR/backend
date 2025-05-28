@@ -43,13 +43,11 @@ public class UsuarioDashboardController {
     private final UsuarioDashboardService usuarioService;
     private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
     private final EstabelecimentoRepository estabelecimentoRepository;
-    private final EmailService emailService;
-    public UsuarioDashboardController(UsuarioDashboardRepository usuarioRepository, UsuarioDashboardService usuarioService, EstabelecimentoRepository estabelecimentoRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository1, RestTemplateAutoConfiguration restTemplateAutoConfiguration, EmailService emailService) {
+    public UsuarioDashboardController(UsuarioDashboardRepository usuarioRepository, UsuarioDashboardService usuarioService, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioService = usuarioService;
         this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
-        this.estabelecimentoRepository = estabelecimentoRepository1;
-        this.emailService = emailService;
+        this.estabelecimentoRepository = estabelecimentoRepository;
     }
 
     @PostMapping("/cadastrar")
@@ -64,7 +62,6 @@ public class UsuarioDashboardController {
         var usuario = new UsuarioDashboard(dadosUsuario);
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         usuarioRepository.save(usuario);
-        emailService.enviarCodigoVerificacao(usuario.getEmail());
 
         var email = dadosUsuario.email();
         new DiscordAlert().AlertDiscord("Novo Usuario Dashboard cadastrado: " + email);

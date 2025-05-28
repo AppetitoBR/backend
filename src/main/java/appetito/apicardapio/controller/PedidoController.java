@@ -44,16 +44,6 @@ public class PedidoController {
         return ResponseEntity.ok(pedidos);
     }
     /*
-        @GetMapping("/{id}")
-        public ResponseEntity<PedidoDetalhamento> buscarPedido(@PathVariable Long id) {
-            Pedido pedido = pedidoService.buscarPedido(id);
-            if (pedido != null) {
-                return ResponseEntity.ok(new PedidoDetalhamento(pedido));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-        }
-
         @DeleteMapping("/{id}")
         public ResponseEntity<Void> excluirPedido(@PathVariable Long id) {
             try {

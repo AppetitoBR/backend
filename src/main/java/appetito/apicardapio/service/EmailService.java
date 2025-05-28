@@ -15,6 +15,8 @@ Irei apagar depois
  */
 @Service
 public class EmailService {
+    /*
+
 
     @Value("${api.mail.username}")
     private String remetente;
@@ -72,4 +74,6 @@ public class EmailService {
                 </div>
                 """.formatted(codigo);
     }
+
+     */
 }

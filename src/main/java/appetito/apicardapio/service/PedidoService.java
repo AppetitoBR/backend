@@ -97,25 +97,6 @@ public class PedidoService {
         }
         return pedidos;
     }
-/*
-    public List<Pedido> listarPedidos() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario)) {
-            throw new ResourceNotFoundException("Usuário não autenticado.");
-        }
-
-        List<Long> estabelecimentoIds = usuarioEstabelecimentoRepository.findByUsuario(usuario)
-                .stream()
-                .map(vinculo -> vinculo.getEstabelecimento().getEstabelecimentoId())
-                .toList();
-
-        return pedidoRepository.findAll().stream()
-                .filter(pedido -> pedido.getMesa() != null &&
-                        pedido.getMesa().getEstabelecimento() != null &&
-                        estabelecimentoIds.contains(pedido.getMesa().getEstabelecimento().getEstabelecimentoId()))
-                .toList();
-    }
- */
 
     private List<PedidoItem> criarItensDoPedido(PedidoCadastro pedidoCadastro, Pedido pedido) {
         return pedidoCadastro.itens().stream()
