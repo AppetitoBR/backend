@@ -6,7 +6,6 @@ import appetito.apicardapio.entity.Cliente;
 import appetito.apicardapio.repository.ClienteRepository;
 import appetito.apicardapio.security.DiscordAlert;
 import appetito.apicardapio.service.ClienteService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
