@@ -5,7 +5,6 @@ import appetito.apicardapio.dto.detalhamento.MesaDetalhamento;
 import appetito.apicardapio.entity.Mesa;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.MesaRepository;
-import appetito.apicardapio.security.PreAuthorizeService;
 import appetito.apicardapio.service.MesaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +18,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
+/**
+ * Controlador REST responsável pelas operações relacionadas às mesas dos estabelecimentos.
+ * <p>
+ * Fornece endpoints para cadastro, atualização, exclusão, listagem e recuperação de QR Code das mesas.
+ */
 @RestController
 @RequestMapping("/mesas")
 public class MesaController {
@@ -32,8 +36,16 @@ public class MesaController {
         this.mesaRepository = mesaRepository;
     }
 
+    /**
+     * Cadastra uma nova mesa para um estabelecimento específico.
+     *
+     * @param estabelecimentoId ID do estabelecimento onde a mesa será cadastrada.
+     * @param dadosMesa Dados da mesa a ser cadastrada.
+     * @param uriBuilder Utilizado para construir a URI de resposta.
+     * @return ResponseEntity com status 201 (Created) e os detalhes da mesa cadastrada.
+     */
     @PostMapping("/{estabelecimentoId}")
-    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId,authentication.principal)")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
     public ResponseEntity<MesaDetalhamento> cadastrarMesa(
             @PathVariable Long estabelecimentoId,
             @RequestBody @Valid MesaCadastro dadosMesa,
@@ -43,6 +55,15 @@ public class MesaController {
         var uri = uriBuilder.path("/mesas/{id}").buildAndExpand(mesaDetalhamento.mesa_id()).toUri();
         return ResponseEntity.created(uri).body(mesaDetalhamento);
     }
+
+    /**
+     * Atualiza uma mesa existente de um estabelecimento.
+     *
+     * @param estabelecimentoId ID do estabelecimento associado à mesa.
+     * @param id ID da mesa a ser atualizada.
+     * @param dadosMesa Novos dados da mesa.
+     * @return ResponseEntity com status 200 (OK) e os detalhes atualizados da mesa.
+     */
     @PutMapping("/{estabelecimentoId}/{id}")
     @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
     public ResponseEntity<MesaDetalhamento> atualizarMesa(
@@ -54,6 +75,13 @@ public class MesaController {
         return ResponseEntity.ok(mesaDetalhamento);
     }
 
+    /**
+     * Exclui uma mesa de um determinado estabelecimento.
+     *
+     * @param estabelecimentoId ID do estabelecimento vinculado à mesa.
+     * @param id ID da mesa a ser excluída.
+     * @return ResponseEntity com status 204 (No Content) se a exclusão for bem-sucedida.
+     */
     @DeleteMapping("/{estabelecimentoId}/{id}")
     @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
     public ResponseEntity<Void> excluirMesa(@PathVariable Long estabelecimentoId, @PathVariable Long id) {
@@ -61,6 +89,12 @@ public class MesaController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Lista todas as mesas de um estabelecimento a partir do seu nome fantasia.
+     *
+     * @param nomeFantasia Nome fantasia do estabelecimento.
+     * @return ResponseEntity com status 200 (OK) e a lista de mesas detalhadas.
+     */
     @GetMapping("/{nomeFantasia}/mesas")
     @PreAuthorize("@preAuthorizeService.podeAtenderEstabelecimentoPorNomeFantasia(#nomeFantasia, authentication.principal)")
     public ResponseEntity<List<MesaDetalhamento>> listarMesas(@PathVariable String nomeFantasia) {
@@ -68,6 +102,12 @@ public class MesaController {
         return ResponseEntity.ok(mesas);
     }
 
+    /**
+     * Retorna a imagem do QR Code associado a uma mesa específica.
+     *
+     * @param id ID da mesa.
+     * @return ResponseEntity com a imagem do QR Code em formato PNG ou status 204 (No Content) se não houver imagem.
+     */
     @GetMapping("/{id}/qrcode")
     public ResponseEntity<byte[]> obterQRCodeDaMesa(@PathVariable Long id) {
         Mesa mesa = mesaRepository.findById(id)
@@ -77,6 +117,7 @@ public class MesaController {
         if (qrCodeBytes == null || qrCodeBytes.length == 0) {
             return ResponseEntity.noContent().build();
         }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_PNG);
         headers.setContentLength(qrCodeBytes.length);
