@@ -22,21 +22,40 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Objects;
-
+/**
+ * Controlador responsável por gerenciar as operações relacionadas aos clientes,
+ * como cadastro, upload e visualização de imagem de perfil, obtenção de informações
+ * do perfil e exclusão de conta.
+ */
 @RestController
 @RequestMapping("/cliente")
 public class ClienteController {
+
     private final DiscordAlert discordAlert;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ClienteRepository clienteRepository;
     private final ClienteService clienteService;
 
+    /**
+     * Construtor da classe ClienteController.
+     *
+     * @param discordAlert        Serviço de alerta via Discord.
+     * @param clienteRepository   Repositório de dados do cliente.
+     * @param clienteService      Serviço com regras de negócio relacionadas ao cliente.
+     */
     public ClienteController(DiscordAlert discordAlert, ClienteRepository clienteRepository, ClienteService clienteService) {
         this.discordAlert = discordAlert;
         this.clienteRepository = clienteRepository;
         this.clienteService = clienteService;
     }
 
+    /**
+     * Cadastra um novo cliente na aplicação.
+     *
+     * @param dadosCliente Dados fornecidos para cadastro do cliente.
+     * @param uriBuilder   Builder para construção de URI do novo recurso.
+     * @return ResponseEntity com status de criação ou erro.
+     */
     @PostMapping("/cadastrar")
     public ResponseEntity<?> cadastrarCliente(
             @RequestBody @Valid ClienteCadastro dadosCliente,
@@ -59,6 +78,15 @@ public class ClienteController {
         return ResponseEntity.created(uri).body(new ClienteDetalhamento(cliente));
     }
 
+    /**
+     * Realiza o upload da imagem de perfil do cliente autenticado.
+     *
+     * @param id                 ID do cliente.
+     * @param file               Arquivo de imagem enviado.
+     * @param clienteAutenticado Cliente autenticado no contexto da requisição.
+     * @param request            Objeto da requisição HTTP.
+     * @return ResponseEntity com status da operação.
+     */
     @PostMapping("/{id}/upload-imagem")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> uploadImagemPerfil(@PathVariable Long id, @RequestPart("file") MultipartFile file, @AuthenticationPrincipal Cliente clienteAutenticado, HttpServletRequest request) {
@@ -85,6 +113,13 @@ public class ClienteController {
         }
     }
 
+    /**
+     * Recupera a imagem de perfil de um cliente com base no ID.
+     *
+     * @param id      ID do cliente.
+     * @param request Objeto da requisição HTTP.
+     * @return ResponseEntity contendo a imagem ou status de erro.
+     */
     @GetMapping("/{id}/imagem-perfil")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> buscarImagemPerfil(@PathVariable Long id, HttpServletRequest request) {
@@ -100,6 +135,14 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
+
+    /**
+     * Recupera a imagem de perfil do cliente autenticado.
+     *
+     * @param cliente Cliente autenticado.
+     * @param request Objeto da requisição HTTP.
+     * @return ResponseEntity contendo a imagem ou erro de autenticação.
+     */
     @GetMapping("/me/imagem")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> minhaImagemPerfil(@AuthenticationPrincipal Cliente cliente, HttpServletRequest request) {
@@ -112,6 +155,12 @@ public class ClienteController {
                 .body(imagem);
     }
 
+    /**
+     * Obtém os dados do cliente autenticado.
+     *
+     * @param cliente Cliente autenticado.
+     * @return ResponseEntity com os dados detalhados do cliente ou erro de autenticação.
+     */
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> meuPerfil(@AuthenticationPrincipal Cliente cliente) {
@@ -121,6 +170,12 @@ public class ClienteController {
         return ResponseEntity.ok(new ClienteDetalhamento(cliente));
     }
 
+    /**
+     * Exclui a conta do cliente autenticado.
+     *
+     * @param cliente Cliente autenticado.
+     * @return ResponseEntity com status da operação.
+     */
     @DeleteMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deletarCliente(@AuthenticationPrincipal Cliente cliente) {
@@ -135,5 +190,4 @@ public class ClienteController {
         clienteRepository.delete(clienteExistente);
         return ResponseEntity.ok("Conta do cliente excluída com sucesso.");
     }
-
 }
