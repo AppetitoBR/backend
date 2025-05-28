@@ -31,7 +31,7 @@ public class ClienteService {
 
     /**
      * Salva a imagem de perfil para um cliente autenticado.
-     *
+     * <p>
      * Verifica se o usuário autenticado é o mesmo cliente cujo perfil será atualizado.
      *
      * @param clienteId ID do cliente que terá a imagem atualizada.
@@ -65,7 +65,7 @@ public class ClienteService {
 
     /**
      * Obtém a imagem de perfil do cliente autenticado.
-     *
+     * <p>
      * Verifica se o usuário autenticado é o mesmo cliente cujo perfil está sendo acessado.
      *
      * @param clienteId ID do cliente cuja imagem de perfil será retornada.
