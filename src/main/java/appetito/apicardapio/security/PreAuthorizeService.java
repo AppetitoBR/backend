@@ -4,8 +4,8 @@ import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.entity.UsuarioEstabelecimento;
 import appetito.apicardapio.enums.PapelUsuario;
+import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,8 +19,14 @@ import java.util.Optional;
 @Component
 public class PreAuthorizeService {
 
-    @Autowired
-    private UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
+
+    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
+    private final EstabelecimentoRepository estabelecimentoRepository;
+
+    public PreAuthorizeService(UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository) {
+        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
+        this.estabelecimentoRepository = estabelecimentoRepository;
+    }
 
     /**
      * Verifica se o usuário tem permissão para gerenciar um estabelecimento.
@@ -77,13 +83,19 @@ public class PreAuthorizeService {
      * @param usuarioDashboard o usuário que deseja acessar
      * @return true se o usuário tiver permissão para atender
      */
-    public boolean podeAtenderEstabelecimenmto(Estabelecimento estabelecimento, UsuarioDashboard usuarioDashboard) {
+    public boolean podeAtenderEstabelecimento(Estabelecimento estabelecimento, UsuarioDashboard usuarioDashboard) {
         return usuarioEstabelecimentoRepository
                 .findByUsuarioAndEstabelecimentoAndPapelIn(
                         usuarioDashboard,
                         estabelecimento,
                         List.of(PapelUsuario.ATENDENTE, PapelUsuario.GERENTE, PapelUsuario.ADMINISTRADOR)
                 ).isPresent();
+    }
+    // esse aqui é personalizado
+    public boolean podeAtenderEstabelecimentoPorNomeFantasia(String nomeFantasia, UsuarioDashboard usuarioDashboard) {
+        return estabelecimentoRepository.findByNomeFantasia(nomeFantasia)
+                .map(estabelecimento -> podeAtenderEstabelecimento(estabelecimento, usuarioDashboard))
+                .orElse(false);
     }
 
     /**

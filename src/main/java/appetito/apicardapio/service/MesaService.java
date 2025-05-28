@@ -65,19 +65,12 @@ public class MesaService {
         return new MesaDetalhamento(mesa);
     }
 
-    public void excluirMesa(Long id) {
-
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        if (!(auth.getPrincipal() instanceof UsuarioDashboard usuario)) {
-            throw new AccessDeniedException("Usuário não autenticado.");
-        }
-
-        Mesa mesa = mesaRepository.findById(id)
+    public void excluirMesa(Long estabelecimentoId, Long mesaId) {
+        Mesa mesa = mesaRepository.findById(mesaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada."));
 
-        boolean vinculado = usuarioEstabelecimentoRepository.existsByUsuarioAndEstabelecimento(usuario, mesa.getEstabelecimento());
-        if (!vinculado) {
-            throw new AccessDeniedException("Você não tem permissão para excluir esta mesa.");
+        if (!mesa.getEstabelecimento().getEstabelecimentoId().equals(estabelecimentoId)) {
+            throw new AccessDeniedException("A mesa não pertence a este estabelecimento.");
         }
 
         mesaRepository.delete(mesa);

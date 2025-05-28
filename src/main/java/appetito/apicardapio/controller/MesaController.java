@@ -5,6 +5,7 @@ import appetito.apicardapio.dto.detalhamento.MesaDetalhamento;
 import appetito.apicardapio.entity.Mesa;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.MesaRepository;
+import appetito.apicardapio.security.PreAuthorizeService;
 import appetito.apicardapio.service.MesaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,8 @@ public class MesaController {
     private MesaService mesaService;
 
     private final MesaRepository mesaRepository;
+    @Autowired
+    private PreAuthorizeService preAuthorizeService;
 
     public MesaController(MesaRepository mesaRepository) {
         this.mesaRepository = mesaRepository;
@@ -53,17 +56,14 @@ public class MesaController {
         return ResponseEntity.ok(mesaDetalhamento);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirMesa(@PathVariable Long id) {
-        mesaService.excluirMesa(id);
+    @DeleteMapping("/{estabelecimentoId}/{id}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
+    public ResponseEntity<Void> excluirMesa(@PathVariable Long estabelecimentoId, @PathVariable Long id) {
+        mesaService.excluirMesa(estabelecimentoId, id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{nomeFantasia}/mesas")
-    public ResponseEntity<List<MesaDetalhamento>> listarMesas(@PathVariable String nomeFantasia) {
-        List<MesaDetalhamento> mesas = mesaService.listarMesasPorEstabelecimento(nomeFantasia);
-        return ResponseEntity.ok(mesas);
-    }
+
 
     @GetMapping("/{id}/qrcode")
     public ResponseEntity<byte[]> obterQRCodeDaMesa(@PathVariable Long id) {
