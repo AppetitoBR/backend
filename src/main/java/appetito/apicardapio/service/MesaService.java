@@ -10,6 +10,7 @@ import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.MesaRepository;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
+import appetito.apicardapio.security.PreAuthorizeService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,11 +23,11 @@ public class MesaService {
 
 
     private final MesaRepository mesaRepository;
-    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
+    private final PreAuthorizeService preAuthorizeService;
     private final EstabelecimentoRepository estabelecimentoRepository;
-    public MesaService(MesaRepository mesaRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository) {
+    public MesaService(MesaRepository mesaRepository,PreAuthorizeService preAuthorizeService, EstabelecimentoRepository estabelecimentoRepository) {
         this.mesaRepository = mesaRepository;
-        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
+        this.preAuthorizeService = preAuthorizeService;
         this.estabelecimentoRepository = estabelecimentoRepository;
     }
 
@@ -77,16 +78,8 @@ public class MesaService {
     }
 
     public List<MesaDetalhamento> listarMesasPorEstabelecimento(String nomeFantasia) {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        if (!(auth.getPrincipal() instanceof UsuarioDashboard usuario)) {
-            throw new AccessDeniedException("Usuário não autenticado.");
-        }
-
-        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository.findAllByUsuario(usuario).stream()
-                .map(UsuarioEstabelecimento::getEstabelecimento)
-                .filter(e -> e.getNomeFantasia().equalsIgnoreCase(nomeFantasia))
-                .findFirst()
-                .orElseThrow(() -> new AccessDeniedException("Você não tem acesso a esse estabelecimento."));
+        Estabelecimento estabelecimento = estabelecimentoRepository.findByNomeFantasia(nomeFantasia)
+                .orElseThrow(() -> new ResourceNotFoundException("Estabelecimento não encontrado."));
 
         List<Mesa> mesas = mesaRepository.findAllByEstabelecimento(estabelecimento);
         return mesas.stream().map(MesaDetalhamento::new).toList();
