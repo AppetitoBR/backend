@@ -27,8 +27,6 @@ public class MesaController {
     private MesaService mesaService;
 
     private final MesaRepository mesaRepository;
-    @Autowired
-    private PreAuthorizeService preAuthorizeService;
 
     public MesaController(MesaRepository mesaRepository) {
         this.mesaRepository = mesaRepository;
@@ -63,7 +61,12 @@ public class MesaController {
         return ResponseEntity.noContent().build();
     }
 
-
+    @GetMapping("/{nomeFantasia}/mesas")
+    @PreAuthorize("@preAuthorizeService.podeAtenderEstabelecimentoPorNomeFantasia(#nomeFantasia, authentication.principal)")
+    public ResponseEntity<List<MesaDetalhamento>> listarMesas(@PathVariable String nomeFantasia) {
+        List<MesaDetalhamento> mesas = mesaService.listarMesasPorEstabelecimento(nomeFantasia);
+        return ResponseEntity.ok(mesas);
+    }
 
     @GetMapping("/{id}/qrcode")
     public ResponseEntity<byte[]> obterQRCodeDaMesa(@PathVariable Long id) {
