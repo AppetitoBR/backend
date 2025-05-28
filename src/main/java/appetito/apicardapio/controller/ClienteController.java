@@ -102,7 +102,7 @@ public class ClienteController {
         }
 
         try {
-            Cliente cliente = clienteService.salvarImagemPerfil(id, file, request);
+            Cliente cliente = clienteService.salvarImagemPerfil(id, file);
             return cliente != null
                     ? ResponseEntity.ok("Imagem de perfil salva com sucesso!")
                     : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não encontrado.");
@@ -124,7 +124,7 @@ public class ClienteController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> buscarImagemPerfil(@PathVariable Long id, HttpServletRequest request) {
         try {
-            byte[] imagem = clienteService.obterImagemPerfil(id, request);
+            byte[] imagem = clienteService.obterImagemPerfil(id);
             if (imagem == null) {
                 return ResponseEntity.notFound().build();
             }
@@ -149,7 +149,7 @@ public class ClienteController {
         if (cliente == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-        byte[] imagem = clienteService.obterImagemPerfil(cliente.getId(), request);
+        byte[] imagem = clienteService.obterImagemPerfil(cliente.getId());
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
                 .body(imagem);
