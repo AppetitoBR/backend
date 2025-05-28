@@ -83,7 +83,6 @@ public class ClienteController {
      * @param id                 ID do cliente.
      * @param file               Arquivo de imagem enviado.
      * @param clienteAutenticado Cliente autenticado no contexto da requisição.
-     * @param request            Objeto da requisição HTTP.
      * @return ResponseEntity com status da operação.
      */
     @PostMapping("/{id}/upload-imagem")
@@ -116,7 +115,6 @@ public class ClienteController {
      * Recupera a imagem de perfil de um cliente com base no ID.
      *
      * @param id      ID do cliente.
-     * @param request Objeto da requisição HTTP.
      * @return ResponseEntity contendo a imagem ou status de erro.
      */
     @GetMapping("/{id}/imagem-perfil")
@@ -139,7 +137,6 @@ public class ClienteController {
      * Recupera a imagem de perfil do cliente autenticado.
      *
      * @param cliente Cliente autenticado.
-     * @param request Objeto da requisição HTTP.
      * @return ResponseEntity contendo a imagem ou erro de autenticação.
      */
     @GetMapping("/me/imagem")
