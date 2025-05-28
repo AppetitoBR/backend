@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +43,7 @@ public class PedidoService {
     @Transactional
     public Pedido criarPedido(PedidoCadastro pedidoCadastro) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (!(authentication.getPrincipal() instanceof Cliente cliente)) {
-            throw new ResourceNotFoundException("Usuário não autenticado.");
-        }
+        Object principal = authentication != null ? authentication.getPrincipal() : null;
 
         if (pedidoCadastro.itens().isEmpty()) {
             throw new IllegalArgumentException("O pedido deve conter pelo menos um item.");
@@ -68,13 +66,23 @@ public class PedidoService {
             throw new IllegalArgumentException("Alguns produtos não pertencem ao mesmo estabelecimento da mesa.");
         }
 
-        Pedido pedido = new Pedido(cliente, mesa);
+        Pedido pedido;
+
+        if (principal instanceof Cliente cliente) {
+            pedido = new Pedido(cliente, mesa);
+        } else if (principal instanceof String p && p.equals("anonymousUser")) {
+            pedido = new Pedido(null, mesa);
+        } else {
+            throw new AccessDeniedException("Acesso não autorizado.");
+        }
+
         criarItensDoPedido(pedidoCadastro, pedido).forEach(pedido.getItens()::add);
         pedido.calcularTotal();
 
         if (pedido.getTotal().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O total do pedido não pode ser zero ou negativo.");
         }
+
         return pedidoRepository.save(pedido);
     }
 
@@ -89,7 +97,7 @@ public class PedidoService {
         }
         return pedidos;
     }
-
+/*
     public List<Pedido> listarPedidos() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario)) {
@@ -107,11 +115,8 @@ public class PedidoService {
                         estabelecimentoIds.contains(pedido.getMesa().getEstabelecimento().getEstabelecimentoId()))
                 .toList();
     }
+ */
 
-   // public void excluirPedido(Long id) {
-     //   Pedido pedido = listarPedidosCliente();
-     //   pedidoRepository.delete(pedido);
-   // }
     private List<PedidoItem> criarItensDoPedido(PedidoCadastro pedidoCadastro, Pedido pedido) {
         return pedidoCadastro.itens().stream()
                 .map(itemCadastro -> {
@@ -122,6 +127,7 @@ public class PedidoService {
                 })
                 .collect(Collectors.toList());
     }
+
     @Transactional
     public Pedido atualizarItensPedido(Long pedidoId, List<ItemAtualizacao> itensAtualizacao) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
@@ -179,4 +185,15 @@ public class PedidoService {
             pedido.getItens().add(new PedidoItem(pedido, produto, itemAtualizacao.quantidade()));
         });
     }
+
+    public List<Pedido> listarPedidosPorEstabelecimento(Long estabelecimentoId) {
+        return pedidoRepository.findAll().stream()
+                .filter(pedido ->
+                        pedido.getMesa() != null &&
+                                pedido.getMesa().getEstabelecimento() != null &&
+                                pedido.getMesa().getEstabelecimento().getEstabelecimentoId().equals(estabelecimentoId)
+                )
+                .toList();
+    }
+
 }

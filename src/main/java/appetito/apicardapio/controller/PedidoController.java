@@ -10,12 +10,10 @@ import appetito.apicardapio.service.PedidoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-/*
-Vou mexer aqui 22/04
- */
+
 @RestController
 @RequestMapping("/pedidos")
 public class PedidoController {
@@ -36,9 +34,10 @@ public class PedidoController {
         }
     }
 
-    @GetMapping
-    public ResponseEntity<List<PedidoDados>> listarPedidos() {
-        List<PedidoDados> pedidos = pedidoService.listarPedidos()
+    @GetMapping("/{estabelecimentoId}")
+    @PreAuthorize("@preAuthorizeService.podeAceitarPedidoCozinha(#estabelecimentoId, authentication.principal)")
+    public ResponseEntity<List<PedidoDados>> listarPedidosPorEstabelecimento(@PathVariable Long estabelecimentoId) {
+        List<PedidoDados> pedidos = pedidoService.listarPedidosPorEstabelecimento(estabelecimentoId)
                 .stream()
                 .map(PedidoDados::new)
                 .toList();
