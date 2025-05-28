@@ -31,21 +31,25 @@ public class MesaController {
         this.mesaRepository = mesaRepository;
     }
 
-    @PostMapping
-    @PreAuthorize("hasAnyRole('GERENTE','ADMINISTRADOR')")
+    @PostMapping("/{estabelecimentoId}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId,authentication.principal)")
     public ResponseEntity<MesaDetalhamento> cadastrarMesa(
+            @PathVariable Long estabelecimentoId,
             @RequestBody @Valid MesaCadastro dadosMesa,
             UriComponentsBuilder uriBuilder) {
-        MesaDetalhamento mesaDetalhamento = mesaService.cadastrarMesa(dadosMesa);
+
+        MesaDetalhamento mesaDetalhamento = mesaService.cadastrarMesa(estabelecimentoId, dadosMesa);
         var uri = uriBuilder.path("/mesas/{id}").buildAndExpand(mesaDetalhamento.mesa_id()).toUri();
         return ResponseEntity.created(uri).body(mesaDetalhamento);
     }
-
-    @PutMapping("/{id}")
+    @PutMapping("/{estabelecimentoId}/{id}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
     public ResponseEntity<MesaDetalhamento> atualizarMesa(
+            @PathVariable Long estabelecimentoId,
             @PathVariable Long id,
             @RequestBody @Valid MesaCadastro dadosMesa) {
-        MesaDetalhamento mesaDetalhamento = mesaService.atualizarMesa(id, dadosMesa);
+
+        MesaDetalhamento mesaDetalhamento = mesaService.atualizarMesa(estabelecimentoId, id, dadosMesa);
         return ResponseEntity.ok(mesaDetalhamento);
     }
 
