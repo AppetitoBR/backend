@@ -38,6 +38,7 @@ public class AutenticacaoController {
     private final DaoAuthenticationProvider dashboardAuthProvider;
     private final DaoAuthenticationProvider appAuthProvider;
     private final TokenService tokenService;
+    private final DiscordAlert discordAlert;
 
     /**
      * Construtor com injeção de dependência dos providers e do serviço de token JWT.
@@ -49,11 +50,12 @@ public class AutenticacaoController {
     public AutenticacaoController(
             @Qualifier("dashboardAuthenticationProvider") DaoAuthenticationProvider dashboardAuthProvider,
             @Qualifier("appAuthenticationProvider") DaoAuthenticationProvider appAuthProvider,
-            TokenService tokenService) {
+            TokenService tokenService, DiscordAlert discordAlert) {
 
         this.dashboardAuthProvider = dashboardAuthProvider;
         this.appAuthProvider = appAuthProvider;
         this.tokenService = tokenService;
+        this.discordAlert = discordAlert;
     }
 
     /**
@@ -99,7 +101,7 @@ public class AutenticacaoController {
             var emailDoCliente = cliente.getEmail();
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
             var ip = request.getRemoteAddr();
-            new DiscordAlert().AlertDiscord("✅ Login em Cliente realizado com sucesso por: " + emailDoCliente + " (IP: " + ip + ")");
+            discordAlert.AlertDiscord("✅ Login em Cliente realizado com sucesso por: " + emailDoCliente + " (IP: " + ip + ")");
             Logger log = LoggerFactory.getLogger(getClass());
             log.warn(cliente.getAuthorities().toString());
 
