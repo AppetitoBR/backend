@@ -3,7 +3,6 @@ package appetito.apicardapio.service;
 import appetito.apicardapio.entity.Cliente;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.ClienteRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -36,13 +35,12 @@ public class ClienteService {
      *
      * @param clienteId ID do cliente que terá a imagem atualizada.
      * @param file Arquivo contendo a nova imagem de perfil.
-     * @param request Objeto HTTP request, usado para possíveis logs ou contextos adicionais.
      * @return Cliente atualizado com a nova imagem de perfil.
      * @throws IOException Caso ocorra erro ao ler o arquivo da imagem.
      * @throws AccessDeniedException Caso o usuário não esteja autenticado ou tente alterar a imagem de outro cliente.
      * @throws ResourceNotFoundException Caso o cliente com o ID informado não exista.
      */
-    public Cliente salvarImagemPerfil(Long clienteId, MultipartFile file, HttpServletRequest request) throws IOException {
+    public Cliente salvarImagemPerfil(Long clienteId, MultipartFile file) throws IOException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!(principal instanceof Cliente clienteAutenticado)) {
@@ -69,11 +67,10 @@ public class ClienteService {
      * Verifica se o usuário autenticado é o mesmo cliente cujo perfil está sendo acessado.
      *
      * @param clienteId ID do cliente cuja imagem de perfil será retornada.
-     * @param request Objeto HTTP request, usado para possíveis logs ou contextos adicionais.
      * @return Array de bytes da imagem de perfil, ou null se o cliente não possuir imagem.
      * @throws AccessDeniedException Caso o usuário não esteja autenticado ou tente acessar a imagem de outro cliente.
      */
-    public byte[] obterImagemPerfil(Long clienteId, HttpServletRequest request) {
+    public byte[] obterImagemPerfil(Long clienteId) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!(principal instanceof Cliente clienteAutenticado)) {
