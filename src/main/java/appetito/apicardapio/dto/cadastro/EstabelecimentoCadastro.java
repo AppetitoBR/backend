@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 public record EstabelecimentoCadastro(
         @NotBlank String razao_social,
         @NotBlank String nome_fantasia,
-        @NotBlank String cnpj,
+        String cnpj,
         String endereco,
         @NotBlank String tipo,
         @NotBlank String segmento
