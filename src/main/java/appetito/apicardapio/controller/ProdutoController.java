@@ -86,4 +86,16 @@ public class ProdutoController {
         Produto produtoAtualizado = produtoService.atualizarProduto(estabelecimentoId, dadosProduto);
         return ResponseEntity.ok(new ProdutoDetalhamento(produtoAtualizado));
     }
+
+    @DeleteMapping("/{estabelecimentoId}/{produtoId}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
+    @Transactional
+    public ResponseEntity<Void> excluirProduto(
+            @PathVariable Long estabelecimentoId,
+            @PathVariable Long produtoId
+    ) {
+        produtoService.excluirProduto(estabelecimentoId, produtoId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
