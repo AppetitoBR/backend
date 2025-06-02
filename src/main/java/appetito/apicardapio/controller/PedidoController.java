@@ -45,17 +45,18 @@ public class PedidoController {
                 .toList();
         return ResponseEntity.ok(pedidos);
     }
-    /*
-        @DeleteMapping("/{id}")
-        public ResponseEntity<Void> excluirPedido(@PathVariable Long id) {
-            try {
-                pedidoService.excluirPedido(id);
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-            } catch (RuntimeException e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluirPedido(@PathVariable Long id) {
+        try {
+            pedidoService.excluirPedido(id);
+            return ResponseEntity.noContent().build();
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-     */
+    }
+
     @PreAuthorize("hasRole('CLIENTE')")
     @PutMapping("/{pedidoId}")
     public ResponseEntity<Pedido> atualizarItensPedido(
