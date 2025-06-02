@@ -10,6 +10,7 @@ import appetito.apicardapio.service.PedidoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -23,6 +24,7 @@ public class PedidoController {
     public PedidoController(PedidoService pedidoService) {
         this.pedidoService = pedidoService;
     }
+
 
     @PostMapping
     public ResponseEntity<PedidoDetalhamento> criarPedido(@RequestBody @Valid PedidoCadastro pedidoCadastro) {
@@ -54,6 +56,7 @@ public class PedidoController {
             }
         }
      */
+    @PreAuthorize("hasRole('CLIENTE')")
     @PutMapping("/{pedidoId}")
     public ResponseEntity<Pedido> atualizarItensPedido(
             @PathVariable Long pedidoId,
@@ -63,6 +66,22 @@ public class PedidoController {
             return ResponseEntity.ok(pedidoAtualizado);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+    @PreAuthorize("hasRole('CLIENTE')")
+    @GetMapping("/me")
+    public ResponseEntity<List<PedidoDados>> listarPedidosDoCliente() {
+        try {
+            List<PedidoDados> pedidos = pedidoService.listarPedidosCliente()
+                    .stream()
+                    .map(PedidoDados::new)
+                    .toList();
+
+            return ResponseEntity.ok(pedidos);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 }
