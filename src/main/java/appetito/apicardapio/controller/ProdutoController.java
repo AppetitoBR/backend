@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/produtos")
@@ -97,5 +98,15 @@ public class ProdutoController {
         produtoService.excluirProduto(estabelecimentoId, produtoId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{estabelecimentoId}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
+    public ResponseEntity<List<ProdutoDetalhamento>> listarProdutos(
+            @PathVariable Long estabelecimentoId
+    ) {
+        List<ProdutoDetalhamento> produtos = produtoService.listarProdutosDoEstabelecimento(estabelecimentoId);
+        return ResponseEntity.ok(produtos);
+    }
+
 
 }
