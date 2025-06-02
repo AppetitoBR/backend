@@ -8,6 +8,5 @@ import java.util.List;
 
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     List<Pedido> findByCliente(Cliente cliente);
-
-    List<Pedido> findAllByMesa_Estabelecimento_EstabelecimentoId(Long estabelecimentoId);
+    List<Pedido> findByMesa_Estabelecimento_EstabelecimentoId(Long estabelecimentoId);
 }
