@@ -57,25 +57,9 @@ public class ProdutoController {
     public ResponseEntity<ProdutoDetalhamento> cadastrarProduto(
             @RequestBody @Valid ProdutoCadastro dadosProduto,
             UriComponentsBuilder uriP) {
-        UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
 
-        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
-                .findAllByUsuario(usuario)
-                .stream()
-                .map(UsuarioEstabelecimento::getEstabelecimento)
-                .findFirst()
-                .orElseThrow(() -> new AccessDeniedException("Você não está vinculado a um estabelecimento."));
+        Produto produto = produtoService.cadastrarProduto(dadosProduto);
 
-        Cardapio cardapio = cardapioRepository.findById(dadosProduto.cardapio())
-                .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado."));
-
-        if (!cardapio.getEstabelecimento().equals(estabelecimento)) {
-            throw new AccessDeniedException("Você não pode adicionar produtos a este cardápio.");
-        }
-        Produto produto = new Produto(dadosProduto);
-        produto.setCardapio(cardapio);
-        produtoRepository.save(produto);
         var uri = uriP.path("/produto/{id}").buildAndExpand(produto.getProduto_id()).toUri();
         return ResponseEntity.created(uri).body(new ProdutoDetalhamento(produto));
     }
