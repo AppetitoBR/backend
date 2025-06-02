@@ -23,20 +23,14 @@ import java.util.stream.Collectors;
 @Service
 public class PedidoService {
 
-    @Autowired
-    private PedidoRepository pedidoRepository;
-    @Autowired
-    private PedidoItemRepository pedidoItemRepository;
-    @Autowired
-    private ProdutoRepository produtoRepository;
-
+    private final PedidoRepository pedidoRepository;
+    private final ProdutoRepository produtoRepository;
     private final MesaRepository mesaRepository;
 
-    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
-
-    public PedidoService(MesaRepository mesaRepository, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository) {
+    public PedidoService(PedidoRepository pedidoRepository, ProdutoRepository produtoRepository, MesaRepository mesaRepository) {
+        this.pedidoRepository = pedidoRepository;
+        this.produtoRepository = produtoRepository;
         this.mesaRepository = mesaRepository;
-        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
     }
 
 
@@ -100,6 +94,20 @@ public class PedidoService {
         }
 
         return pedidos;
+    }
+    @Transactional
+    public void excluirPedido(Long pedidoId) {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = authentication != null ? authentication.getPrincipal() : null;
+
+        if (pedido.getCliente() == null || !(principal instanceof Cliente cliente) || !pedido.getCliente().equals(cliente)) {
+            throw new AccessDeniedException("Você não tem permissão para excluir este pedido.");
+        }
+
+        pedidoRepository.delete(pedido);
     }
 
     private List<PedidoItem> criarItensDoPedido(PedidoCadastro pedidoCadastro, Pedido pedido) {
