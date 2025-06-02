@@ -3,6 +3,7 @@ package appetito.apicardapio.controller;
 import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
 import appetito.apicardapio.dto.GetAll.ProdutoDados;
 import appetito.apicardapio.dto.detalhamento.ProdutoDetalhamento;
+import appetito.apicardapio.dto.put.ProdutoAtualizacao;
 import appetito.apicardapio.entity.Cardapio;
 import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.Produto;
@@ -87,5 +88,16 @@ public class ProdutoController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PutMapping("/{estabelecimentoId}/{produtoId}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
+    @Transactional
+    public ResponseEntity<ProdutoDetalhamento> atualizarProduto(@PathVariable Long estabelecimentoId, @PathVariable Long produtoId, @RequestBody @Valid ProdutoAtualizacao dadosProduto) {
+        if (!produtoId.equals(dadosProduto.produtoId())) {
+            throw new IllegalArgumentException("ID do produto no caminho não confere com o corpo da requisição.");
+        }
+        Produto produtoAtualizado = produtoService.atualizarProduto(estabelecimentoId, dadosProduto);
+        return ResponseEntity.ok(new ProdutoDetalhamento(produtoAtualizado));
     }
 }

@@ -1,6 +1,7 @@
 package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
+import appetito.apicardapio.dto.put.ProdutoAtualizacao;
 import appetito.apicardapio.entity.Cardapio;
 import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.Produto;
@@ -13,6 +14,7 @@ import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -59,6 +61,34 @@ public class ProdutoService {
 
         return produtoRepository.save(produto);
     }
+    @Transactional
+    public Produto atualizarProduto(Long estabelecimentoId, ProdutoAtualizacao dados) {
+        Produto produto = produtoRepository.findById(dados.produtoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
+
+        if (!produto.getCardapio().getEstabelecimento().getEstabelecimentoId().equals(estabelecimentoId)) {
+            throw new AccessDeniedException("Produto não pertence a este estabelecimento.");
+        }
+
+        Cardapio cardapio = cardapioRepository.findById(dados.cardapioId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado"));
+
+        produto.setCardapio(cardapio);
+        produto.setNome_curto(dados.nomeCurto());
+        produto.setNome_longo(dados.nomeLongo());
+        produto.setCategoria(dados.categoria());
+        produto.setTamanho(dados.tamanho());
+        produto.setPreco_custo(dados.precoCusto());
+        produto.setPreco_venda(dados.precoVenda());
+        produto.setEstoque(dados.estoque());
+        produto.setEstoque_minimo(dados.estoqueMinimo());
+        produto.setAtivo(dados.ativo());
+        produto.setUnidade_medida(dados.unidadeMedida());
+        produto.setImagens(dados.imagens());
+
+        return produtoRepository.save(produto);
+    }
+
 
 
 }
