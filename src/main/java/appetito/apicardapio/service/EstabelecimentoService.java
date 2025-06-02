@@ -13,6 +13,7 @@ import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.UsuarioDashboardRepository;
 import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.security.DiscordAlert;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,6 +104,10 @@ public class EstabelecimentoService {
     public List<EstabelecimentoDados> listarPorNomeFantasia(String nomeFantasia) {
         List<Estabelecimento> estabelecimentos = estabelecimentoRepository
                 .findByNomeFantasiaContainingIgnoreCase(nomeFantasia);
+
+        if (estabelecimentos.isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum estabelecimento encontrado com o nome fantasia informado.");
+        }
 
         return estabelecimentos.stream()
                 .map(EstabelecimentoDados::new)
