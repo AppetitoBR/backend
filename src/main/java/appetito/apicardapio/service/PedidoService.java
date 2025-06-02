@@ -88,38 +88,41 @@ public class PedidoService {
 
     public List<Pedido> listarPedidosCliente() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication.getPrincipal() instanceof Cliente cliente)) {
-            throw new AccessDeniedException("Usuário não autenticado ou inválido.");
+
+        if (!(authentication != null && authentication.getPrincipal() instanceof Cliente cliente)) {
+            throw new AccessDeniedException("Acesso permitido apenas para clientes autenticados.");
         }
+
         List<Pedido> pedidos = pedidoRepository.findByCliente(cliente);
+
         if (pedidos.isEmpty()) {
-            throw new ResourceNotFoundException("Não há pedidos encontrados para este cliente.");
+            throw new ResourceNotFoundException("Nenhum pedido encontrado para este cliente.");
         }
+
         return pedidos;
     }
 
     private List<PedidoItem> criarItensDoPedido(PedidoCadastro pedidoCadastro, Pedido pedido) {
         return pedidoCadastro.itens().stream()
-                .map(itemCadastro -> {
-                    Produto produto = produtoRepository.findById(itemCadastro.produtoId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
+                .map(item -> {
+                    Long produtoId = item.produtoId();
+                    Produto produto = produtoRepository.findById(produtoId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Produto com ID " + produtoId + " não encontrado."));
 
-                    return new PedidoItem(pedido, produto, itemCadastro.quantidade());
+                    return new PedidoItem(pedido, produto, item.quantidade());
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
     public Pedido atualizarItensPedido(Long pedidoId, List<ItemAtualizacao> itensAtualizacao) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication.getPrincipal() instanceof Cliente cliente)) {
-            throw new ResourceNotFoundException("Operação não permitida. Usuário não autenticado.");
-        }
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado."));
+
+        Cliente cliente = getClienteAutenticado();
 
         if (!pedido.getCliente().equals(cliente)) {
-            throw new ResourceNotFoundException("Operação não permitida. O cliente não pode atualizar pedido de outro cliente.");
+            throw new AccessDeniedException("Você não tem permissão para atualizar este pedido.");
         }
 
         atualizarItensDoPedidoEficiente(pedido, itensAtualizacao);
@@ -128,53 +131,67 @@ public class PedidoService {
         return pedido;
     }
 
+    private Cliente getClienteAutenticado() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof Cliente cliente)) {
+            throw new AccessDeniedException("Usuário não autenticado.");
+        }
+        return cliente;
+    }
+
     private void atualizarItensDoPedidoEficiente(Pedido pedido, List<ItemAtualizacao> itensAtualizacao) {
+        Map<Long, Produto> produtosMap = carregarProdutosMap(itensAtualizacao);
+        Map<Long, ItemAtualizacao> itensParaAtualizar = mapearItensAtualizacao(itensAtualizacao);
+
+        atualizarOuRemoverItensExistentes(pedido, itensParaAtualizar);
+        adicionarNovosItens(pedido, itensParaAtualizar, produtosMap);
+    }
+
+    private Map<Long, Produto> carregarProdutosMap(List<ItemAtualizacao> itensAtualizacao) {
         List<Long> produtoIds = itensAtualizacao.stream()
                 .map(ItemAtualizacao::produto_id)
                 .distinct()
                 .toList();
 
-        Map<Long, Produto> produtosMap = produtoRepository.findAllById(produtoIds)
-                .stream()
+        return produtoRepository.findAllById(produtoIds).stream()
                 .collect(Collectors.toMap(Produto::getProduto_id, Function.identity()));
+    }
 
-        Map<Long, ItemAtualizacao> itensParaAtualizar = itensAtualizacao.stream()
+    private Map<Long, ItemAtualizacao> mapearItensAtualizacao(List<ItemAtualizacao> itensAtualizacao) {
+        return itensAtualizacao.stream()
                 .collect(Collectors.toMap(
                         ItemAtualizacao::produto_id,
                         Function.identity(),
-                        (existente, novo) -> novo
+                        (existente, novo) -> novo // prioriza o último caso tenha duplicado
                 ));
+    }
 
+    private void atualizarOuRemoverItensExistentes(Pedido pedido, Map<Long, ItemAtualizacao> itensParaAtualizar) {
         Iterator<PedidoItem> iterator = pedido.getItens().iterator();
         while (iterator.hasNext()) {
             PedidoItem item = iterator.next();
-            ItemAtualizacao atualizacao = itensParaAtualizar.get(item.getProduto_id());
+            ItemAtualizacao atualizacao = itensParaAtualizar.remove(item.getProduto_id());
 
             if (atualizacao != null) {
                 item.setQuantidade(atualizacao.quantidade());
-                itensParaAtualizar.remove(item.getProduto_id());
             } else {
-                iterator.remove();
+                iterator.remove(); // remove itens que não estão na nova lista
             }
         }
+    }
 
-        itensParaAtualizar.forEach((produtoId, itemAtualizacao) -> {
-            Produto produto = produtosMap.get(produtoId);
+    private void adicionarNovosItens(Pedido pedido, Map<Long, ItemAtualizacao> itensRestantes, Map<Long, Produto> produtosMap) {
+        for (Map.Entry<Long, ItemAtualizacao> entry : itensRestantes.entrySet()) {
+            Produto produto = produtosMap.get(entry.getKey());
             if (produto == null) {
-                throw new ResourceNotFoundException("Produto ID " + produtoId + " não encontrado");
+                throw new ResourceNotFoundException("Produto ID " + entry.getKey() + " não encontrado.");
             }
-            pedido.getItens().add(new PedidoItem(pedido, produto, itemAtualizacao.quantidade()));
-        });
+            pedido.getItens().add(new PedidoItem(pedido, produto, entry.getValue().quantidade()));
+        }
     }
 
     public List<Pedido> listarPedidosPorEstabelecimento(Long estabelecimentoId) {
-        return pedidoRepository.findAll().stream()
-                .filter(pedido ->
-                        pedido.getMesa() != null &&
-                                pedido.getMesa().getEstabelecimento() != null &&
-                                pedido.getMesa().getEstabelecimento().getEstabelecimentoId().equals(estabelecimentoId)
-                )
-                .toList();
+        return pedidoRepository.findByMesa_Estabelecimento_EstabelecimentoId(estabelecimentoId);
     }
 
 }
