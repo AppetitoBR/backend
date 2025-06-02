@@ -140,7 +140,13 @@ public class PedidoService {
 
         pedidoRepository.delete(pedido);
     }
-
+    /**
+     * Cria os itens do pedido com base no DTO recebido.
+     *
+     * @param pedidoCadastro DTO contendo os itens
+     * @param pedido         pedido que receberá os itens
+     * @return lista de itens criados
+     */
     private List<PedidoItem> criarItensDoPedido(PedidoCadastro pedidoCadastro, Pedido pedido) {
         return pedidoCadastro.itens().stream()
                 .map(item -> {
@@ -152,7 +158,15 @@ public class PedidoService {
                 })
                 .toList();
     }
-
+    /**
+     * Atualiza os itens de um pedido já existente, substituindo e/ou removendo conforme informado.
+     *
+     * @param pedidoId         ID do pedido a ser atualizado
+     * @param itensAtualizacao nova lista de itens para o pedido
+     * @return o pedido atualizado
+     * @throws ResourceNotFoundException se o pedido não existir ou se algum produto não for encontrado
+     * @throws AccessDeniedException se o cliente não for o dono do pedido
+     */
     @Transactional
     public Pedido atualizarItensPedido(Long pedidoId, List<ItemAtualizacao> itensAtualizacao) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
@@ -169,7 +183,12 @@ public class PedidoService {
 
         return pedido;
     }
-
+    /**
+     * Retorna o cliente autenticado na sessão atual.
+     *
+     * @return o cliente autenticado
+     * @throws AccessDeniedException se o usuário não for um cliente autenticado
+     */
     private Cliente getClienteAutenticado() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof Cliente cliente)) {
@@ -178,6 +197,12 @@ public class PedidoService {
         return cliente;
     }
 
+    /**
+     * Atualiza os itens existentes ou remove os que não estão presentes na nova lista.
+     *
+     * @param pedido             pedido alvo
+     * @param itensAtualizacao mapa de atualizações por ID do produto
+     */
     private void atualizarItensDoPedidoEficiente(Pedido pedido, List<ItemAtualizacao> itensAtualizacao) {
         Map<Long, Produto> produtosMap = carregarProdutosMap(itensAtualizacao);
         Map<Long, ItemAtualizacao> itensParaAtualizar = mapearItensAtualizacao(itensAtualizacao);
@@ -185,7 +210,12 @@ public class PedidoService {
         atualizarOuRemoverItensExistentes(pedido, itensParaAtualizar);
         adicionarNovosItens(pedido, itensParaAtualizar, produtosMap);
     }
-
+    /**
+     * Carrega todos os produtos necessários em um mapa indexado por ID.
+     *
+     * @param itensAtualizacao lista de itens a atualizar
+     * @return mapa de produtos
+     */
     private Map<Long, Produto> carregarProdutosMap(List<ItemAtualizacao> itensAtualizacao) {
         List<Long> produtoIds = itensAtualizacao.stream()
                 .map(ItemAtualizacao::produto_id)
@@ -218,7 +248,14 @@ public class PedidoService {
             }
         }
     }
-
+    /**
+     * Adiciona novos itens ao pedido que não estavam presentes anteriormente.
+     *
+     * @param pedido             pedido alvo
+     * @param itensRestantes     itens restantes após a atualização dos existentes
+     * @param produtosMap        mapa de produtos disponíveis
+     * @throws ResourceNotFoundException se algum produto informado não for encontrado
+     */
     private void adicionarNovosItens(Pedido pedido, Map<Long, ItemAtualizacao> itensRestantes, Map<Long, Produto> produtosMap) {
         for (Map.Entry<Long, ItemAtualizacao> entry : itensRestantes.entrySet()) {
             Produto produto = produtosMap.get(entry.getKey());
@@ -228,7 +265,12 @@ public class PedidoService {
             pedido.getItens().add(new PedidoItem(pedido, produto, entry.getValue().quantidade()));
         }
     }
-
+    /**
+     * Lista os pedidos vinculados a um determinado estabelecimento.
+     *
+     * @param estabelecimentoId ID do estabelecimento
+     * @return lista de pedidos do estabelecimento
+     */
     public List<Pedido> listarPedidosPorEstabelecimento(Long estabelecimentoId) {
         return pedidoRepository.findByMesa_Estabelecimento_EstabelecimentoId(estabelecimentoId);
     }
