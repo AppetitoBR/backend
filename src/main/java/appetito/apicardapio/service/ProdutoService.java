@@ -81,6 +81,17 @@ public class ProdutoService {
 
         return produtoRepository.save(produto);
     }
+    public void excluirProduto(Long estabelecimentoId, Long produtoId) {
+        Produto produto = produtoRepository.findById(produtoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
+
+        if (!produto.getCardapio().getEstabelecimento().getEstabelecimentoId().equals(estabelecimentoId)) {
+            throw new AccessDeniedException("Este produto não pertence ao estabelecimento informado.");
+        }
+
+        produtoRepository.delete(produto);
+    }
+
 
 
 
