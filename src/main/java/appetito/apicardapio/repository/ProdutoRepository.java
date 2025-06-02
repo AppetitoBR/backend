@@ -8,5 +8,6 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
-    List<Produto> findAllByAtivoTrue();
+
+    List<Produto> findByCardapio_Estabelecimento_EstabelecimentoId(Long estabelecimentoId);
 }

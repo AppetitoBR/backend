@@ -1,6 +1,7 @@
 package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
+import appetito.apicardapio.dto.detalhamento.ProdutoDetalhamento;
 import appetito.apicardapio.dto.put.ProdutoAtualizacao;
 import appetito.apicardapio.entity.Cardapio;
 import appetito.apicardapio.entity.Produto;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class ProdutoService {
@@ -91,8 +93,11 @@ public class ProdutoService {
 
         produtoRepository.delete(produto);
     }
-
-
-
+    public List<ProdutoDetalhamento> listarProdutosDoEstabelecimento(Long estabelecimentoId) {
+        List<Produto> produtos = produtoRepository.findByCardapio_Estabelecimento_EstabelecimentoId(estabelecimentoId);
+        return produtos.stream()
+                .map(ProdutoDetalhamento::new)
+                .toList();
+    }
 
 }
