@@ -7,7 +7,6 @@ import appetito.apicardapio.entity.*;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.*;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
