@@ -1,17 +1,9 @@
 package appetito.apicardapio.controller;
 
 import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
-import appetito.apicardapio.dto.GetAll.ProdutoDados;
 import appetito.apicardapio.dto.detalhamento.ProdutoDetalhamento;
-import appetito.apicardapio.entity.Cardapio;
-import appetito.apicardapio.entity.Estabelecimento;
+import appetito.apicardapio.dto.put.ProdutoAtualizacao;
 import appetito.apicardapio.entity.Produto;
-import appetito.apicardapio.entity.UsuarioDashboard;
-import appetito.apicardapio.entity.UsuarioEstabelecimento;
-import appetito.apicardapio.exception.ResourceNotFoundException;
-import appetito.apicardapio.repository.CardapioRepository;
-import appetito.apicardapio.repository.ProdutoRepository;
-import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.service.ProdutoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,62 +12,34 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/produtos")
 public class ProdutoController {
 
-    @Autowired
-    private ProdutoService produtoService;
+    private final ProdutoService produtoService;
 
-    @Autowired
-    private ProdutoRepository produtoRepository;
-    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
-    private final CardapioRepository cardapioRepository;
-
-    public ProdutoController(UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, CardapioRepository cardapioRepository) {
-        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
-
-        this.cardapioRepository = cardapioRepository;
+    public ProdutoController(ProdutoService produtoService) {
+        this.produtoService = produtoService;
     }
 
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
+    @PostMapping("/{estabelecimentoId}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
     @Transactional
     public ResponseEntity<ProdutoDetalhamento> cadastrarProduto(
+            @PathVariable Long estabelecimentoId,
             @RequestBody @Valid ProdutoCadastro dadosProduto,
             UriComponentsBuilder uriP) {
-        UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
 
-        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
-                .findAllByUsuario(usuario)
-                .stream()
-                .map(UsuarioEstabelecimento::getEstabelecimento)
-                .findFirst()
-                .orElseThrow(() -> new AccessDeniedException("Você não está vinculado a um estabelecimento."));
+        Produto produto = produtoService.cadastrarProduto(estabelecimentoId, dadosProduto);
 
-        Cardapio cardapio = cardapioRepository.findById(dadosProduto.cardapio())
-                .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado."));
-
-        if (!cardapio.getEstabelecimento().equals(estabelecimento)) {
-            throw new AccessDeniedException("Você não pode adicionar produtos a este cardápio.");
-        }
-        Produto produto = new Produto(dadosProduto);
-        produto.setCardapio(cardapio);
-        produtoRepository.save(produto);
         var uri = uriP.path("/produto/{id}").buildAndExpand(produto.getProduto_id()).toUri();
         return ResponseEntity.created(uri).body(new ProdutoDetalhamento(produto));
     }
@@ -110,5 +74,16 @@ public class ProdutoController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PutMapping("/{estabelecimentoId}/{produtoId}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
+    @Transactional
+    public ResponseEntity<ProdutoDetalhamento> atualizarProduto(@PathVariable Long estabelecimentoId, @PathVariable Long produtoId, @RequestBody @Valid ProdutoAtualizacao dadosProduto) {
+        if (!produtoId.equals(dadosProduto.produtoId())) {
+            throw new IllegalArgumentException("ID do produto no caminho não confere com o corpo da requisição.");
+        }
+        Produto produtoAtualizado = produtoService.atualizarProduto(estabelecimentoId, dadosProduto);
+        return ResponseEntity.ok(new ProdutoDetalhamento(produtoAtualizado));
     }
 }
