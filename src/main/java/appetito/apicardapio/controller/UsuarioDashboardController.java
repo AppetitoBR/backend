@@ -29,7 +29,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
-@Tag(name = "Usuário", description = "Gerenciamento de usuários e imagens de perfil")
+
+/*
+Vou mexer aqui 03/06 -- se possivel
+ */
 public class UsuarioDashboardController {
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -92,7 +95,7 @@ public class UsuarioDashboardController {
         }
 
         try {
-            UsuarioDashboard usuarioAtualizado = usuarioService.salvarImagemPerfil(id, file, request);
+            UsuarioDashboard usuarioAtualizado = usuarioService.salvarImagemPerfil(id, file);
             return usuarioAtualizado != null
                     ? ResponseEntity.ok("Imagem de perfil salva com sucesso!")
                     : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado.");
@@ -103,7 +106,7 @@ public class UsuarioDashboardController {
 
     @GetMapping("/{id}/imagem-perfil")
     public ResponseEntity<byte[]> buscarImagemPerfil(@PathVariable Long id, HttpServletRequest request) {
-        byte[] imagem = usuarioService.obterImagemPerfil(id, request);
+        byte[] imagem = usuarioService.obterImagemPerfil(id);
         if (imagem == null) {
                return ResponseEntity.notFound().build();
         }
@@ -129,7 +132,7 @@ public class UsuarioDashboardController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
-        byte[] imagem = usuarioService.obterImagemPerfil(usuario.getUsuario_dashboard_id(), request);
+        byte[] imagem = usuarioService.obterImagemPerfil(usuario.getUsuario_dashboard_id());
 
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)

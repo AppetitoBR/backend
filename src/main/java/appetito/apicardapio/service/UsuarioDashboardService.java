@@ -18,7 +18,7 @@ public class UsuarioDashboardService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public UsuarioDashboard salvarImagemPerfil(Long usuarioId, MultipartFile file, HttpServletRequest request) throws IOException {
+    public UsuarioDashboard salvarImagemPerfil(Long usuarioId, MultipartFile file) throws IOException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof UsuarioDashboard usuarioAutenticado)) {
             throw new AccessDeniedException("Você não está autenticado.");
@@ -35,7 +35,7 @@ public class UsuarioDashboardService {
         }
         return null;
     }
-    public byte[] obterImagemPerfil(Long usuarioId, HttpServletRequest request) {
+    public byte[] obterImagemPerfil(Long usuarioId) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof UsuarioDashboard usuarioAutenticado)) {
             throw new AccessDeniedException("Você não está autenticado.");
