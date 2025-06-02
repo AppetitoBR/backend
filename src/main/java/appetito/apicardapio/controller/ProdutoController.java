@@ -51,14 +51,15 @@ public class ProdutoController {
         this.cardapioRepository = cardapioRepository;
     }
 
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'GERENTE')")
+    @PostMapping("/{estabelecimentoId}")
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#estabelecimentoId, authentication.principal)")
     @Transactional
     public ResponseEntity<ProdutoDetalhamento> cadastrarProduto(
+            @PathVariable Long estabelecimentoId,
             @RequestBody @Valid ProdutoCadastro dadosProduto,
             UriComponentsBuilder uriP) {
 
-        Produto produto = produtoService.cadastrarProduto(dadosProduto);
+        Produto produto = produtoService.cadastrarProduto(estabelecimentoId, dadosProduto);
 
         var uri = uriP.path("/produto/{id}").buildAndExpand(produto.getProduto_id()).toUri();
         return ResponseEntity.created(uri).body(new ProdutoDetalhamento(produto));

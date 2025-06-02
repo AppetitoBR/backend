@@ -46,21 +46,11 @@ public class ProdutoService {
         return produtoRepository.save(produto);
     }
 
-    public Produto cadastrarProduto(ProdutoCadastro dadosProduto) {
-        UsuarioDashboard usuario = (UsuarioDashboard) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-
-        Estabelecimento estabelecimento = usuarioEstabelecimentoRepository
-                .findAllByUsuario(usuario)
-                .stream()
-                .map(UsuarioEstabelecimento::getEstabelecimento)
-                .findFirst()
-                .orElseThrow(() -> new AccessDeniedException("Você não está vinculado a um estabelecimento."));
-
+    public Produto cadastrarProduto(Long estabelecimentoId, ProdutoCadastro dadosProduto) {
         Cardapio cardapio = cardapioRepository.findById(dadosProduto.cardapio())
                 .orElseThrow(() -> new ResourceNotFoundException("Cardápio não encontrado."));
 
-        if (!cardapio.getEstabelecimento().equals(estabelecimento)) {
+        if (!cardapio.getEstabelecimento().getEstabelecimentoId().equals(estabelecimentoId)) {
             throw new AccessDeniedException("Você não pode adicionar produtos a este cardápio.");
         }
 
@@ -69,5 +59,6 @@ public class ProdutoService {
 
         return produtoRepository.save(produto);
     }
+
 
 }
