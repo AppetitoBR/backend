@@ -1,18 +1,9 @@
 package appetito.apicardapio.controller;
 
 import appetito.apicardapio.dto.cadastro.ProdutoCadastro;
-import appetito.apicardapio.dto.GetAll.ProdutoDados;
 import appetito.apicardapio.dto.detalhamento.ProdutoDetalhamento;
 import appetito.apicardapio.dto.put.ProdutoAtualizacao;
-import appetito.apicardapio.entity.Cardapio;
-import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.Produto;
-import appetito.apicardapio.entity.UsuarioDashboard;
-import appetito.apicardapio.entity.UsuarioEstabelecimento;
-import appetito.apicardapio.exception.ResourceNotFoundException;
-import appetito.apicardapio.repository.CardapioRepository;
-import appetito.apicardapio.repository.ProdutoRepository;
-import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.service.ProdutoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,18 +12,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/produtos")
