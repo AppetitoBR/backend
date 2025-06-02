@@ -56,6 +56,10 @@ public class CardapioService {
     public List<CardapioDados> listarCardapiosComProdutosPorNomeFantasia(String nomeFantasia) {
         List<Cardapio> cardapios = cardapioRepository.findByEstabelecimentoNomeFantasia(nomeFantasia);
 
+        if (cardapios.isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum cardapio encontrado com o nome fantasia informado.");
+        }
+
         return cardapios.stream()
                 .map(CardapioDados::new)
                 .toList();
