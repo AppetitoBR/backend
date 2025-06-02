@@ -196,12 +196,15 @@ public class PedidoService {
         }
         return cliente;
     }
-
     /**
-     * Atualiza os itens existentes ou remove os que não estão presentes na nova lista.
+     * Atualiza os itens do pedido de forma eficiente:
+     * - Atualiza a quantidade dos itens existentes que também estão na lista de atualização.
+     * - Remove os itens que não estão mais presentes na lista de atualização.
+     * - Adiciona novos itens que não estavam presentes anteriormente no pedido.
      *
-     * @param pedido             pedido alvo
-     * @param itensAtualizacao mapa de atualizações por ID do produto
+     * @param pedido          o pedido cujos itens serão atualizados
+     * @param itensAtualizacao lista com os dados de atualização dos itens (produto_id e quantidade)
+     * @throws ResourceNotFoundException se algum produto informado na lista de atualização não for encontrado no banco
      */
     private void atualizarItensDoPedidoEficiente(Pedido pedido, List<ItemAtualizacao> itensAtualizacao) {
         Map<Long, Produto> produtosMap = carregarProdutosMap(itensAtualizacao);
@@ -225,7 +228,12 @@ public class PedidoService {
         return produtoRepository.findAllById(produtoIds).stream()
                 .collect(Collectors.toMap(Produto::getProduto_id, Function.identity()));
     }
-
+    /**
+     * Mapeia a lista de atualizações para um mapa por ID de produto.
+     *
+     * @param itensAtualizacao lista de atualizações
+     * @return mapa de atualizações
+     */
     private Map<Long, ItemAtualizacao> mapearItensAtualizacao(List<ItemAtualizacao> itensAtualizacao) {
         return itensAtualizacao.stream()
                 .collect(Collectors.toMap(
@@ -235,6 +243,12 @@ public class PedidoService {
                 ));
     }
 
+    /**
+     * Atualiza os itens existentes ou remove os que não estão presentes na nova lista.
+     *
+     * @param pedido             pedido alvo
+     * @param itensParaAtualizar mapa de atualizações por ID do produto
+     */
     private void atualizarOuRemoverItensExistentes(Pedido pedido, Map<Long, ItemAtualizacao> itensParaAtualizar) {
         Iterator<PedidoItem> iterator = pedido.getItens().iterator();
         while (iterator.hasNext()) {
