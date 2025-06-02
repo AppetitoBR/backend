@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Serviço responsável pelas operações relacionadas aos pedidos.
+ */
 @Service
 public class PedidoService {
 
@@ -27,6 +30,11 @@ public class PedidoService {
     private final ProdutoRepository produtoRepository;
     private final MesaRepository mesaRepository;
 
+    /**
+     * Construtor com injeção de dependência.
+     *
+     * @param mesaRepository                     repositório de mesas
+     */
     public PedidoService(PedidoRepository pedidoRepository, ProdutoRepository produtoRepository, MesaRepository mesaRepository) {
         this.pedidoRepository = pedidoRepository;
         this.produtoRepository = produtoRepository;
@@ -34,6 +42,15 @@ public class PedidoService {
     }
 
 
+    /**
+     * Cria um novo pedido com base nos dados informados.
+     *
+     * @param pedidoCadastro DTO contendo as informações do pedido
+     * @return o pedido criado e persistido
+     * @throws IllegalArgumentException se os itens forem inválidos ou o total for zero/negativo
+     * @throws ResourceNotFoundException se a mesa ou algum produto não for encontrado
+     * @throws AccessDeniedException se o usuário não for um cliente autenticado ou for um tipo não autorizado
+     */
     @Transactional
     public Pedido criarPedido(PedidoCadastro pedidoCadastro) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -80,6 +97,13 @@ public class PedidoService {
         return pedidoRepository.save(pedido);
     }
 
+    /**
+     * Lista os pedidos feitos pelo cliente autenticado.
+     *
+     * @return lista de pedidos do cliente
+     * @throws AccessDeniedException se o usuário não for um cliente autenticado
+     * @throws ResourceNotFoundException se o cliente não tiver pedidos registrados
+     */
     public List<Pedido> listarPedidosCliente() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -95,6 +119,13 @@ public class PedidoService {
 
         return pedidos;
     }
+    /**
+     * Exclui um pedido do cliente autenticado.
+     *
+     * @param pedidoId ID do pedido a ser excluído
+     * @throws ResourceNotFoundException se o pedido não existir
+     * @throws AccessDeniedException se o cliente não for o dono do pedido
+     */
     @Transactional
     public void excluirPedido(Long pedidoId) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
