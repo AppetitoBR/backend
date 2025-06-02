@@ -37,18 +37,10 @@ import java.util.List;
 @RequestMapping("/produtos")
 public class ProdutoController {
 
-    @Autowired
-    private ProdutoService produtoService;
+    private final ProdutoService produtoService;
 
-    @Autowired
-    private ProdutoRepository produtoRepository;
-    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
-    private final CardapioRepository cardapioRepository;
-
-    public ProdutoController(UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, CardapioRepository cardapioRepository) {
-        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
-
-        this.cardapioRepository = cardapioRepository;
+    public ProdutoController(ProdutoService produtoService) {
+        this.produtoService = produtoService;
     }
 
     @PostMapping("/{estabelecimentoId}")
