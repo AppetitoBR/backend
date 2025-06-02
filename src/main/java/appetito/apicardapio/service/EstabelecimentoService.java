@@ -89,6 +89,9 @@ public class EstabelecimentoService {
                 .stream()
                 .map(UsuarioEstabelecimento::getEstabelecimento)
                 .toList();
+        if (estabelecimentos.isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum estabelecimento encontrado.");
+        }
 
         return estabelecimentos.stream()
                 .map(EstabelecimentoDados::new)
