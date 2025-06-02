@@ -169,9 +169,6 @@ public class EstabelecimentoController {
     @GetMapping("/{nomeFantasia}/cardapio")
     public ResponseEntity<List<CardapioDados>> listarCardapiosDoEstabelecimento(@PathVariable String nomeFantasia) {
         List<CardapioDados> cardapios = cardapioService.listarCardapiosComProdutosPorNomeFantasia(nomeFantasia);
-        if (cardapios == null || cardapios.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
         return ResponseEntity.ok(cardapios);
     }
 
