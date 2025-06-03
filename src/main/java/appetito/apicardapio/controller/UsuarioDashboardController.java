@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -65,39 +66,26 @@ public class UsuarioDashboardController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
-    @PostMapping(value = "/{id}/upload-imagem", consumes = "multipart/form-data")
-    public ResponseEntity<String> uploadImagemPerfil(@PathVariable Long id, @RequestPart("file") MultipartFile file, HttpServletRequest request) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado.");
-        }
+    @PostMapping(value = "/{id}/upload-imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadImagemPerfil(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file,
+            @AuthenticationPrincipal UsuarioDashboard usuarioAutenticado) {
 
-        if (!usuario.getUsuario_dashboard_id().equals(id)) {
+        if (!usuarioAutenticado.getUsuario_dashboard_id().equals(id)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para atualizar a imagem de outro usuário.");
         }
 
-        String filename = file.getOriginalFilename();
-        if (filename == null || !(filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".png"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo de imagem inválido. Apenas .jpg, .jpeg e .png são permitidos.");
-        }
-
-        if (file.getSize() > 2 * 1024 * 1024) { // 2MB = 2 * 1024 * 1024 bytes
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("O arquivo é muito grande. O tamanho máximo permitido é 2MB.");
-        }
-
-        if (file.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Arquivo de imagem não pode estar vazio!");
-        }
-
         try {
-            UsuarioDashboard usuarioAtualizado = usuarioService.salvarImagemPerfil(id, file);
-            return usuarioAtualizado != null
-                    ? ResponseEntity.ok("Imagem de perfil salva com sucesso!")
-                    : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado.");
+            usuarioService.uploadImagemPerfil(id, file);
+            return ResponseEntity.ok("Imagem de perfil salva com sucesso!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao salvar imagem: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("Erro ao salvar imagem: " + e.getMessage());
         }
     }
+
 
     @GetMapping("/{id}/imagem-perfil")
     public ResponseEntity<byte[]> buscarImagemPerfil(@PathVariable Long id, HttpServletRequest request) {

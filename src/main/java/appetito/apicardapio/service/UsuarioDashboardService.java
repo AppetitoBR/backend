@@ -23,23 +23,6 @@ public class UsuarioDashboardService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UsuarioDashboard salvarImagemPerfil(Long usuarioId, MultipartFile file) throws IOException {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UsuarioDashboard usuarioAutenticado)) {
-            throw new AccessDeniedException("Você não está autenticado.");
-        }
-        if (!usuarioAutenticado.getUsuario_dashboard_id().equals(usuarioId)) {
-            throw new AccessDeniedException("Você não tem permissão para salvar a imagem de outro usuário.");
-        }
-
-        Optional<UsuarioDashboard> usuarioOpt = usuarioRepository.findById(usuarioId);
-        if (usuarioOpt.isPresent()) {
-            UsuarioDashboard usuario = usuarioOpt.get();
-            usuario.setImagem_perfil(file.getBytes());
-            return usuarioRepository.save(usuario);
-        }
-        return null;
-    }
     public byte[] obterImagemPerfil(Long usuarioId) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof UsuarioDashboard usuarioAutenticado)) {
@@ -65,5 +48,27 @@ public class UsuarioDashboardService {
 
         return usuario;
     }
+    public void uploadImagemPerfil(Long id, MultipartFile file) throws IOException {
+        String filename = file.getOriginalFilename();
+
+        if (filename == null || !(filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".png"))) {
+            throw new IllegalArgumentException("Arquivo de imagem inválido. Apenas .jpg, .jpeg e .png são permitidos.");
+        }
+
+        if (file.getSize() > 2 * 1024 * 1024) {
+            throw new IllegalArgumentException("O arquivo é muito grande. O tamanho máximo permitido é 2MB.");
+        }
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Arquivo de imagem não pode estar vazio!");
+        }
+
+        UsuarioDashboard usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        usuario.setImagem_perfil(file.getBytes());
+        usuarioRepository.save(usuario);
+    }
+
 }
 
