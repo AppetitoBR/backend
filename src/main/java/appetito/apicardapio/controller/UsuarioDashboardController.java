@@ -52,24 +52,19 @@ public class UsuarioDashboardController {
             @RequestBody @Valid UsuarioDashboardCadastro dadosUsuario,
             UriComponentsBuilder uriBuilder) {
 
-        if (usuarioRepository.existsByEmail(dadosUsuario.email())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("E-mail já cadastrado!");
+        try {
+            UsuarioDashboard usuario = usuarioService.cadastrarUsuarioDashboard(dadosUsuario);
+
+            var uri = uriBuilder.path("/usuarios/{id}")
+                    .buildAndExpand(usuario.getUsuario_dashboard_id())
+                    .toUri();
+
+            return ResponseEntity.created(uri).body(new UsuarioDashboardDetalhamento(usuario));
+
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
-
-        var usuario = new UsuarioDashboard(dadosUsuario);
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
-        usuarioRepository.save(usuario);
-
-        var email = dadosUsuario.email();
-        new DiscordAlert().AlertDiscord("Novo Usuario Dashboard cadastrado: " + email);
-
-        var uri = uriBuilder.path("/usuarios/{id}")
-                .buildAndExpand(usuario.getUsuario_dashboard_id())
-                .toUri();
-
-        return ResponseEntity.created(uri).body(new UsuarioDashboardDetalhamento(usuario));
     }
-
     @PostMapping(value = "/{id}/upload-imagem", consumes = "multipart/form-data")
     public ResponseEntity<String> uploadImagemPerfil(@PathVariable Long id, @RequestPart("file") MultipartFile file, HttpServletRequest request) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
