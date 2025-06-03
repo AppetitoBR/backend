@@ -32,9 +32,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/usuarios")
 
-/*
-Vou mexer aqui 03/06 -- se possivel
- */
 public class UsuarioDashboardController {
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
