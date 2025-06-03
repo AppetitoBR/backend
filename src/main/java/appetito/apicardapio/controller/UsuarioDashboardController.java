@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -66,6 +67,7 @@ public class UsuarioDashboardController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
+    @PreAuthorize("isAuthenticated()")
     @PostMapping(value = "/{id}/upload-imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadImagemPerfil(
             @PathVariable Long id,
@@ -98,6 +100,7 @@ public class UsuarioDashboardController {
         return new ResponseEntity<>(imagem, headers, HttpStatus.OK);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/me")
     public ResponseEntity<?> meuPerfil() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -105,9 +108,11 @@ public class UsuarioDashboardController {
         if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado.");
         }
+
         return ResponseEntity.ok(new UsuarioDashboardDetalhamento(usuario));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/me/imagem")
     public ResponseEntity<byte[]> minhaImagem(HttpServletRequest request) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();

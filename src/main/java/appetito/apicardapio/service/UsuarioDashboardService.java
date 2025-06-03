@@ -22,7 +22,6 @@ public class UsuarioDashboardService {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
     }
-
     public byte[] obterImagemPerfil(Long usuarioId) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(principal instanceof UsuarioDashboard usuarioAutenticado)) {
