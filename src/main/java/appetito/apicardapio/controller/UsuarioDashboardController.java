@@ -87,6 +87,7 @@ public class UsuarioDashboardController {
 
 
     @GetMapping("/{id}/imagem-perfil")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> buscarImagemPerfil(@PathVariable Long id, HttpServletRequest request) {
         byte[] imagem = usuarioService.obterImagemPerfil(id);
         if (imagem == null) {
@@ -125,6 +126,7 @@ public class UsuarioDashboardController {
     }
 
     @DeleteMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deletarUsuarioDashboard() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -149,6 +151,7 @@ public class UsuarioDashboardController {
     }
 
     @PutMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> atualizarUsuario(@RequestBody @Valid UsuarioDashboardCadastro dadosAtualizados) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
