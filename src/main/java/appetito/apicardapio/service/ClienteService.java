@@ -3,6 +3,8 @@ package appetito.apicardapio.service;
 import appetito.apicardapio.entity.Cliente;
 import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.ClienteRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -83,6 +85,16 @@ public class ClienteService {
 
         Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
         return clienteOpt.map(Cliente::getImagemPerfil).orElse(null);
+    }
+
+    public ResponseEntity<?> deletarCliente(Cliente cliente) {
+        var clienteExistente = clienteRepository.findById(cliente.getId()).orElse(null);
+        if (clienteExistente == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não encontrado.");
+        }
+
+        clienteRepository.delete(clienteExistente);
+        return ResponseEntity.ok("Conta do cliente excluída com sucesso.");
     }
 }
 

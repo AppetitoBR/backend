@@ -178,12 +178,7 @@ public class ClienteController {
         if (cliente == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Cliente não autenticado.");
         }
-        var clienteExistente = clienteRepository.findById(cliente.getId()).orElse(null);
-        if (clienteExistente == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não encontrado.");
-        }
 
-        clienteRepository.delete(clienteExistente);
-        return ResponseEntity.ok("Conta do cliente excluída com sucesso.");
+        return clienteService.deletarCliente(cliente);
     }
 }
