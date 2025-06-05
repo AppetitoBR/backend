@@ -113,7 +113,7 @@ public class UsuarioDashboardController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/me/imagem")
-    public ResponseEntity<byte[]> minhaImagem(HttpServletRequest request) {
+    public ResponseEntity<byte[]> minhaImagem() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
