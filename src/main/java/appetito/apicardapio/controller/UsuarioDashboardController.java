@@ -2,6 +2,7 @@ package appetito.apicardapio.controller;
 
 import appetito.apicardapio.dto.cadastro.UsuarioDashboardCadastro;
 import appetito.apicardapio.dto.detalhamento.UsuarioDashboardDetalhamento;
+import appetito.apicardapio.dto.put.UsuarioDashboardAtualizacao;
 import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.entity.UsuarioEstabelecimento;
@@ -152,15 +153,15 @@ public class UsuarioDashboardController {
 
     @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> atualizarUsuario(@RequestBody @Valid UsuarioDashboardCadastro dadosAtualizados) {
+    public ResponseEntity<?> atualizarUsuario(@RequestBody @Valid UsuarioDashboardAtualizacao dadosAtualizados) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado.");
         }
 
-        UsuarioDashboardDetalhamento usuarioAtualizado = usuarioService.atualizarUsuario(usuario, dadosAtualizados);
-        return ResponseEntity.ok(usuarioAtualizado);
+        UsuarioDashboardDetalhamento detalhamento = usuarioService.atualizarUsuario(usuario, dadosAtualizados);
+        return ResponseEntity.ok(detalhamento);
     }
 
 

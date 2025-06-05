@@ -2,6 +2,7 @@ package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.cadastro.UsuarioDashboardCadastro;
 import appetito.apicardapio.dto.detalhamento.UsuarioDashboardDetalhamento;
+import appetito.apicardapio.dto.put.UsuarioDashboardAtualizacao;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.repository.UsuarioDashboardRepository;
 import appetito.apicardapio.security.DiscordAlert;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -72,19 +75,17 @@ public class UsuarioDashboardService {
     }
 
     @Transactional
-    public UsuarioDashboardDetalhamento atualizarUsuario(UsuarioDashboard usuario, UsuarioDashboardCadastro dadosAtualizados) {
+    public UsuarioDashboardDetalhamento atualizarUsuario(UsuarioDashboard usuario, UsuarioDashboardAtualizacao dadosAtualizados) {
 
         usuario.setNome_completo(dadosAtualizados.nome_completo());
-        usuario.setEmail(dadosAtualizados.email());
-        // usuario.setIdioma_padrao(dadosAtualizados.idioma_padrao()); // ajustar depois
-
-        if (dadosAtualizados.senha() != null && !dadosAtualizados.senha().isEmpty()) {
-            usuario.setSenha(passwordEncoder.encode(dadosAtualizados.senha()));
-        }
+        usuario.setTelefone(dadosAtualizados.telefone());
+        usuario.setSituacao(dadosAtualizados.situacao());
+        usuario.setData_atualizacao(LocalDate.now());
 
         usuarioRepository.save(usuario);
         return new UsuarioDashboardDetalhamento(usuario);
     }
+
 
 }
 
