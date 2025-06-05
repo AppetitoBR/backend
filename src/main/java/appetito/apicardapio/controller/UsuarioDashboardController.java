@@ -2,6 +2,7 @@ package appetito.apicardapio.controller;
 
 import appetito.apicardapio.dto.cadastro.UsuarioDashboardCadastro;
 import appetito.apicardapio.dto.detalhamento.UsuarioDashboardDetalhamento;
+import appetito.apicardapio.dto.put.UsuarioDashboardAtualizacao;
 import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.entity.UsuarioEstabelecimento;
@@ -152,26 +153,16 @@ public class UsuarioDashboardController {
 
     @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> atualizarUsuario(@RequestBody @Valid UsuarioDashboardCadastro dadosAtualizados) {
+    public ResponseEntity<?> atualizarUsuario(@RequestBody @Valid UsuarioDashboardAtualizacao dadosAtualizados) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (!(authentication.getPrincipal() instanceof UsuarioDashboard usuario)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado.");
         }
 
-        if (!usuario.getUsuario_dashboard_id().equals(authentication.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para atualizar o perfil de outro usuário.");
-        }
-
-        usuario.setNome_completo(dadosAtualizados.nome_completo());
-        usuario.setEmail(dadosAtualizados.email());
-        // usuario.setIdioma_padrao(dadosAtualizados.idioma_padrao()); // vou arrumar isso aqui depois
-
-        if (dadosAtualizados.senha() != null && !dadosAtualizados.senha().isEmpty()) {
-            usuario.setSenha(passwordEncoder.encode(dadosAtualizados.senha()));
-        }
-        usuarioRepository.save(usuario);
-        return ResponseEntity.ok(new UsuarioDashboardDetalhamento(usuario));
+        UsuarioDashboardDetalhamento detalhamento = usuarioService.atualizarUsuario(usuario, dadosAtualizados);
+        return ResponseEntity.ok(detalhamento);
     }
+
 
 }

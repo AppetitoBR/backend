@@ -62,6 +62,8 @@ public class UsuarioDashboard implements UserDetails {
      */
     private String senha;
 
+    private String telefone;
+
     /**
      * Imagem do perfil armazenada como array de bytes (blob).
      */
