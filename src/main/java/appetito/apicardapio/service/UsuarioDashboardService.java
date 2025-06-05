@@ -1,6 +1,7 @@
 package appetito.apicardapio.service;
 
 import appetito.apicardapio.dto.cadastro.UsuarioDashboardCadastro;
+import appetito.apicardapio.dto.detalhamento.UsuarioDashboardDetalhamento;
 import appetito.apicardapio.entity.UsuarioDashboard;
 import appetito.apicardapio.repository.UsuarioDashboardRepository;
 import appetito.apicardapio.security.DiscordAlert;
@@ -9,6 +10,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Optional;
@@ -67,6 +69,21 @@ public class UsuarioDashboardService {
 
         usuario.setImagem_perfil(file.getBytes());
         usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public UsuarioDashboardDetalhamento atualizarUsuario(UsuarioDashboard usuario, UsuarioDashboardCadastro dadosAtualizados) {
+
+        usuario.setNome_completo(dadosAtualizados.nome_completo());
+        usuario.setEmail(dadosAtualizados.email());
+        // usuario.setIdioma_padrao(dadosAtualizados.idioma_padrao()); // ajustar depois
+
+        if (dadosAtualizados.senha() != null && !dadosAtualizados.senha().isEmpty()) {
+            usuario.setSenha(passwordEncoder.encode(dadosAtualizados.senha()));
+        }
+
+        usuarioRepository.save(usuario);
+        return new UsuarioDashboardDetalhamento(usuario);
     }
 
 }

@@ -159,19 +159,9 @@ public class UsuarioDashboardController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado.");
         }
 
-        if (!usuario.getUsuario_dashboard_id().equals(authentication.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para atualizar o perfil de outro usuário.");
-        }
-
-        usuario.setNome_completo(dadosAtualizados.nome_completo());
-        usuario.setEmail(dadosAtualizados.email());
-        // usuario.setIdioma_padrao(dadosAtualizados.idioma_padrao()); // vou arrumar isso aqui depois
-
-        if (dadosAtualizados.senha() != null && !dadosAtualizados.senha().isEmpty()) {
-            usuario.setSenha(passwordEncoder.encode(dadosAtualizados.senha()));
-        }
-        usuarioRepository.save(usuario);
-        return ResponseEntity.ok(new UsuarioDashboardDetalhamento(usuario));
+        UsuarioDashboardDetalhamento usuarioAtualizado = usuarioService.atualizarUsuario(usuario, dadosAtualizados);
+        return ResponseEntity.ok(usuarioAtualizado);
     }
+
 
 }
