@@ -135,21 +135,10 @@ public class UsuarioDashboardController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado.");
         }
 
-        List<UsuarioEstabelecimento> vinculos = usuarioEstabelecimentoRepository.findByUsuario(usuario);
-        for (UsuarioEstabelecimento vinculo : vinculos) {
-            if (vinculo.getPapel() == PapelUsuario.ADMINISTRADOR) {
-                Estabelecimento est = vinculo.getEstabelecimento();
-                usuarioEstabelecimentoRepository.deleteAllByEstabelecimento(est);
-                estabelecimentoRepository.delete(est);
-            } else {
-                usuarioEstabelecimentoRepository.delete(vinculo);
-            }
-        }
-
-        usuarioRepository.delete(usuario);
-
+        usuarioService.deletarUsuarioDashboard(usuario);
         return ResponseEntity.ok("Conta e vínculos removidos com sucesso.");
     }
+
 
     @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")

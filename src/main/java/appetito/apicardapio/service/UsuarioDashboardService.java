@@ -3,8 +3,13 @@ package appetito.apicardapio.service;
 import appetito.apicardapio.dto.cadastro.UsuarioDashboardCadastro;
 import appetito.apicardapio.dto.detalhamento.UsuarioDashboardDetalhamento;
 import appetito.apicardapio.dto.put.UsuarioDashboardAtualizacao;
+import appetito.apicardapio.entity.Estabelecimento;
 import appetito.apicardapio.entity.UsuarioDashboard;
+import appetito.apicardapio.entity.UsuarioEstabelecimento;
+import appetito.apicardapio.enums.PapelUsuario;
+import appetito.apicardapio.repository.EstabelecimentoRepository;
 import appetito.apicardapio.repository.UsuarioDashboardRepository;
+import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.security.DiscordAlert;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,16 +21,21 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UsuarioDashboardService {
     private final UsuarioDashboardRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository;
+    private final EstabelecimentoRepository estabelecimentoRepository;
 
-    public UsuarioDashboardService(UsuarioDashboardRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioDashboardService(UsuarioDashboardRepository usuarioRepository, PasswordEncoder passwordEncoder, UsuarioEstabelecimentoRepository usuarioEstabelecimentoRepository, EstabelecimentoRepository estabelecimentoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.usuarioEstabelecimentoRepository = usuarioEstabelecimentoRepository;
+        this.estabelecimentoRepository = estabelecimentoRepository;
     }
     public byte[] obterImagemPerfil(Long usuarioId) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -85,6 +95,24 @@ public class UsuarioDashboardService {
         usuarioRepository.save(usuario);
         return new UsuarioDashboardDetalhamento(usuario);
     }
+
+    @Transactional
+    public void deletarUsuarioDashboard(UsuarioDashboard usuario) {
+        List<UsuarioEstabelecimento> vinculos = usuarioEstabelecimentoRepository.findByUsuario(usuario);
+
+        for (UsuarioEstabelecimento vinculo : vinculos) {
+            if (vinculo.getPapel() == PapelUsuario.ADMINISTRADOR) {
+                Estabelecimento est = vinculo.getEstabelecimento();
+                usuarioEstabelecimentoRepository.deleteAllByEstabelecimento(est);
+                estabelecimentoRepository.delete(est);
+            } else {
+                usuarioEstabelecimentoRepository.delete(vinculo);
+            }
+        }
+
+        usuarioRepository.delete(usuario);
+    }
+
 
 
 }
