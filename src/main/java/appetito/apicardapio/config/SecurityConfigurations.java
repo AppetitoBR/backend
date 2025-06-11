@@ -71,6 +71,7 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.GET, "/estabelecimento/*/cardapio").permitAll()
                         .requestMatchers(HttpMethod.GET, "/produtos/*/imagem").permitAll()
                         .requestMatchers(HttpMethod.GET, "/estabelecimento/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/estabelecimento/*/imagem-perfil").permitAll()
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",

@@ -206,6 +206,7 @@ public class EstabelecimentoController {
             return ResponseEntity.internalServerError().body("Erro ao salvar imagem: " + e.getMessage());
         }
     }
+    
     @GetMapping("/{nomeFantasia}/imagem-perfil")
     public ResponseEntity<byte[]> buscarImagemPerfil(@PathVariable String nomeFantasia) {
         byte[] imagem = estabelecimentoService.obterLogoMarca(nomeFantasia);
