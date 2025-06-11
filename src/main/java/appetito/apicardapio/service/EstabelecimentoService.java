@@ -15,10 +15,14 @@ import appetito.apicardapio.repository.UsuarioEstabelecimentoRepository;
 import appetito.apicardapio.security.DiscordAlert;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Serviço responsável pelas operações relacionadas a estabelecimentos,
@@ -203,6 +207,33 @@ public class EstabelecimentoService {
                         v.getUsuario().getEmail(),
                         v.getPapel()))
                 .toList();
+    }
+
+    public byte[] obterLogoMarca(String nomeFantasia) {
+        Optional<Estabelecimento> estabelecimento = estabelecimentoRepository.findByNomeFantasia(nomeFantasia);
+        return estabelecimento.map(Estabelecimento::getLogomarca).orElse(null);
+    }
+
+    public void uploadLogoMarca(Long id, MultipartFile file) throws IOException {
+        String filename = file.getOriginalFilename();
+
+        if (filename == null || !(filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".png"))) {
+            throw new IllegalArgumentException("Arquivo de imagem inválido. Apenas .jpg, .jpeg e .png são permitidos.");
+        }
+
+        if (file.getSize() > 2 * 1024 * 1024) {
+            throw new IllegalArgumentException("O arquivo é muito grande. O tamanho máximo permitido é 2MB.");
+        }
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Arquivo de imagem não pode estar vazio!");
+        }
+
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Estabelecimento não encontrado."));
+
+        estabelecimento.setLogomarca(file.getBytes());
+        estabelecimentoRepository.save(estabelecimento);
     }
 
     /**

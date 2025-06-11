@@ -110,7 +110,6 @@ public class Estabelecimento {
     /**
      * Logomarca do estabelecimento armazenada em formato texto longo (base64, url ou similar).
      */
-    @Lob
     private byte[] logomarca;
 
     /**
