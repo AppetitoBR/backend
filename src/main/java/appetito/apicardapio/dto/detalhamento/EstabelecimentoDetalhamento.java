@@ -13,7 +13,6 @@ public record EstabelecimentoDetalhamento(
         Long usuario_cadastro_id,
         LocalDateTime data_alteracao_cadastro,
         String observacao,
-        String logomarca,
         String url_cardapio_digital,
         String subdominio_appetito
 ) {
@@ -29,7 +28,6 @@ public record EstabelecimentoDetalhamento(
                 estabelecimento.getUsuarioCadastro().getUsuario_dashboard_id(),
                 estabelecimento.getData_alteracao_cadastro(),
                 estabelecimento.getObservacao(),
-                estabelecimento.getLogomarca(),
                 estabelecimento.getUrl_cardapio_digital(),
                 estabelecimento.getSubdominio_appetito()
         );
