@@ -85,7 +85,7 @@ public class ClienteController {
      * @param clienteAutenticado Cliente autenticado no contexto da requisição.
      * @return ResponseEntity com status da operação.
      */
-    @PostMapping("/{id}/upload-imagem")
+    @PostMapping(value = "/{id}/upload-imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> uploadImagemPerfil(@PathVariable Long id, @RequestPart("file") MultipartFile file, @AuthenticationPrincipal Cliente clienteAutenticado) {
         if (file.isEmpty()) {

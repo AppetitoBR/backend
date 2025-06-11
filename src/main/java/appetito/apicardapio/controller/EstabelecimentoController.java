@@ -7,10 +7,7 @@ import appetito.apicardapio.dto.cadastro.EstabelecimentoCadastro;
 import appetito.apicardapio.dto.GetAll.EstabelecimentoDados;
 import appetito.apicardapio.dto.detalhamento.EstabelecimentoDetalhamento;
 import appetito.apicardapio.entity.*;
-import appetito.apicardapio.enums.PapelUsuario;
-import appetito.apicardapio.exception.ResourceNotFoundException;
 import appetito.apicardapio.repository.*;
-import appetito.apicardapio.security.DiscordAlert;
 import appetito.apicardapio.service.CardapioService;
 import appetito.apicardapio.service.EstabelecimentoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,17 +16,14 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Controlador responsável por operações relacionadas a estabelecimentos,
@@ -132,7 +126,6 @@ public class EstabelecimentoController {
      *
      * @param dto dados do funcionário e novo papel
      * @return resposta sem conteúdo (204)
-     * @throws AccessDeniedException em caso de permissão negada
      */
     @PutMapping
     @Transactional
@@ -150,7 +143,6 @@ public class EstabelecimentoController {
      *
      * @param estabelecimentoId ID do estabelecimento
      * @return lista de funcionários vinculados
-     * @throws AccessDeniedException em caso de permissão negada
      */
     @GetMapping
     @PreAuthorize("@preAuthorizeService.ehAdministrador(authentication.principal, #estabelecimentoId)")
