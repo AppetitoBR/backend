@@ -126,6 +126,7 @@ public class Estabelecimento {
     private Time abertura;
     private Time fechamento;
 
+    @Transient
     private boolean isOpen;
 
     public void atualizarStatus() {
