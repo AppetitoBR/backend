@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.Time;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,7 +111,7 @@ public class Estabelecimento {
      * Logomarca do estabelecimento armazenada em formato texto longo (base64, url ou similar).
      */
     @Lob
-    private String logomarca;
+    private byte[] logomarca;
 
     /**
      * URL do cardápio digital vinculado ao estabelecimento.
@@ -120,6 +122,33 @@ public class Estabelecimento {
      * Subdomínio do estabelecimento na plataforma Appetito.
      */
     private String subdominio_appetito;
+
+    private Time abertura;
+    private Time fechamento;
+
+    private boolean isOpen;
+
+    public void atualizarStatus() {
+        if (abertura == null || fechamento == null) {
+            isOpen = false; // não tem horário definido
+            return;
+        }
+
+        LocalTime agora = LocalTime.now();
+        LocalTime abre = abertura.toLocalTime();
+        LocalTime fecha = fechamento.toLocalTime();
+
+        if (abre.isBefore(fecha)) {
+            isOpen = !agora.isBefore(abre) && agora.isBefore(fecha);
+        } else {
+            isOpen = !agora.isBefore(abre) || agora.isBefore(fecha);
+        }
+    }
+    public boolean isOpen() {
+        atualizarStatus();
+        return isOpen;
+    }
+    private Float nota;
 
     /**
      * Construtor que cria um estabelecimento a partir de dados fornecidos no DTO EstabelecimentoCadastro.
