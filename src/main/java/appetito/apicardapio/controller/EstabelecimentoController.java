@@ -13,15 +13,20 @@ import appetito.apicardapio.service.EstabelecimentoService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -181,6 +186,38 @@ public class EstabelecimentoController {
         }
         return ResponseEntity.ok(cardapios);
     }
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(id, authentication.principal)")
+    @PostMapping(value = "/{id}/upload-imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadImagemPerfil(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file,
+            @AuthenticationPrincipal UsuarioEstabelecimento usuarioEstabelecimento) {
+
+        if (!usuarioEstabelecimento.getUsuario().getUsuario_dashboard_id().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para atualizar a imagem de outro estabelecimento.");
+        }
+
+        try {
+            estabelecimentoService.uploadLogoMarca(id, file);
+            return ResponseEntity.ok("Imagem de perfil salva com sucesso!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Erro ao salvar imagem: " + e.getMessage());
+        }
+    }
+    @GetMapping("/{nomeFantasia}/imagem-perfil")
+    public ResponseEntity<byte[]> buscarImagemPerfil(@PathVariable String nomeFantasia) {
+        byte[] imagem = estabelecimentoService.obterLogoMarca(nomeFantasia);
+        if (imagem == null) {
+            return ResponseEntity.notFound().build();
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "image/png");
+        return new ResponseEntity<>(imagem, headers, HttpStatus.OK);
+    }
+
+
 
 }
 
