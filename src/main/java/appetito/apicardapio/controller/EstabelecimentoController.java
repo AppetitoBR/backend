@@ -27,9 +27,10 @@ public class EstabelecimentoController {
     @PostMapping
     @Transactional
     public ResponseEntity<EstabelecimentoDetalhamento> cadastrarEstabelecimento(@RequestBody @Valid EstabelecimentoCadastro dadosEstabelecimento, UriComponentsBuilder uriE){
-            var estabelecimento = new Estabelecimento(dadosEstabelecimento);
+        var estabelecimento = new Estabelecimento(dadosEstabelecimento);
         estabelecimentoRepository.save(new Estabelecimento(dadosEstabelecimento));
-    var uri = uriE.path("/estabelecimento/{id}").buildAndExpand(estabelecimento.getId()).toUri();
+
+        var uri = uriE.path("/estabelecimento/{id}").buildAndExpand(estabelecimento.getId()).toUri();
         return ResponseEntity.created(uri).body(new EstabelecimentoDetalhamento(estabelecimento));
     }
 
