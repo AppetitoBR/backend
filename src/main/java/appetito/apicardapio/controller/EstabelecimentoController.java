@@ -191,9 +191,8 @@ public class EstabelecimentoController {
     public ResponseEntity<String> uploadImagemPerfil(
             @PathVariable Long id,
             @RequestPart("file") MultipartFile file,
-            @AuthenticationPrincipal UsuarioEstabelecimento usuarioEstabelecimento) {
-
-        if (!usuarioEstabelecimento.getUsuario().getUsuario_dashboard_id().equals(id)) {
+            @AuthenticationPrincipal UsuarioDashboard usuarioDashboard) {
+        if (!usuarioDashboard.getUsuario_dashboard_id().equals(id)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para atualizar a imagem de outro estabelecimento.");
         }
 
