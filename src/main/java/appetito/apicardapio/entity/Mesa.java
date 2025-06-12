@@ -29,8 +29,6 @@ public class Mesa {
   //  @Column(nullable = false, unique = true)
   //  private String qrCode;
 
-
-
     public Mesa() {}
 
     public Mesa(String nome, Integer capacidade, String status, Long estabelecimento ) {
