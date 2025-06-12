@@ -217,7 +217,5 @@ public class EstabelecimentoController {
         return new ResponseEntity<>(imagem, headers, HttpStatus.OK);
     }
 
-
-
 }
 
