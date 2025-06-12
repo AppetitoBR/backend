@@ -186,8 +186,9 @@ public class EstabelecimentoController {
         }
         return ResponseEntity.ok(cardapios);
     }
-    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(id, authentication.principal)")
+
     @PostMapping(value = "/{id}/upload-imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("@preAuthorizeService.podeGerenciarEstabelecimento(#id, authentication.principal)")
     public ResponseEntity<String> uploadImagemPerfil(
             @PathVariable Long id,
             @RequestPart("file") MultipartFile file,
